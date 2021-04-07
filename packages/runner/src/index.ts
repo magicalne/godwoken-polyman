@@ -1,7 +1,7 @@
 import path from 'path';
 import { Api } from './api';
 
-const _indexer_path = path.resolve(__dirname, '../db/ckb_indxer'); 
+const _indexer_path = path.resolve(__dirname, '../db/ckb-indexer-data'); 
 const ckb_rpc= 'http://127.0.0.1:8114';
 const godwoken_rpc = 'http://127.0.0.1:8119';
 const rollup_type_hash = '0x49a0d86dafc58a2826174b1aac6609d2736a0c50e5ef031a5252babab4e98272';
