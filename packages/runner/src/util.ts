@@ -59,11 +59,17 @@ export function caculateLayer2LockScriptHash (
     const script = {
       code_hash: layer2LockConfig.code_hash,
       hash_type: layer2LockConfig.hash_type,
-      layer2LockArgs,
+      args: layer2LockArgs,
     };
     return base.utils.ckbHash(
       base.core.SerializeScript(normalizers.NormalizeScript(script))
     ).serializeJson();
+}
+
+export function serializeScript (script: Script) {
+    return base.utils.ckbHash(
+        base.core.SerializeScript(normalizers.NormalizeScript(script))
+      ).serializeJson(); 
 }
 
 

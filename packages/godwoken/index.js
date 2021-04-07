@@ -9,7 +9,7 @@ const {
   NormalizeRawWithdrawalRequest,
 } = require("./normalizer");
 const normalizer = require("./normalizer");
-const core = require("../schemas");
+const core = require("./schemas");
 
 function numberToUInt32LE(value) {
   const buf = Buffer.alloc(4);

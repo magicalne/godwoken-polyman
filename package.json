@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build-pw-core": "cd ./node_modules/@lay2/pw-core && yarn run build && rm -rf src && cd -",
-    "bootstrap": "yarn install && yarn run build-pw-core"
+    "bootstrap": "yarn install && yarn run build-pw-core",
+    "start": "yarn workspace @godwoken-examples/runner start"
   }
 }

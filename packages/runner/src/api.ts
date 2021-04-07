@@ -42,10 +42,8 @@ import { RPC } from "ckb-js-toolkit";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import path from "path";
 import { initializeConfig } from "@ckb-lumos/config-manager";
-import { privateKeyToCkbAddress, privateKeyToEthAddress } from "./util";
 
-
-import { asyncSleep, caculateLayer2LockScriptHash, waitForBlockSync } from "./util";
+import { asyncSleep, caculateLayer2LockScriptHash, serializeScript,  waitForBlockSync, privateKeyToCkbAddress, privateKeyToEthAddress } from "./util";
 
 export class Api {
 
@@ -53,14 +51,14 @@ export class Api {
     private ckb_rpc: RPC;
 
     public godwoken_rpc_url: string;
-    private godwoken: Godwoken;
+    public godwoken: Godwoken;
 
     public validator_code_hash: string;
 
     private indexer: Indexer | null;
     public indexer_path: string; 
 
-    private polyjuice: Polyjuice | null;
+    public polyjuice: Polyjuice | null;
 
     constructor (
         _ckb_rpc_url: string,
@@ -189,6 +187,7 @@ export class Api {
         while (true) {
             await asyncSleep(1000);
             const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
+            console.log(txWithStatus);
             if (
                 txWithStatus &&
                 txWithStatus.tx_status &&
@@ -202,8 +201,19 @@ export class Api {
 
         //get deposit account id
         const script_hash = caculateLayer2LockScriptHash(ethAddress);
-        const account_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
-        console.log(`account id: ${account_id}`)
+        console.log(`compute_scripthash: ${script_hash}`);
+        
+        while (true) {
+            await asyncSleep(1000); 
+            const account_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+            console.log(`account id: ${account_id}`); 
+            if(account_id){
+                console.log(`account id: ${account_id}`);
+                break;
+            }
+        }
+
+        const account_id = await this.godwoken.getAccountIdByScriptHash(script_hash); 
         return account_id.toString();
     }
 
@@ -219,6 +229,7 @@ export class Api {
         const raw_l2tx = _createAccountRawL2Transaction(
             from_id, nonce, this.validator_code_hash, script_args,
         );
+        
         const message = _generateTransactionMessageToSign(raw_l2tx, rollup_type_hash);
         const signature = _signMessage(message, privkey);
         console.log("message", message);
@@ -228,6 +239,25 @@ export class Api {
         console.log("RunResult", run_result);
         const new_account_id = UInt32LEToNumber(run_result.return_data);
         console.log("Created account id:", new_account_id);
+
+        // wait for confirm
+        const l2_script: Script = {
+            code_hash: this.validator_code_hash,
+            hash_type: "data",
+            args: script_args
+        };
+        const l2_script_hash = serializeScript(l2_script);
+        while (true) {
+            await asyncSleep(1000); 
+            const account_id = await this.godwoken.getAccountIdByScriptHash(l2_script_hash);
+            console.log(`wait for creator_account_id lands on chain..`);
+
+            if(account_id){
+                console.log(`creator_account_id ${account_id} is now on chain!`);
+                break;    
+            }
+        }
+
         return new_account_id.toString();
     }
 
@@ -236,6 +266,7 @@ export class Api {
         init_code: string,
         rollup_type_hash: string,
         privkey: string,
+        eth_address?: string
     ) {
         const creator_account_id = parseInt(creator_account_id_str);
         this.polyjuice = new Polyjuice(this.godwoken, {
@@ -243,7 +274,7 @@ export class Api {
             sudt_id: 1,
             creator_account_id,
         });
-        const script_hash = accountScriptHash(privkey);
+        const script_hash = eth_address ? caculateLayer2LockScriptHash(eth_address) : accountScriptHash(privkey);
         const from_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
         if (!from_id) {
             console.log("Can not find account id by script_hash:", script_hash);
@@ -257,13 +288,48 @@ export class Api {
         console.log("L2Transaction", l2tx);
         const run_result = await this.godwoken.submitL2Transaction(l2tx);
         console.log("RunResult", run_result);
-        const new_script_hash = this.polyjuice.calculateScriptHash(from_id, nonce);
-        console.log("new script hash", new_script_hash);
+
+
+        // todo: the method of caculateScriptHash seems go wrong.
+        // const new_script_hash = this.polyjuice.calculateScriptHash(from_id, nonce);
+        // console.log("new script hash", new_script_hash);
+        if(!run_result || !run_result.new_scripts)
+            throw new Error("run_result or run_result.new_scripts is empty.");
+        
+        const contract_script_hash = Object.keys(run_result.new_scripts)[0];
+
+        // wait for confirm
+        while (true) {
+            await asyncSleep(1000); 
+            const new_account_id = await this.godwoken.getAccountIdByScriptHash(
+                contract_script_hash
+            );
+            console.log(`contract_id: ${new_account_id}`);
+
+            if(new_account_id){
+                break;
+            }
+        }
+
         const new_account_id = await this.godwoken.getAccountIdByScriptHash(
-            new_script_hash
+            contract_script_hash
         );
-        console.log("new account id:", new_account_id);
-        return new_account_id.toString();
+        const account_address = await this.polyjuice.accountIdToAddress(new_account_id);
+        console.log(`the contract deployed at address ${account_address}`);
+        return account_address;
+    }
+
+    init_polyjuice (creator_account_id: number) {
+        this.polyjuice = new Polyjuice(this.godwoken, {
+            validator_code_hash: this.validator_code_hash,
+            sudt_id: 1,
+            creator_account_id,
+        });
+    }
+
+    async getAccountId (script_hash: string) {
+        const id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+        return id;
     }
 
     async _call(
