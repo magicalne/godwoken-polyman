@@ -1,0 +1,3 @@
+[submodule "polyjuice-providers-http"]
+	path = polyjuice-providers-http
+	url = https://github.com/RetricSu/polyjuice-providers-http.git
