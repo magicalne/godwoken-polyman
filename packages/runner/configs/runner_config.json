@@ -1,0 +1,90 @@
+{
+  "deploymentConfig": {
+    "deposition_lock": {
+      "code_hash": "0xcb8153e7a306df15df6754a0a6580a7bcd0741962f4facdef31da7f5280dcd8a",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "deposition_lock_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0x9b888dccbbe8b891b5e9a8d7f555cd9b4caacb2f3e3b5c66719ee44dd958e1e3",
+        "index": "0x0"
+      }
+    },
+    "custodian_lock": {
+      "code_hash": "0x01e4eb30f8795d6fc5a89460de44691b5589f1a8bf45b638d3ae0ecaf1685c4d",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "custodian_lock_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0x5ffe2bb1d0afdbe01d81dc3bae939f9b9261b8af0a3e5ff8f520330c874f90e2",
+        "index": "0x0"
+      }
+    },
+    "withdrawal_lock": {
+      "code_hash": "0xe0dd1c2538c89d8211a427437a630c5520618ce33660c49e171c71dbb5b5ee13",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "withdrawal_lock_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0xe25df62943d12e3c48e88a1afafe5ff8aa5e76ac13f197f8aedafeb24b68686f",
+        "index": "0x0"
+      }
+    },
+    "state_validator_lock": {
+      "code_hash": "0x6efa12736252a0ec7b37f10bd31d28dd67a39a0d4f95534a191fec66e7e8afb4",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "state_validator_lock_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0x4756ba80419f43fdee5534d1a149beae94eb1ba402fb295c0de21a3545d2e2c0",
+        "index": "0x0"
+      }
+    },
+    "state_validator_type": {
+      "code_hash": "0x29371a4b2cbf258cbc96340e932c97e926c32add061728770cdaa3c2294ec0c6",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "state_validator_type_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0xefb5568eaf23ecf2f2159d7aaee8ab81919d9a88fda1b4e68e70952442c8afbc",
+        "index": "0x0"
+      }
+    },
+    "rollup_type_hash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "godwokenConfig": {
+    "genesis": {
+      "timestamp": "0x1234"
+    },
+    "consensus": {
+      "aggregator_id": "0x0"
+    },
+    "rpc": {
+      "listen": "http://127.0.0.1:8114"
+    },
+    "chain": {
+      "rollup_type_script": {
+        "code_hash": "0x29371a4b2cbf258cbc96340e932c97e926c32add061728770cdaa3c2294ec0c6",
+        "hash_type": "type",
+        "args": "0x4e283113d4a833ff19ef34c1f924c2248005ede68c7a2b8634df8b7d4d901fdc"
+      }
+    }
+  },
+  "storeConfig": {
+    "type": "genesis",
+    "headerInfo": "0x3201000000000000b5b9350f30d7b4f9a85b07de36a4aab9b5fec9fea7107c805f764e6616cdc8c1"
+  },
+  "aggregatorConfig": {
+    "type": "always_success"
+  }
+}
