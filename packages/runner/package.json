@@ -6,7 +6,8 @@
   "types": "index.d.ts",
   "license": "MIT",
   "scripts": {
-    "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json ts-node-dev ./src/index"
+    "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json ts-node-dev ./src/index",
+    "fmt": "prettier --write \"src/*.ts\" \"src/*.js\" \"js/**/*.ts\" \"js/**/*.js\" package.json"
   },
   "dependencies": {
     "@ckb-lumos/base": "^0.16.0",
