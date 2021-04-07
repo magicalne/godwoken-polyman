@@ -47,17 +47,13 @@ import { asyncSleep, caculateLayer2LockScriptHash, serializeScript,  waitForBloc
 
 export class Api {
 
+    public validator_code_hash: string;
     public ckb_rpc_url: string;
     private ckb_rpc: RPC;
-
     public godwoken_rpc_url: string;
     public godwoken: Godwoken;
-
-    public validator_code_hash: string;
-
     private indexer: Indexer | null;
     public indexer_path: string; 
-
     public polyjuice: Polyjuice | null;
 
     constructor (
@@ -203,15 +199,8 @@ export class Api {
         const script_hash = caculateLayer2LockScriptHash(ethAddress);
         console.log(`compute_scripthash: ${script_hash}`);
         
-        while (true) {
-            await asyncSleep(1000); 
-            const account_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
-            console.log(`account id: ${account_id}`); 
-            if(account_id){
-                console.log(`account id: ${account_id}`);
-                break;
-            }
-        }
+        // wait for confirm
+        await this.waitForAccountIdOnChain(script_hash);
 
         const account_id = await this.godwoken.getAccountIdByScriptHash(script_hash); 
         return account_id.toString();
@@ -247,16 +236,7 @@ export class Api {
             args: script_args
         };
         const l2_script_hash = serializeScript(l2_script);
-        while (true) {
-            await asyncSleep(1000); 
-            const account_id = await this.godwoken.getAccountIdByScriptHash(l2_script_hash);
-            console.log(`wait for creator_account_id lands on chain..`);
-
-            if(account_id){
-                console.log(`creator_account_id ${account_id} is now on chain!`);
-                break;    
-            }
-        }
+        await this.waitForAccountIdOnChain(l2_script_hash);
 
         return new_account_id.toString();
     }
@@ -299,17 +279,7 @@ export class Api {
         const contract_script_hash = Object.keys(run_result.new_scripts)[0];
 
         // wait for confirm
-        while (true) {
-            await asyncSleep(1000); 
-            const new_account_id = await this.godwoken.getAccountIdByScriptHash(
-                contract_script_hash
-            );
-            console.log(`contract_id: ${new_account_id}`);
-
-            if(new_account_id){
-                break;
-            }
-        }
+        await this.waitForAccountIdOnChain(contract_script_hash); 
 
         const new_account_id = await this.godwoken.getAccountIdByScriptHash(
             contract_script_hash
@@ -330,6 +300,21 @@ export class Api {
     async getAccountId (script_hash: string) {
         const id = await this.godwoken.getAccountIdByScriptHash(script_hash);
         return id;
+    }
+
+    async waitForAccountIdOnChain (script_hash: string) {
+        while (true) {
+            await asyncSleep(1000); 
+            const new_account_id = await this.godwoken.getAccountIdByScriptHash(
+                script_hash
+            );
+            console.log(`contract_id: ${new_account_id}`);
+
+            if(new_account_id){
+                break;
+            }
+        }
+        return;
     }
 
     async _call(
