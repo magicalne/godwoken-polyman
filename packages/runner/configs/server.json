@@ -1,0 +1,13 @@
+{
+    "SERVER_PORT": {
+        "development": "5000",
+        "production": "9112"
+    },
+    "CROS_SERVER_LIST": [
+        "http://localhost:3000",
+        "https://asdfvaswe23.xyz",
+        "https://www.asdfvaswe23.xyz",
+        "https://zero2ckb.ckbapp.dev"
+    ],
+    "mode": "development" 
+}

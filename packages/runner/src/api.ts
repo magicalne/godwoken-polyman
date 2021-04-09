@@ -17,6 +17,7 @@ import {
   UInt32LEToNumber,
   numberToUInt32LE,
   u32ToHex,
+  RunResult,
 } from "@godwoken-examples/godwoken";
 import { Polyjuice } from "@godwoken-examples/polyjuice";
 
@@ -101,6 +102,13 @@ export class Api {
     console.log("synced ...");
   }
 
+  async clean_sync(){
+    if(!this.indexer)throw new Error("indexer not found. do syncLayer1 first!");
+    
+    await this.indexer.tip();
+    console.log('clean syncd.');
+  }
+
   async sendTx(
     deploymentConfig: DeploymentConfig,
     fromAddress: string,
@@ -108,6 +116,7 @@ export class Api {
     layer2LockArgs: HexString,
     privateKey: HexString
   ): Promise<Hash> {
+    await this.clean_sync();
     let txSkeleton = TransactionSkeleton({ cellProvider: this.indexer });
 
     const ownerLock: Script = parseAddress(fromAddress);
@@ -187,7 +196,11 @@ export class Api {
     while (true) {
       await asyncSleep(1000);
       const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
-      console.log(txWithStatus);
+      console.log(JSON.stringify(txWithStatus, null, 2));
+      if(txWithStatus === null){
+        throw new Error(`the tx is disapeared from ckb, please re-try.`);
+      }
+
       if (
         txWithStatus &&
         txWithStatus.tx_status &&
@@ -336,7 +349,7 @@ export class Api {
       const new_account_id = await this.godwoken.getAccountIdByScriptHash(
         script_hash
       );
-      console.log(`contract_id: ${new_account_id}`);
+      console.log(`account_id: ${new_account_id}`);
 
       if (new_account_id) {
         break;
@@ -412,5 +425,107 @@ export class Api {
       rollup_type_hash,
       privkey
     );
+  }
+
+  generateLayer2TransactionMessageToSign(
+    raw_l2tx: RawL2Transaction,
+    rollup_type_hash: Hash
+  ){
+    const message = _generateTransactionMessageToSign(
+      raw_l2tx,
+      rollup_type_hash
+    );
+    return message;
+  }
+
+  async sendLayer2Transaction(
+    raw_l2tx: RawL2Transaction,
+    signature: Hash
+  ) {
+    const l2tx: L2Transaction = { raw: raw_l2tx, signature };
+    const run_result = await this.godwoken.submitL2Transaction(l2tx);
+    console.log("RunResult", run_result);
+    return run_result;
+  }
+
+  async generateCreateCreatorAccountTx(
+    from_id_str: string,
+    sudt_id_str: string,
+    rollup_type_hash: string,
+  ){
+    const from_id = parseInt(from_id_str);
+    const nonce = await this.godwoken.getNonce(from_id);
+    const script_args = numberToUInt32LE(parseInt(sudt_id_str));
+    const raw_l2tx = _createAccountRawL2Transaction(
+      from_id,
+      nonce,
+      this.validator_code_hash,
+      script_args
+    ); 
+    const message = this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
+    return {type: 'create_creator', raw_l2tx: raw_l2tx, message: message, l2_script_args: script_args};
+  }
+
+  async waitForCreateCreator(sudt_id_str: string){
+    const script_args = numberToUInt32LE(parseInt(sudt_id_str));
+
+    // wait for confirm
+    const l2_script: Script = {
+      code_hash: this.validator_code_hash,
+      hash_type: "data",
+      args: script_args,
+    };
+    const l2_script_hash = serializeScript(l2_script);
+    await this.waitForAccountIdOnChain(l2_script_hash);
+    const id = await this.getAccountId(l2_script_hash);
+    return id;
+  }
+
+  async generateDeployTx(
+    creator_account_id_str: string,
+    init_code: string,
+    rollup_type_hash: string,
+    eth_address: string
+  ){
+    const creator_account_id = parseInt(creator_account_id_str);
+    this.polyjuice = new Polyjuice(this.godwoken, {
+      validator_code_hash: this.validator_code_hash,
+      sudt_id: 1,
+      creator_account_id,
+    });
+    const script_hash = caculateLayer2LockScriptHash(eth_address);
+    const from_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    if (!from_id) {
+      console.log("Can not find account id by script_hash:", script_hash);
+      throw new Error(`Can not find account id by script_hash: ${script_hash}`);
+    }
+    const nonce = await this.godwoken.getNonce(from_id);
+    const raw_l2tx = this.polyjuice.generateTransaction(
+      from_id,
+      0,
+      0n,
+      init_code,
+      nonce
+    );
+    const message = this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
+    return {type: 'deploy', raw_l2tx: raw_l2tx, message: message, l2_script_args: eth_address}
+  }
+
+  async watiForDeployTx(l2_script_hash: string){
+    await this.waitForAccountIdOnChain(l2_script_hash);
+    const id = await this.getAccountId(l2_script_hash);
+    return id; 
+  }
+  
+  async findCreateCreatorAccoundId(sudt_id_str: string) {
+    const script_args = numberToUInt32LE(parseInt(sudt_id_str));
+    const l2_script: Script = {
+      code_hash: this.validator_code_hash,
+      hash_type: "data",
+      args: script_args,
+    };
+    const l2_script_hash = serializeScript(l2_script);
+    const id = await this.godwoken.getAccountIdByScriptHash(l2_script_hash);
+    return id;
   }
 }

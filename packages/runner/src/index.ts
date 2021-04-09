@@ -1,7 +1,13 @@
-import path from "path";
-import { Api } from "./api";
+import { Api } from './api';
+import path from 'path';
+import express from 'express';
+import cors from "cors";
+import timeout from "connect-timeout";
+import Config from "../configs/server.json";
+import { ethAddress } from './common';
 
-const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
+const port = 5000; 
+const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 const ckb_rpc = "http://127.0.0.1:8114";
 const godwoken_rpc = "http://127.0.0.1:8119";
 const rollup_type_hash =
@@ -11,38 +17,115 @@ const sudt_id_str =
 const amount = "40000000000";
 const private_key =
   "0xdd50cac37ec6dd12539a968c1a2cbedda75bd8724f7bcad486548eaabb87fc8b";
-const eth_private_key =
-  "0x9582bd2e7a45def7696215a39b176f73432650c63b395e86b0edc657ff7fad52";
-const eth_address = "0xdb35f58677b7C1339D1a030a0dbb23454A45DD95";
-const contract_code =
-  "0x60806040525b607b60006000508190909055505b610018565b60db806100266000396000f3fe60806040526004361060295760003560e01c806360fe47b114602f5780636d4ce63c14605b576029565b60006000fd5b60596004803603602081101560445760006000fd5b81019080803590602001909291905050506084565b005b34801560675760006000fd5b50606e6094565b6040518082815260200191505060405180910390f35b8060006000508190909055505b50565b6000600060005054905060a2565b9056fea2646970667358221220044daf4e34adffc61c3bb9e8f40061731972d32db5b8c2bc975123da9e988c3e64736f6c63430006060033";
 
-const run = async () => {
-  console.log("start..");
-  const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
-  try {
-    await api.syncLayer1();
-    const from_id = await api.deposit(private_key, eth_address, amount);
-    const creator_account_id = await api.createCreatorAccount(
-      from_id,
-      sudt_id_str,
-      rollup_type_hash,
-      eth_private_key
-    );
-    const contract_account = await api.deploy(
-      creator_account_id,
-      contract_code,
-      rollup_type_hash,
-      eth_private_key,
-      eth_address
-    );
-    console.log(`contract address: ${contract_account}`);
-    console.log(`finished~`);
-    process.exit(0);
-  } catch (e) {
-    console.error(e);
-    process.exit(1);
-  }
-};
+const corsOptions = {
+    origin: Config.CROS_SERVER_LIST,
+    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+    credentials: true
+}
 
-run();
+const api = new Api(ckb_rpc, godwoken_rpc, indexer_path);
+api.syncLayer1();
+
+const app = express();
+app.use(cors(corsOptions));
+app.use('/static', express.static(path.join(__dirname, '../../src/resource')));
+app.use(timeout('300s')); // keep alive for long time
+app.use(express.urlencoded({ extended: false, limit: '1gb' })); // for uploading very large contract code
+
+app.get( "/", ( req, res ) => {
+    res.send( "Hello world!" );
+} );
+
+app.get( "/start_polyjuice", async ( req, res ) => {
+    try {
+        const eth_address = req.query.eth_address + '';
+        await api.clean_sync();
+        const from_id = await api.deposit(private_key, eth_address, amount);
+        const data = await api.generateCreateCreatorAccountTx(from_id, sudt_id_str, rollup_type_hash);
+        res.send({status:'ok', data: data});
+    } catch (error) {
+        console.log(error);
+        res.send({status:'failed', error: error});
+    }
+} );
+
+app.get( "/send_l2_tx", async ( req, res ) => {
+    try {
+        const raw_l2tx = JSON.parse(req.query.raw_l2tx + '');
+        const signature = req.query.signature + '';
+        const type = req.query.type + '';
+        await api.clean_sync();
+        const run_result = await api.sendLayer2Transaction(raw_l2tx, signature);
+        switch (type) {
+            case 'create_creator':
+                const id = await api.waitForCreateCreator(sudt_id_str);
+                res.send({status:'ok', data: {run_result: run_result, account_id: id }});
+                break;
+        
+            case 'deploy':
+                //const l2_script_args = req.query.l2_script_args+'';
+                const contract_id = await api.watiForDeployTx(Object.keys(run_result.new_scripts)[0]);
+                res.send({status:'ok', data: {run_result: run_result, account_id: contract_id }});
+                break;
+
+            case 'deposit':
+                break;
+
+            default:
+                res.send({status:'failed', error: `unknow type ${type}.`});
+                break;
+        }
+    } catch (error) {
+        console.log(error);
+        res.send({status:'failed', error: error});
+    }
+} );
+
+app.get( "/deposit", async ( req, res ) => {
+    try {
+        const eth_address = req.query.eth_address + '';
+        await api.clean_sync();
+        const account_id = await api.deposit(private_key, eth_address, amount);
+        console.log(account_id);
+        res.send({status:'ok', data: {eth_address: eth_address, account_id: account_id}});
+    } catch (error) {
+        console.log(error);
+        res.send({status:'failed', error: error});
+    }
+} );
+
+app.get( "/create_creator_account", async ( req, res ) => {
+    try {
+        const from_id = req.query.from_id + '';
+        await api.clean_sync();
+        const data = await api.generateCreateCreatorAccountTx(from_id, sudt_id_str, rollup_type_hash);
+        res.send({status:'ok', data: data});
+    } catch (error) {
+        console.log(error);
+        res.send({status:'failed', error: error});
+    }
+} );
+
+
+app.get( "/deploy_contract", async ( req, res ) => {
+    try {
+        const creator_account_id = await api.findCreateCreatorAccoundId(sudt_id_str);
+        if(!creator_account_id)
+            return res.send({status:'failed', error: `creator_account_id not found.`});
+
+        const contract_code = req.query.contract_code + '';
+        const eth_address = req.query.eth_address + '';
+        await api.clean_sync();
+        const data = await api.generateDeployTx(creator_account_id.toString(), contract_code, rollup_type_hash, eth_address);
+        res.send({status:'ok', data: data});
+    } catch (error) {
+        console.log(error);
+        res.send({status:'failed', error: error});
+    }
+} );
+
+
+app.listen( port, () => {
+    console.log( `server started at http://localhost:${ port }` );
+} );
