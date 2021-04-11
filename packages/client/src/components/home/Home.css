@@ -42,8 +42,13 @@
   width: 100%;
   min-height: 500px;
   background: #666b6a;
-  font-size: 18px;
+  font-size: 25px;
   cursor: pointer;
+  font-weight: 700;
+  text-align: center;
+  vertical-align: middle;
+  display: inline-block;
+  line-height: 500px;
 }
 
 .big-right-btn{
@@ -51,8 +56,14 @@
   width: 100%;
   min-height: 500px;
   background:#88ccf1;
-  font-size: 18px;
+  font-size: 25px;
   cursor: pointer;
+  font-weight: 700;
+  text-align: center;
+  vertical-align: middle;
+  display: inline-block;
+  line-height: 500px;
+  color: black;
 }
 
 .big-left-btn:hover{

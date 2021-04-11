@@ -29,15 +29,8 @@ export const run = async () => {
   const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
   try {
     await api.syncLayer1();
-    const from_id = await api.deposit(user_private_key, undefined, amount);
-    console.log(`create deposit account.`);
-    const creator_account_id = await api.createCreatorAccount(
-      from_id,
-      sudt_id_str,
-      rollup_type_hash,
-      eth_private_key
-    );
-    console.log(`create creator account.`);
+    await api.giveUserLayer1AccountSomeMoney(miner_ckb_devnet_addr, miner_private_key, user_ckb_devnet_addr, user_account_init_amount);
+    console.log(`prepared money.`);
     console.log(`finished~`);
     process.exit(0);
   } catch (e) {

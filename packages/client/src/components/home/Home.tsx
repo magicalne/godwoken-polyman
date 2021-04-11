@@ -205,27 +205,16 @@ function Home() {
 
           <Grid container spacing={3}>
             <Grid item xs={6} className="big-left-btn" onClick={deposit}>
-              <Button
-                variant="contained"
-                component="label"
-                onClick={deposit}
-              >
-                deposit to metamask
-              </Button>
+              Deposit to Metamask Address
             </Grid>
             <Grid item xs={6} className="big-right-btn"> 
-              <Button
-                variant="contained"
-                component="label"
-              >
-                deploy contract 
+                Deploy Smart Contract 
                 <input
                   type="file"
                   ref={inputFile}
                   onChange={deployContractCode}
-                  hidden
+                  
                 />
-              </Button>
             </Grid>
           </Grid>
         </header>

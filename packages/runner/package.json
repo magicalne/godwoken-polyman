@@ -7,7 +7,8 @@
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf ./db",
-    "ready": "LUMOS_CONFIG_FILE=./configs/lumos-config.json ts-node-dev ./src/init_polyjuice.ts",
+    "prepare_money": "LUMOS_CONFIG_FILE=./configs/lumos-config.json ts-node-dev ./src/prepare_money.ts",
+    "init_polyjuice": "LUMOS_CONFIG_FILE=./configs/lumos-config.json ts-node-dev ./src/init_polyjuice.ts",
     "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json ts-node-dev ./src/index",
     "fmt": "prettier --write \"src/*.ts\" \"src/*.js\" \"js/**/*.ts\" \"js/**/*.js\" package.json"
   },
