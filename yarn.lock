@@ -1246,6 +1246,16 @@
     request "^2.88.2"
     xxhash "^0.3.0"
 
+"@ckb-lumos/transaction-manager@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@ckb-lumos/transaction-manager/-/transaction-manager-0.16.0.tgz#b47247ac672fe4b821c772e86e032f001b2e068f"
+  integrity sha512-ZnCeJH4GIGtuU7kuDqf2lyspk3gbleyFzOWRqsO208MzJy9IpQxTMrczRnIWA/qX/vy3XgZyRUKify/pkH78IQ==
+  dependencies:
+    "@ckb-lumos/base" "^0.16.0"
+    "@ckb-lumos/indexer" "^0.16.0"
+    ckb-js-toolkit "^0.10.2"
+    immutable "^4.0.0-rc.12"
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -1958,6 +1968,13 @@
     "@types/connect" "*"
     "@types/node" "*"
 
+"@types/connect-timeout@0.0.34":
+  version "0.0.34"
+  resolved "https://registry.yarnpkg.com/@types/connect-timeout/-/connect-timeout-0.0.34.tgz#16639efcc65b5b887f3b6738f8d9ee4acf556f04"
+  integrity sha512-ZadN0ttd64Wg5suotSRqJTn/QSw6gO1OqFY3GVgzY9WC5Efo2fxsSt5Scd5IOC6eXPbA7N4VlK17/oRpGSmOzA==
+  dependencies:
+    "@types/express" "*"
+
 "@types/connect@*":
   version "3.4.34"
   resolved "https://registry.yarnpkg.com/@types/connect/-/connect-3.4.34.tgz#170a40223a6d666006d93ca128af2beb1d9b1901"
@@ -1997,7 +2014,7 @@
     "@types/qs" "*"
     "@types/range-parser" "*"
 
-"@types/express@^4.17.11":
+"@types/express@*", "@types/express@^4.17.11":
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.11.tgz#debe3caa6f8e5fcda96b47bd54e2f40c4ee59545"
   integrity sha512-no+R6rW60JEc59977wIxreQVsIEOAYwgCqldrA/vkpCnbD7MqTefO97lmoBe4WE0F156bC4uLSP1XHDOySnChg==

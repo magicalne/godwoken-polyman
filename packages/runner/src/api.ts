@@ -25,6 +25,7 @@ import { HexString, Cell, Script, Hash, utils } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
 import { Indexer } from "@ckb-lumos/indexer";
 import { key } from "@ckb-lumos/hd";
+import TransactionManager from "@ckb-lumos/transaction-manager";
 import {
   TransactionSkeleton,
   parseAddress,
@@ -59,6 +60,7 @@ export class Api {
   public godwoken_rpc_url: string;
   public godwoken: Godwoken;
   private indexer: Indexer | null;
+  private transactionManager: TransactionManager | null;
   public indexer_path: string;
   public polyjuice: Polyjuice | null;
 
@@ -75,6 +77,7 @@ export class Api {
       "0x20814f4f3ebaf8a297d452aa38dbf0f9cb0b2988a87cb6119c2497de817e7de9";
 
     this.indexer = null;
+    this.transactionManager = null;
     this.ckb_rpc = new RPC(this.ckb_rpc_url);
     this.godwoken = new Godwoken(this.godwoken_rpc_url);
 
@@ -96,17 +99,19 @@ export class Api {
 
     this.indexer = new Indexer(this.ckb_rpc_url, indexerPath);
     this.indexer.startForever();
+    this.transactionManager = new TransactionManager(this.indexer)
+    this.transactionManager.start();
 
     console.log("waiting for sync ...");
     await this.indexer.waitForSync();
     console.log("synced ...");
   }
 
-  async clean_sync(){
+  async syncToTip(){
     if(!this.indexer)throw new Error("indexer not found. do syncLayer1 first!");
     
     await this.indexer.tip();
-    console.log('clean syncd.');
+    console.log('syncd to tip.');
   }
 
   async sendTx(
@@ -116,8 +121,11 @@ export class Api {
     layer2LockArgs: HexString,
     privateKey: HexString
   ): Promise<Hash> {
-    await this.clean_sync();
-    let txSkeleton = TransactionSkeleton({ cellProvider: this.indexer });
+    if(!this.transactionManager)
+      throw new Error(`this.transactionManager not found.`);
+      
+    await this.syncToTip();
+    let txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager });
 
     const ownerLock: Script = parseAddress(fromAddress);
     const ownerLockHash: Hash = utils.computeScriptHash(ownerLock);
@@ -172,7 +180,7 @@ export class Api {
     return txHash;
   }
 
-  async deposit(_privateKey: string, _ethAddress: string, _amount: string) {
+  async deposit(_privateKey: string, _ethAddress: string | undefined, _amount: string) {
     if (!this.indexer) {
       throw new Error("indexer is null, please run syncLayer1 first!");
     }
@@ -196,6 +204,7 @@ export class Api {
     while (true) {
       await asyncSleep(1000);
       const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
+      console.log('---------------------')
       console.log(JSON.stringify(txWithStatus, null, 2));
       if(txWithStatus === null){
         throw new Error(`the tx is disapeared from ckb, please re-try.`);
@@ -330,7 +339,7 @@ export class Api {
     return account_address;
   }
 
-  init_polyjuice(creator_account_id: number) {
+  initPolyjuice(creator_account_id: number) {
     this.polyjuice = new Polyjuice(this.godwoken, {
       validator_code_hash: this.validator_code_hash,
       sudt_id: 1,
@@ -340,6 +349,11 @@ export class Api {
 
   async getAccountId(script_hash: string) {
     const id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    return id;
+  }
+
+  async getAccountIdByEthAddr(eth_address: string){
+    const id = await this.godwoken.getAccountIdByScriptHash(caculateLayer2LockScriptHash(eth_address));
     return id;
   }
 
@@ -527,5 +541,52 @@ export class Api {
     const l2_script_hash = serializeScript(l2_script);
     const id = await this.godwoken.getAccountIdByScriptHash(l2_script_hash);
     return id;
+  }
+
+  async giveUserLayer1AccountSomeMoney(miner_address: string, miner_privatekey: string, user_address: string, amount: bigint){
+    if(!this.indexer)
+      throw new Error(`this.indexer not found.`);
+    if(!this.transactionManager)
+      throw new Error(`this.transactionManager not found.`);
+      
+    await this.syncToTip();
+    let txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager });
+    txSkeleton = await common.transfer(txSkeleton, [miner_address], user_address, amount);
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [miner_address],
+      BigInt(1000)
+    );
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, miner_privatekey);
+    const tx = sealTransaction(txSkeleton, [content]);
+    const txHash: Hash = await this.ckb_rpc.send_transaction(tx);
+    console.log(`txHash ${txHash} is sent!`);
+
+    // Wait for tx to land on chain.
+    while (true) {
+      await asyncSleep(1000);
+      const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
+      console.log('---------------------')
+      console.log(JSON.stringify(txWithStatus, null, 2));
+      if(txWithStatus === null){
+        throw new Error(`the tx is disapeared from ckb, please re-try.`);
+      }
+
+      if (
+        txWithStatus &&
+        txWithStatus.tx_status &&
+        txWithStatus.tx_status.status === "committed"
+      ) {
+        await waitForBlockSync(
+          this.indexer,
+          this.ckb_rpc!,
+          txWithStatus.tx_status.block_hash
+        );
+        break;
+      }
+    }
+    console.log(`tx ${txHash} is now onChain!`);
   }
 }

@@ -6,6 +6,8 @@
   "types": "index.d.ts",
   "license": "MIT",
   "scripts": {
+    "clean": "rm -rf ./db",
+    "ready": "LUMOS_CONFIG_FILE=./configs/lumos-config.json ts-node-dev ./src/init_polyjuice.ts",
     "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json ts-node-dev ./src/index",
     "fmt": "prettier --write \"src/*.ts\" \"src/*.js\" \"js/**/*.ts\" \"js/**/*.js\" package.json"
   },
@@ -16,6 +18,7 @@
     "@ckb-lumos/hd": "^0.14.2-rc6",
     "@ckb-lumos/helpers": "^0.14.2-rc6",
     "@ckb-lumos/indexer": "^0.16.0",
+    "@ckb-lumos/transaction-manager": "^0.16.0",
     "@godwoken-examples/godwoken": "^0.0.1",
     "@types/secp256k1": "^4.0.1",
     "ckb-js-toolkit": "^0.10.2",

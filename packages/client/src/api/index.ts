@@ -24,6 +24,24 @@ class Api{
         return res.data;
     };
 
+    async getBalance(eth_address: string){
+        let res = await axios.get(`${this.base_url}/get_layer2_balance`, { 
+            params:{
+                eth_address: eth_address
+            }
+        });
+        return res.data;
+    };  
+
+    async deposit(eth_address: string){
+        let res = await axios.get(`${this.base_url}/deposit`, { 
+            params:{
+                eth_address: eth_address
+            }
+        });
+        return res.data;
+    }; 
+
     async deploy_contract(contract_code: string, eth_address: StringifyOptions ){
         let res = await axios.get(`${this.base_url}/deploy_contract`, { 
             params:{

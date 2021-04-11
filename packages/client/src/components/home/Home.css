@@ -37,12 +37,28 @@
   }
 }
 
-.arcii-art{
-  white-space: pre;
-  display: inline-block; 
-  font-family: "Lucida Console", Monaco, monospace;
-  letter-spacing: -0.2em;
-  line-height: 0.8em;
-  text-shadow: 0 0 5px rgba(100,100,100,0.5);
-  font-size: 12px;
+.big-left-btn{
+  padding: 10px;
+  width: 100%;
+  min-height: 500px;
+  background: #666b6a;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.big-right-btn{
+  padding: 10px;
+  width: 100%;
+  min-height: 500px;
+  background:#88ccf1;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.big-left-btn:hover{
+  background: #72a276;
+}
+
+.big-right-btn:hover{
+  background: #72a276;
 }
