@@ -37,7 +37,7 @@ export const run = async (maxRetryLimit: number) => {
   } catch (e) {
     console.error(e);
     if(retry < maxRetryLimit){
-      asyncSleep(intervals);
+      await asyncSleep(intervals);
       console.log(`retry...${retry}th times`);
       run(maxRetryLimit);
     }else{

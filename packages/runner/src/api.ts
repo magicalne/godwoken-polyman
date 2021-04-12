@@ -616,7 +616,11 @@ export class Api {
     await this.syncToTip();
     let txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager });
     try {
-      txSkeleton = await common.transfer(txSkeleton, [ckb_address], ckb_address, amount);
+      txSkeleton = await common.injectCapacity(
+        txSkeleton,
+        [ckb_address],
+        amount
+      );
       return true;
     } catch (error) {
       return false;
