@@ -116,6 +116,5 @@ packages/runner/db/
 packages/runner/temp-db/
 
 packages/runner/configs/lumos-config.json
-packages/runner/configs/runner_config.json
 
 .DS_Store

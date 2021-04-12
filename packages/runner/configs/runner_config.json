@@ -1,0 +1,90 @@
+{
+  "deploymentConfig": {
+    "deposition_lock": {
+      "code_hash": "0x7af73dbf49b2c4d3a588d891aa50671b95dd0d2cdc6c19718cec20c3ebd00bf3",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "deposition_lock_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0xab81620e9d6cc1aab32ca47364224fcd025440044c212259715d390fbba5422c",
+        "index": "0x0"
+      }
+    },
+    "custodian_lock": {
+      "code_hash": "0x3d0d4f8727132d0efefa7e94219131d546cf1ddfc086e739777539f631161e4f",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "custodian_lock_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0x3ec216e4591d0b3522377e5ebd86a215cc48fbb6511bcbdc23d629d29da30bad",
+        "index": "0x0"
+      }
+    },
+    "withdrawal_lock": {
+      "code_hash": "0x8888109eea3b1bf398089ab3c45281fdac8d0b707860f23ca7db47fffb36e2cb",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "withdrawal_lock_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0xdfe7efc0beb05cc0ab812e17162318456e3543f2774a3b00af3d73e4d1b03f8f",
+        "index": "0x0"
+      }
+    },
+    "state_validator_lock": {
+      "code_hash": "0xabb416998c579093bf82d945b23431db0fe8e7343e27dc9f6a5e1640176751d8",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "state_validator_lock_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0xb16b1bb8ebbc7e6bad10d613f2b41a80b87bcf1b493ad063f277db69a4ae0877",
+        "index": "0x0"
+      }
+    },
+    "state_validator_type": {
+      "code_hash": "0xd6465f2d342d98bc59287de5e07f2467755afe4b530f75d091dd18fd70d55f97",
+      "hash_type": "type",
+      "args": "0x"
+    },
+    "state_validator_type_dep": {
+      "dep_type": "code",
+      "out_point": {
+        "tx_hash": "0xca028a07e7f9ddebfab64ace099c587a306a824e75342b3bf915d7488cf9a9e5",
+        "index": "0x0"
+      }
+    },
+    "rollup_type_hash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "godwokenConfig": {
+    "genesis": {
+      "timestamp": "0x1234"
+    },
+    "consensus": {
+      "aggregator_id": "0x0"
+    },
+    "rpc": {
+      "listen": "http://ckb:8114"
+    },
+    "chain": {
+      "rollup_type_script": {
+        "code_hash": "0xd6465f2d342d98bc59287de5e07f2467755afe4b530f75d091dd18fd70d55f97",
+        "hash_type": "type",
+        "args": "0x202c159d0dde6fbdfbd8ca0c5331e18c0479c4d74ac198973f21527099e62c04"
+      }
+    }
+  },
+  "storeConfig": {
+    "type": "genesis",
+    "headerInfo": "0x2c000000000000008d9892cd9334f69128d7dd56b3d1186878ff276e98018398055817d1f0320157"
+  },
+  "aggregatorConfig": {
+    "type": "always_success"
+  }
+}
