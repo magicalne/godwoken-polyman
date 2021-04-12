@@ -21,6 +21,7 @@ import {
 } from "@godwoken-examples/godwoken";
 import { Polyjuice } from "@godwoken-examples/polyjuice";
 
+import gpConfig from "../configs/config.json";
 import { HexString, Cell, Script, Hash, utils } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
 import { Indexer } from "@ckb-lumos/indexer";
@@ -73,8 +74,7 @@ export class Api {
     this.ckb_rpc_url = _ckb_rpc_url;
     this.godwoken_rpc_url = _godwoken_rpc;
 
-    this.validator_code_hash =
-      "0x20814f4f3ebaf8a297d452aa38dbf0f9cb0b2988a87cb6119c2497de817e7de9";
+    this.validator_code_hash = gpConfig.polyjuice.validator_code_hash;
 
     this.indexer = null;
     this.transactionManager = null;
