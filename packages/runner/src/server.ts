@@ -4,25 +4,25 @@ import express from 'express';
 import cors from "cors";
 import timeout from "connect-timeout";
 import Config from "../configs/server.json";
-import { ethAddress } from './common';
+import { getRollupTypeHash } from '../js/transactions/deposition';
 
 const port = 5000; 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 const ckb_rpc = "http://127.0.0.1:8114";
 const godwoken_rpc = "http://127.0.0.1:8119";
-const rollup_type_hash =
-  "0x251e5a8d205b4b0abe675cab1c217424f03b8b39dceefc4c94ec4bf4b8b7a36c";
+
+const rollup_type_hash = getRollupTypeHash();
+
 const sudt_id_str =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 const amount = "40000000000";
 const miner_private_key =
   "0xdd50cac37ec6dd12539a968c1a2cbedda75bd8724f7bcad486548eaabb87fc8b";
-const miner_ckb_devnet_addr = 'ckt1qyqy84gfm9ljvqr69p0njfqullx5zy2hr9kq0pd3n5';
 
 const user_private_key = '0x6cd5e7be2f6504aa5ae7c0c04178d8f47b7cfc63b71d95d9e6282f5b090431bf';
-const user_ckb_devnet_addr = 'ckt1qyqf22qfzaer95xm5d2m5km0f6k288x9warqnhsf4m';
 
-const user_account_init_amount = 800000000000n;
+// re-caculate rollup type hash when godwoken ready
+// re-structure
 
 const corsOptions = {
     origin: Config.CROS_SERVER_LIST,
@@ -72,7 +72,8 @@ app.get( "/send_l2_tx", async ( req, res ) => {
             case 'deploy':
                 //const l2_script_args = req.query.l2_script_args+'';
                 const contract_id = await api.watiForDeployTx(Object.keys(run_result.new_scripts)[0]);
-                res.send({status:'ok', data: {run_result: run_result, account_id: contract_id }});
+                const account_address = await api.polyjuice!.accountIdToAddress(contract_id);
+                res.send({status:'ok', data: {run_result: run_result, account_id: account_address }});
                 break;
 
             case 'deposit':
@@ -146,8 +147,27 @@ app.get( "/get_layer2_balance", async ( req, res ) => {
     }
 } );
 
-export function start() {
-    app.listen( port, () => {
-        console.log( `server started at http://localhost:${ port }` );
-    } );
+export async function start() {
+    await api.waitForGodwokenStart();
+
+    // start a polyjuice chain
+    try {
+        await api.syncToTip();
+        const from_id = await api.deposit(user_private_key, undefined, amount);
+        console.log(`create deposit account.`);
+        const creator_account_id = await api.createCreatorAccount(
+          from_id,
+          sudt_id_str,
+          rollup_type_hash,
+          user_private_key
+        );
+        console.log(`create creator account.`);
+        console.log(`init polyjuice chain.`);
+
+        app.listen( port, () => {
+            console.log( `server started at http://localhost:${ port }` );
+        } );
+    } catch (e) {
+        console.error(e);
+    }
 }

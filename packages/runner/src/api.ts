@@ -114,6 +114,22 @@ export class Api {
     console.log('syncd to tip.');
   }
 
+  async waitForGodwokenStart(){
+    while (true) {
+      await asyncSleep(5000);
+      try {
+        const res = await this.godwoken.getScriptHash(1); //ckb coin id
+        if(res){
+          console.log(`godwoken has started..`);
+          break;
+        }
+      } catch (error) {
+        console.log(`wait for godwoken to start..`);
+      }
+    }
+    return;
+  }
+
   async sendTx(
     deploymentConfig: DeploymentConfig,
     fromAddress: string,
