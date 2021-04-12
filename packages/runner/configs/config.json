@@ -15,13 +15,19 @@
     "simple_storage_account_id": 5
   },
   "godwoken": {
-    "rpc": ["http://localhost:8119"],
+    "rpc": [
+      "http://godwoken:8119",
+      "http://localhost:8119"
+    ],
     "sudt_script_hashes": {
       "CKB": "0x0000000000000000000000000000000000000000000000000000000000000000"
     }
   },
   "ckb": {
-    "rpc": ["http://localhost:8114"]
+    "rpc": [
+      "http://ckb:8114",
+      "http://localhost:8114"
+    ]
   },
   "pw": {
     "pw_collector_url": "https://cellapitest.ckb.pw"

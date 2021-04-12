@@ -9,8 +9,8 @@ import { getRollupTypeHash } from '../js/transactions/deposition';
 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
-const ckb_rpc = gpConfig.ckb.rpc[0];
-const godwoken_rpc = gpConfig.godwoken.rpc[0];
+const ckb_rpc = process.env.MODE === "docker-compose" ? gpConfig.ckb.rpc[0] : gpConfig.ckb.rpc[1];
+const godwoken_rpc = process.env.MODE === "docker-compose" ? gpConfig.godwoken.rpc[0] : gpConfig.ckb.rpc[1] ;
 const sudt_id_str = serverConfig.default_sudt_id_str;
 const amount = serverConfig.default_amount;
 const user_private_key = serverConfig.user_private_key;
