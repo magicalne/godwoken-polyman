@@ -113,6 +113,7 @@ packages/demo/src/configs/config.json
 indexer-data/
 
 packages/runner/db/
+packages/runner/temp-db/
 
 packages/runner/configs/lumos-config.json
 packages/runner/configs/runner_config.json

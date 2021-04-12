@@ -605,4 +605,21 @@ export class Api {
     }
     console.log(`tx ${txHash} is now onChain!`);
   }
+
+  // check if an address's balance meets the requirment.
+  async checkCkbBalance(ckb_address: string, amount: bigint){
+    if(!this.indexer)
+      throw new Error(`this.indexer not found.`);
+    if(!this.transactionManager)
+      throw new Error(`this.transactionManager not found.`);
+      
+    await this.syncToTip();
+    let txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager });
+    try {
+      txSkeleton = await common.transfer(txSkeleton, [ckb_address], ckb_address, amount);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
 }

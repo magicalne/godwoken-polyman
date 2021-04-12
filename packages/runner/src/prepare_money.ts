@@ -4,7 +4,7 @@ import serverConfig from "../configs/server.json";
 import gpConfig from "../configs/config.json";
 import { asyncSleep } from "./util";
 
-const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
+const _indexer_path = path.resolve(__dirname, "../temp-db/ckb-indexer-data");
 
 const ckb_rpc = gpConfig.ckb.rpc[0];
 const godwoken_rpc = gpConfig.godwoken.rpc[0];
@@ -18,21 +18,28 @@ const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
 api.syncLayer1();
 
 var retry = 0;
+const intervals = 5000; // 5 seconds
 
-export const run = async () => {
+export const run = async (maxRetryLimit: number) => {
   try {
-    retry++;
-    await api.syncToTip();
-    await api.giveUserLayer1AccountSomeMoney(miner_ckb_devnet_addr, miner_private_key, user_ckb_devnet_addr, user_account_init_amount);
-    console.log(`prepared money.`);
-    console.log(`finished~`);
-    process.exit(0);
+    const isMoneyReady = await api.checkCkbBalance(user_ckb_devnet_addr, user_account_init_amount);
+    if(isMoneyReady){
+      console.log(`money already prepared.`);
+      console.log(`finished~`);
+      process.exit(0); 
+    }else{
+      retry++;
+      await api.giveUserLayer1AccountSomeMoney(miner_ckb_devnet_addr, miner_private_key, user_ckb_devnet_addr, user_account_init_amount);
+      console.log(`prepared money.`);
+      console.log(`finished~`);
+      process.exit(0);
+    }
   } catch (e) {
     console.error(e);
-    if(retry < 10){
-      asyncSleep(3000);
+    if(retry < maxRetryLimit){
+      asyncSleep(intervals);
       console.log(`retry...${retry}`);
-      run();
+      run(maxRetryLimit);
     }else{
       console.error(`failed to prepare money.`);
       process.exit(1);
@@ -40,5 +47,5 @@ export const run = async () => {
   }
 };
 
-run();
+run(20);
 
