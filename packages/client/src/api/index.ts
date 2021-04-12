@@ -15,15 +15,6 @@ class Api{
         this.base_url = utils.get_env_mode() === 'development' ? config.development_server_url : config.production_server_url;
     };
 
-    async start_polyjuice(eth_address: string){
-        let res = await axios.get(`${this.base_url}/start_polyjuice`, { 
-            params:{
-                eth_address: eth_address
-            }
-        });
-        return res.data;
-    };
-
     async getBalance(eth_address: string){
         let res = await axios.get(`${this.base_url}/get_layer2_balance`, { 
             params:{
@@ -42,7 +33,7 @@ class Api{
         return res.data;
     }; 
 
-    async deploy_contract(contract_code: string, eth_address: StringifyOptions ){
+    async deployContract(contract_code: string, eth_address: StringifyOptions ){
         let res = await axios.get(`${this.base_url}/deploy_contract`, { 
             params:{
                 contract_code: contract_code,
@@ -52,7 +43,7 @@ class Api{
         return res.data;
     };
 
-    async send_l2_tx(raw_l2tx: RawL2Transaction, signature: string, type: OpType, l2_script_args?: string){
+    async sendL2Transaction(raw_l2tx: RawL2Transaction, signature: string, type: OpType, l2_script_args?: string){
         let res = await axios.get(`${this.base_url}/send_l2_tx`, { 
             params:{
                 raw_l2tx: raw_l2tx,
