@@ -115,4 +115,7 @@ indexer-data/
 packages/runner/db/
 packages/runner/ui/
 
+packages/runner/configs/lumos-config.json
+packages/runner/configs/runner_config.json
+
 .DS_Store
