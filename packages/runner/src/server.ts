@@ -36,8 +36,12 @@ const setUpRouters = (
 ) => {
 
     app.get( "/", ( req, res ) => {
-        res.send( "Hello world!" );
+        res.send({status: 'ok', data: "you just reach polyjuice api server."});
     } );
+
+    app.get("/get_rollup_type_hash", ( req, res ) => {
+       res.send({status: 'ok', data: rollup_type_hash}); 
+    });
     
     app.get( "/send_l2_tx", async ( req, res ) => {
         try {
@@ -54,8 +58,8 @@ const setUpRouters = (
             
                 case 'deploy':
                     const contract_id = await api.watiForDeployTx(Object.keys(run_result.new_scripts)[0]);
-                    const account_address = await api.polyjuice!.accountIdToAddress(contract_id);
-                    res.send({status:'ok', data: {run_result: run_result, account_id: account_address }});
+                    const contract_address = await api.polyjuice!.accountIdToAddress(contract_id);
+                    res.send({status:'ok', data: {run_result: run_result, account_id: contract_id, contract_address: contract_address }});
                     break;
     
                 case 'deposit':
@@ -118,9 +122,9 @@ const setUpRouters = (
         try {
             const eth_address = req.query.eth_address + '';
             await api.syncToTip();
-            console.log(eth_address);
             const account_id = await api.getAccountIdByEthAddr(eth_address);
-            console.log(account_id);
+            if(!account_id)
+                return res.send({status:'failed', error: `account not exits. deposit first.`}); 
             const balance = await api.godwoken.getBalance(1, account_id);
             res.send({status:'ok', data: balance.toString()});
         } catch (error) {
@@ -152,7 +156,7 @@ export async function start() {
             console.log(`polyjuice chain already exits. skip.`);
         }
     } catch (e) {
-        console.error(e);
+        throw new Error(e);
     }
 
     // start api server
@@ -164,4 +168,5 @@ export async function start() {
     app.listen( serverConfig.server_port, () => {
         console.log( `api server started at http://localhost:${ serverConfig.server_port }` );
     } );
+    return;
 }

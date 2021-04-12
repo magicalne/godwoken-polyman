@@ -1,5 +1,5 @@
 {
-    "development_server_url": "http://localhost:5000",
+    "development_server_url": "http://localhost:6101",
     "production_server_url": "https://your.domain",
     "mode": "development"
 }

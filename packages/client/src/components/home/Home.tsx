@@ -26,8 +26,21 @@ const styles = {...common_styles, ...{
   button: {
     fontSize: '25px',
     width: '100%',
-    maxWidth: '600px',
+    maxWidth: '700px',
     margin: '10px',
+    padding: '0.7rem 1.2rem',
+  },
+  contract_container: {
+    width: '100%',
+    maxWidth: '700px',
+    margin: '30px auto',
+    textAlign: 'left' as const,
+    fontSize: '15px',
+    border: '1px solid gray',
+    color: 'gray',
+  },
+  contract_li: {
+    listStyleType: 'none' as const,
   }
 }
 }
@@ -37,19 +50,22 @@ function Home() {
   const [selectedAddress, setSelectedAddress] = useState<string>();
   const [balance, setBalance] = useState<string>('0');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [deployedContracts, setDeployedContracts] = useState<string[]>([]);
+  const [rollupTypeHash, setRollupTypeHash] = useState<string>();
 
   useEffect(() => {
     // connect account
     if(window.ethereum){
       window.ethereum.request({ method: 'eth_requestAccounts' });
       setSelectedAddress(window.ethereum.selectedAddress);
-    }
+    };
+    getRollupTypeHash();
   }, []);
 
   useEffect(() => {
     if(selectedAddress){
       getBalance();
-    }
+    };
   }, [selectedAddress]);
 
   // detect metamask account changes.
@@ -68,6 +84,18 @@ function Home() {
     } catch (error) {
       notify(JSON.stringify(error));
     }
+  }
+
+  const getRollupTypeHash = async () => {
+    const api = new Api();
+    try {
+      const res = await api.getRollupTypeHash();
+      if(res.status !== 'ok')
+        return notify(`failed to get rollup type hash. ${JSON.stringify(res.error)}`);
+      setRollupTypeHash(res.data);
+    } catch (error) {
+      notify(JSON.stringify(error));
+    } 
   }
 
   const deposit =  async () => {
@@ -115,7 +143,8 @@ function Home() {
       }
 
       console.log(tx_res.data);
-      notify(tx_res.data.account_id, 'success');
+      notify(`your contract address: ${tx_res.data.contract_address}`, 'success');
+      setDeployedContracts(oldArray => [...oldArray, tx_res.data.contract_address]);
     } catch (error) {
       notify(JSON.stringify(error));
     }
@@ -127,7 +156,7 @@ function Home() {
     const res: any = await readContractCode(codefile);
     if(res.status !== 'ok'){
       setIsLoading(false);
-      return notify(`can not read contract code from file.`)
+      return notify(`can not read contract code from file.`);
     };
 
     const code_hex = res.data;
@@ -180,6 +209,23 @@ function Home() {
                   onChange={deployContract}
                   hidden
               />
+            </Grid>
+          </Grid>
+
+          <hr></hr>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} style={styles.contract_container}>
+              rollup_type_hash:
+              <ul>
+                <li style={styles.contract_li}>{rollupTypeHash}</li>
+              </ul>
+
+              contract address: 
+              <ul>
+                {deployedContracts.map((contract_addr) => 
+                  <li style={styles.contract_li} key={contract_addr}>{contract_addr}</li>)}
+              </ul>
             </Grid>
           </Grid>
         </header>

@@ -17,6 +17,9 @@
   "scripts": {
     "build-pw-core": "cd ./node_modules/@lay2/pw-core && yarn run build && rm -rf src && cd -",
     "bootstrap": "yarn install && yarn run build-pw-core",
-    "start": "yarn workspace @godwoken-examples/runner start"
+    "start": "yarn workspace @godwoken-examples/runner start",
+    "build:client": "yarn workspace @godwoken-examples/client build",
+    "prepare-ui": "yarn build:client && rm -rf ./packages/runner/ui && cp -r ./packages/client/build ./packages/runner/ui",
+    "prepare-money": "yarn workspace @godwoken-examples/runner prepare-money"
   }
 }
