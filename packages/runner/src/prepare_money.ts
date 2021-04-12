@@ -38,7 +38,7 @@ export const run = async (maxRetryLimit: number) => {
     console.error(e);
     if(retry < maxRetryLimit){
       asyncSleep(intervals);
-      console.log(`retry...${retry}`);
+      console.log(`retry...${retry}th times`);
       run(maxRetryLimit);
     }else{
       console.error(`failed to prepare money.`);
