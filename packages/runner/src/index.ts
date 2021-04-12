@@ -1,7 +1,7 @@
-import { start as startServer } from "./server";
+import { start as startApiServer } from "./server";
 
 const start = async () => {
-    await startServer();
+    await startApiServer();
 }
 
 start();
