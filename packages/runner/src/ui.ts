@@ -11,6 +11,6 @@ app.get('/*', function (req: any, res: { sendFile: (arg0: any) => void; }) {
 
 export function start () {
    app.listen(Config.ui_port, () => {
-       console.log(`check http://localhost:${Config.ui_port} to deploy contract!`);
+       console.log(`ui server started at http://localhost:${Config.ui_port}, go there to deploy contract!`);
    });
 }

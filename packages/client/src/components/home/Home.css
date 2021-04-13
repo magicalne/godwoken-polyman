@@ -73,3 +73,14 @@
 .big-right-btn:hover{
   background: #72a276;
 }
+
+pre {
+  background: gray;
+  color: white;
+  page-break-inside: avoid;
+  font-size: 14px;
+  overflow: auto;
+  padding: 1em 1.5em;
+  display: block;
+  word-wrap: break-word;
+}

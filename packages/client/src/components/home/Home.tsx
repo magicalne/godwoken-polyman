@@ -7,6 +7,8 @@ import { MsgSignType  } from '../../types/polyjuice';
 import { Grid } from '@material-ui/core';
 import common_styles from '../widget/common_style';
 import utils from '../../utils/index';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { codepenEmbed, gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 declare global {
   interface Window { ethereum: any; }
@@ -182,6 +184,21 @@ function Home() {
     });  
   } 
 
+  const web3CodeString = `
+  const godwoken_rpc_url = 'http://127.0.0.1:8119';
+  const provider_config =  {
+    godwoken: {
+        rollup_type_hash: "${rollupTypeHash}",
+        layer2_lock: {
+            code_hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
+            hash_type: "data"
+        }
+    }
+  }
+  const provider = new PolyjuiceHttpProvider(godwoken_rpc_url, provider_config);
+  const web3 = new Web3(provider);
+                  `
+
   return (
     <div>
       <div className="App">
@@ -216,12 +233,13 @@ function Home() {
 
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.contract_container}>
-              rollup_type_hash:
-              <ul>
-                <li style={styles.contract_li}>{rollupTypeHash}</li>
-              </ul>
 
-              contract address: 
+              Web3.js init code: 
+              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
+                {web3CodeString}
+              </SyntaxHighlighter>
+
+              Contract Address: 
               <ul>
                 {deployedContracts.map((contract_addr) => 
                   <li style={styles.contract_li} key={contract_addr}>{contract_addr}</li>)}
