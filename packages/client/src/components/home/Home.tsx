@@ -8,7 +8,7 @@ import { Grid } from '@material-ui/core';
 import common_styles from '../widget/common_style';
 import utils from '../../utils/index';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { codepenEmbed, gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 declare global {
   interface Window { ethereum: any; }
@@ -240,10 +240,10 @@ function Home() {
               </SyntaxHighlighter>
 
               Contract Address: 
-              <ul>
-                {deployedContracts.map((contract_addr) => 
-                  <li style={styles.contract_li} key={contract_addr}>{contract_addr}</li>)}
-              </ul>
+              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
+                {deployedContracts.join('\n')}
+              </SyntaxHighlighter>
+              
             </Grid>
           </Grid>
         </header>
