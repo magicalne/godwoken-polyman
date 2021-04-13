@@ -1,0 +1,17 @@
+.Toastify__toast-container {
+    width: 500px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+.Toastify__toast {
+    width: 450px;
+    word-wrap: break-word;
+    text-align: left;
+    overflow-X: break-word;
+}
+.Toastify__toast-body{
+    width: 400px;
+    word-wrap: break-word;
+    text-align: left;
+    overflow-X: break-word;
+}

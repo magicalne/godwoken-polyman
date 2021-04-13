@@ -1,14 +1,17 @@
 import React, { useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './notify.css';
 import commomStyle from '../widget/common_style';
 
 const styles = {...commomStyle, ...{
     panel: {
-        maxWidth: "700px",
+        //maxWidth: "700px",
     },
     toast: {
         padding: '10px',
+        fontSize: '14px',
+        
     }
 }};
 
