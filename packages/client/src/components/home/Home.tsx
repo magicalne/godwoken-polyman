@@ -107,7 +107,7 @@ function Home() {
       const res = await api.deposit(selectedAddress);
       console.log(res);
       if(res.status === 'ok'){
-        notify(res.data.account_id, 'success');
+        notify(`your account id: ${res.data.account_id}`, 'success');
         getBalance();
       }else{
         notify(JSON.stringify(res.error));
@@ -132,12 +132,18 @@ function Home() {
       if(res.status !== 'ok')return notify(JSON.stringify(res));
 
       const data: MsgSignType = res.data;
-      const signature = await window.ethereum.request({
-        method: 'personal_sign',
-        params: [data.message, window.ethereum.selectedAddress],
-      });
+      var signature;
+      try {
+        signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [data.message, window.ethereum.selectedAddress],
+        }); 
+      } catch (error) {
+        console.log(error);
+        return notify(`could not finished signing process. \n\n ${error}`);
+      }
+
       // submit the signed tx to godwoken
-      // todo: catch user cancel metamask signing process.
       const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
       if(tx_res.status !== 'ok'){
         console.log(tx_res);
@@ -243,7 +249,7 @@ function Home() {
               <SyntaxHighlighter language="javascript" style={gruvboxDark}>
                 {deployedContracts.join('\n')}
               </SyntaxHighlighter>
-              
+
             </Grid>
           </Grid>
         </header>
