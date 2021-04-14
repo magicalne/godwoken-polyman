@@ -140,7 +140,7 @@ function Home() {
         }); 
       } catch (error) {
         console.log(error);
-        return notify(`could not finished signing process. \n\n ${error}`);
+        return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
       }
 
       // submit the signed tx to godwoken
