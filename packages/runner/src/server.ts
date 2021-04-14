@@ -10,7 +10,7 @@ import { getRollupTypeHash } from '../js/transactions/deposition';
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
 const ckb_rpc = process.env.MODE === "docker-compose" ? gpConfig.ckb.rpc[0] : gpConfig.ckb.rpc[1];
-const godwoken_rpc = process.env.MODE === "docker-compose" ? gpConfig.godwoken.rpc[0] : gpConfig.ckb.rpc[1] ;
+const godwoken_rpc = process.env.MODE === "docker-compose" ? gpConfig.godwoken.rpc[0] : gpConfig.godwoken.rpc[1] ;
 const sudt_id_str = serverConfig.default_sudt_id_str;
 const amount = serverConfig.default_amount;
 const user_private_key = serverConfig.user_private_key;
@@ -27,7 +27,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use('/static', express.static(path.join(__dirname, '../../src/resource')));
 app.use(timeout('300s')); // keep alive for a long time
-app.use(express.urlencoded({ extended: false, limit: '1gb' })); // for uploading very large contract code
+app.use(express.urlencoded({ extended: false, limit: '1mb' })); // for uploading very large contract code
+app.use(express.json({limit: '1mb'}));
 
 const setUpRouters = (  
     rollup_type_hash: string, 
@@ -43,11 +44,11 @@ const setUpRouters = (
        res.send({status: 'ok', data: rollup_type_hash}); 
     });
     
-    app.get( "/send_l2_tx", async ( req, res ) => {
+    app.post( "/send_l2_tx", async ( req, res ) => {
         try {
-            const raw_l2tx = JSON.parse(req.query.raw_l2tx + '');
-            const signature = req.query.signature + '';
-            const type = req.query.type + '';
+            const raw_l2tx = req.body.data.raw_l2tx;
+            const signature = req.body.data.signature;
+            const type = req.body.data.type;
             await api.syncToTip();
             const run_result = await api.sendLayer2Transaction(raw_l2tx, signature);
             switch (type) {
@@ -101,14 +102,14 @@ const setUpRouters = (
     } );
     
     
-    app.get( "/deploy_contract", async ( req, res ) => {
+    app.post( "/deploy_contract", async ( req, res ) => {
         try {
             const creator_account_id = await api.findCreateCreatorAccoundId(sudt_id_str);
             if(!creator_account_id)
                 return res.send({status:'failed', error: `creator_account_id not found.`});
-    
-            const contract_code = req.query.contract_code + '';
-            const eth_address = req.query.eth_address + '';
+            
+            const contract_code = req.body.data.contract_code + '';
+            const eth_address = req.body.data.eth_address + '';
             await api.syncToTip();
             const data = await api.generateDeployTx(creator_account_id.toString(), contract_code, rollup_type_hash, eth_address);
             res.send({status:'ok', data: data});
