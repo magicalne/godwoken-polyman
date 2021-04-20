@@ -56,11 +56,9 @@ export function getDepositionLockArgs(
 }
 
 export function getRollupTypeHash(): HexString {
-  const rollupTypeScript: Script = runnerConfig.godwokenConfig.chain
-    .rollup_type_script as Script;
-  const hash: HexString = utils.computeScriptHash(rollupTypeScript);
-
+  // const rollupTypeScript: Script = runnerConfig.godwokenConfig.chain.rollup_type_script as Script;
+  // const hash: HexString = utils.computeScriptHash(rollupTypeScript);
+  const hash: HexString = runnerConfig.godwokenConfig.chain.rollup_type_hash;
   console.log("rollupTypeHash:", hash);
-
   return hash;
 }

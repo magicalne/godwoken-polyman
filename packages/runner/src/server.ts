@@ -141,10 +141,11 @@ export async function start() {
     // start a polyjuice chain
     try {
         await api.syncToTip();
-        const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
+        //const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
+        const createCreatorId = null;
         if(createCreatorId === null){
             const from_id = await api.deposit(user_private_key, undefined, amount);
-            console.log(`create deposit account.`);
+            console.log(`create deposit account.${from_id}`);
             const creator_account_id = await api.createCreatorAccount(
               from_id,
               sudt_id_str,

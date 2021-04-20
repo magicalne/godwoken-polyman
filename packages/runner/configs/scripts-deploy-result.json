@@ -1,5 +1,4 @@
 {
-  "deploymentConfig": {
     "custodian_lock": {
       "script_type_hash": "0xc32f6e6ac99eac51f5054c61318a331123011c7515cc6d631b9336cd78c39cc7",
       "cell_dep": {
@@ -119,33 +118,5 @@
         },
         "dep_type": "code"
       }
-    },
-    "rollup_type_hash": "0x0000000000000000000000000000000000000000000000000000000000000000"
-  },
-  "godwokenConfig": {
-    "genesis": {
-      "timestamp": "0x1234"
-    },
-    "consensus": {
-      "aggregator_id": "0x0"
-    },
-    "rpc": {
-      "listen": "http://ckb:8114"
-    },
-    "chain": {
-      "rollup_type_script": {
-        "code_hash": "0xd6465f2d342d98bc59287de5e07f2467755afe4b530f75d091dd18fd70d55f97",
-        "hash_type": "type",
-        "args": "0x202c159d0dde6fbdfbd8ca0c5331e18c0479c4d74ac198973f21527099e62c04"
-      },
-      "rollup_type_hash": "0xabd43f199b6b6cdaa939e4621227fccdb7fba64a7875cebc38131bf3e383ee14"
     }
-  },
-  "storeConfig": {
-    "type": "genesis",
-    "headerInfo": "0x2c000000000000008d9892cd9334f69128d7dd56b3d1186878ff276e98018398055817d1f0320157"
-  },
-  "aggregatorConfig": {
-    "type": "always_success"
-  }
 }

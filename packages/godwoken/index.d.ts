@@ -97,6 +97,7 @@ export enum Status {
 export declare class Godwoken {
   constructor(url: string);
 
+  getTipBlockHash(): Promise<Hash>;
   executeL2Transaction(l2tx: L2Transaction): Promise<RunResult>;
   submitL2Transaction(l2tx: L2Transaction): Promise<RunResult>;
   submitWithdrawalRequest(request: WithdrawalRequest): Promise<void>;

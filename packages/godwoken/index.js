@@ -59,6 +59,10 @@ class Godwoken {
     return await method(data);
   }
 
+  async getTipBlockHash() {
+    return await this.rpc.get_tip_block_hash();
+  }
+
   async executeL2Transaction(l2tx) {
     return this._send(l2tx, this.rpc.gw_executeL2Tranaction);
   }
@@ -80,7 +84,9 @@ class Godwoken {
     return await this.rpc.gw_getStorageAt(account_id, key);
   }
   async getAccountIdByScriptHash(script_hash) {
-    return await this.rpc.gw_getAccountIdByScriptHash(script_hash);
+    // const script_hash = Buffer.from(_script_hash).toString();
+    console.log(script_hash);
+    return await this.rpc.get_account_id_by_script_hash(script_hash);
   }
   async getNonce(account_id) {
     return await this.rpc.gw_getNonce(account_id);

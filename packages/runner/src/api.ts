@@ -118,7 +118,7 @@ export class Api {
     while (true) {
       await asyncSleep(5000);
       try {
-        const res = await this.godwoken.getScriptHash(1); //ckb coin id
+        const res = await this.godwoken.getTipBlockHash();
         if(res){
           console.log(`godwoken has started..`);
           break;
