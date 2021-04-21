@@ -87,8 +87,12 @@ export interface UnlockWithdrawalViaFinalize {
 //     number: Uint64;
 //     block_hash: Hash;
 // }
-// FIXME: todo
-// export interface L2Block {}
+
+
+export interface L2Block {
+  
+}
+
 export enum Status {
   Running = "running",
   Halting = "halting",
@@ -97,7 +101,11 @@ export enum Status {
 export declare class Godwoken {
   constructor(url: string);
 
+  ping(): Promise<'pong'>;
   getTipBlockHash(): Promise<Hash>;
+  getBlockHash(block_number: Uint32): Promise<Hash>;
+  getBlock(block_hash: Hash): Promise<L2Block>;
+  getBlockByNumber(block_number: Uint32): Promise<L2Block>;
   executeL2Transaction(l2tx: L2Transaction): Promise<RunResult>;
   submitL2Transaction(l2tx: L2Transaction): Promise<RunResult>;
   submitWithdrawalRequest(request: WithdrawalRequest): Promise<void>;
@@ -108,8 +116,6 @@ export declare class Godwoken {
   getScript(script_hash: Hash): Promise<Script>;
   getScriptHash(account_id: Uint32): Promise<Hash>;
   getData(data_hash: Hash): Promise<HexString>;
-  // gw_getDataHash
-  hasDataHash(data_hash: Hash): Promise<boolean>;
 }
 
 export declare class GodwokenUtils {

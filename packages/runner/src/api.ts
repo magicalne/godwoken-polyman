@@ -145,6 +145,7 @@ export class Api {
 
     const ownerLock: Script = parseAddress(fromAddress);
     const ownerLockHash: Hash = utils.computeScriptHash(ownerLock);
+    
     const depositionLockArgs: DepositionLockArgs = getDepositionLockArgs(
       ownerLockHash,
       layer2LockArgs
@@ -220,8 +221,8 @@ export class Api {
     while (true) {
       await asyncSleep(1000);
       const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
-      console.log('---------------------')
-      console.log(JSON.stringify(txWithStatus, null, 2));
+      //console.log('---------------------')
+      //console.log(JSON.stringify(txWithStatus, null, 2));
       if(txWithStatus === null){
         throw new Error(`the tx is disapeared from ckb, please re-try.`);
       }
