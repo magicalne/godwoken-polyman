@@ -21,6 +21,9 @@ import crypto from "crypto";
 import keccak256 from "keccak256";
 import { getConfig } from "@ckb-lumos/config-manager";
 import { generateAddress } from "@ckb-lumos/helpers";
+import TOML from '@iarna/toml';
+import fs from 'fs';
+import path from 'path';
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));
@@ -92,4 +95,13 @@ export function privateKeyToEthAddress(privateKey: HexString) {
       .slice(12)
       .toString("hex");
   return ethAddress;
+}
+
+export async function generateGodwokenConfig(_input_file: string, _output_file: string) {
+  const toml_path: string = path.resolve(__dirname, _input_file);
+  const toml_file_str = await fs.readFileSync(toml_path).toString();
+  const toml_file_obj = TOML.parse(toml_file_str);
+  const json_path = path.resolve(__dirname, _output_file);
+  await fs.writeFileSync(json_path, JSON.stringify(toml_file_obj, null, 2));
+  console.log(`create godwoken_config.json file in ${json_path}. done.`);
 }

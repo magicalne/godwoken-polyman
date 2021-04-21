@@ -6,6 +6,7 @@ import timeout from "connect-timeout";
 import serverConfig from "../configs/server.json";
 import gpConfig from "../configs/config.json";
 import { getRollupTypeHash } from '../js/transactions/deposition';
+import { generateGodwokenConfig } from './util';
 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
@@ -137,12 +138,17 @@ const setUpRouters = (
 
 export async function start() {
     await api.waitForGodwokenStart();
+
+    // generate config file from config.toml
+    await generateGodwokenConfig('../configs/config.toml', 
+                                 '../configs/godwoken_config.json');
+
     var rollup_type_hash = getRollupTypeHash();
+
     // start a polyjuice chain
     try {
         await api.syncToTip();
-        //const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
-        const createCreatorId = null;
+        const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
         if(createCreatorId === null){
             const from_id = await api.deposit(user_private_key, undefined, amount);
             console.log(`create deposit account.${from_id}`);

@@ -12,7 +12,8 @@
     "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/index",
     "prepare-money:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/prepare_money.ts",
     "start:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/index",
-    "fmt": "prettier --write \"src/*.ts\" \"src/*.js\" \"js/**/*.ts\" \"js/**/*.js\" package.json"
+    "fmt": "prettier --write \"src/*.ts\" \"src/*.js\" \"js/**/*.ts\" \"js/**/*.js\" package.json",
+    "test_gen_config": "ts-node-dev ./test/gen_config.ts"
   },
   "dependencies": {
     "@ckb-lumos/base": "^0.16.0",
@@ -23,6 +24,7 @@
     "@ckb-lumos/indexer": "^0.16.0",
     "@ckb-lumos/transaction-manager": "^0.16.0",
     "@godwoken-examples/godwoken": "^0.0.1",
+    "@iarna/toml": "^2.2.5",
     "@types/secp256k1": "^4.0.1",
     "ckb-js-toolkit": "^0.10.2",
     "commander": "^6.2.1",

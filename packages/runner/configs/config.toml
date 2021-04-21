@@ -1,0 +1,84 @@
+[[backends]]
+validator_path = 'godwoken-scripts/c/build/meta-contract-validator'
+generator_path = 'godwoken-scripts/c/build/meta-contract-generator'
+validator_script_type_hash = '0x626a11234aea67084fe311cb035fbc082f9fb1481565fb3bd5ff2ba6429d657d'
+
+[[backends]]
+validator_path = 'godwoken-scripts/c/build/sudt-validator'
+generator_path = 'godwoken-scripts/c/build/sudt-generator'
+validator_script_type_hash = '0x46c2d947cf3aaa73e7a9c1906e01ebb295cdff47a9ae9b8889f26b1c97f8bb54'
+
+[[backends]]
+validator_path = 'deploy/polyjuice-validator'
+generator_path = 'deploy/polyjuice-generator'
+validator_script_type_hash = '0xbac49534a21667c9d09d76bb5729523f0550f32a952c6c4f9915b673dee44725'
+
+[store]
+path = './store.db'
+
+[genesis]
+timestamp = 0
+rollup_type_hash = '0xf70aa98a96fba847185be1b58c1d1e3cae7ad91f971eecc5749799d5e72939f0'
+meta_contract_validator_type_hash = '0x626a11234aea67084fe311cb035fbc082f9fb1481565fb3bd5ff2ba6429d657d'
+
+[genesis.rollup_config]
+l1_sudt_script_type_hash = '0x0000000000000000000000000000000000000000000000000000000000000000'
+custodian_script_type_hash = '0x28751f22faf2b43c6eea6c36e9319284bf79006dc797c0f6f8cb24e11749acca'
+deposition_script_type_hash = '0x652933dbd8627f676c55ccb350a61dc32030311f021def6b2157a6ebf390d0f4'
+withdrawal_script_type_hash = '0x8aa7d92555ee4b3edc72a2c7c82d837cd449a9f6d81307d31039421dd6c5560b'
+challenge_script_type_hash = '0x06d7d19549bba0e392b76a5830f79c0f9dcf5ec06bba7ab4cef81f961847391b'
+stake_script_type_hash = '0x74d750de11f34e69dc81a05d1544c3152c5c4e74115487267e71dcf70f223427'
+l2_sudt_validator_script_type_hash = '0x46c2d947cf3aaa73e7a9c1906e01ebb295cdff47a9ae9b8889f26b1c97f8bb54'
+burn_lock_hash = '0x0000000000000000000000000000000000000000000000000000000000000000'
+required_staking_capacity = '0x2540be400'
+challenge_maturity_blocks = '0x5'
+finality_blocks = '0x14'
+reward_burn_rate = '0x32'
+[chain.genesis_committed_info]
+number = '0x47'
+block_hash = '0x28cac30cba00f9dc65a56066830c3cf0cfef8f6ce874309e8c34d11b950137f8'
+transaction_hash = '0x33c4a09e27d09a7d019239de43b816b100a3cb14f1181c7839d7d627b5be8ee8'
+
+[chain.rollup_type_script]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x722f0daa7bc5469e93e9590d47113c23e981c497ed655f919ab32fd44df6e1af'
+
+[rpc_client]
+indexer_url = 'http://127.0.0.1:8116'
+ckb_url = 'http://ckb:8114'
+
+[rpc_server]
+listen = '0.0.0.0:8119'
+
+[block_producer]
+account_id = 0
+
+[block_producer.rollup_cell_lock_dep]
+dep_type = 'code'
+
+[block_producer.rollup_cell_lock_dep.out_point]
+tx_hash = '0xc4edb174e2a09d16e848494c8f56d2fa960bf8bb43d7b4059cd59c5f41f7e7fd'
+index = '0x0'
+
+[block_producer.rollup_cell_type_dep]
+dep_type = 'code'
+
+[block_producer.rollup_cell_type_dep.out_point]
+tx_hash = '0x1c499e2ed12ad7b6d6a4373d28b8cc727547ceba9f19e9b58352216a0784ac72'
+index = '0x0'
+
+[block_producer.deposit_cell_lock_dep]
+dep_type = 'code'
+
+[block_producer.deposit_cell_lock_dep.out_point]
+tx_hash = '0xa16bb7c556bc516196a1cfcf6638395f1092e194aa565f9779827935c4599fef'
+index = '0x0'
+
+[block_producer.wallet_config]
+privkey_path = 'deploy/private_key'
+
+[block_producer.wallet_config.lock]
+args = '0x43d509d97f26007a285f39241cffcd411157196c'
+hash_type = 'type'
+code_hash = '0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8'
