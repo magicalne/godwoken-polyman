@@ -4,9 +4,7 @@ import { DeploymentConfig } from "../base";
 import { deploymentConfig } from "../utils/deployment_config";
 import { Script, HexString, Hash, PackedSince, utils } from "@ckb-lumos/base";
 import { NormalizeDepositionLockArgs } from "@godwoken-examples/godwoken/normalizer";
-import runnerConfig from "../../configs/runner_config.json";
-import Config from "../../configs/config.json";
-const layer2LockConfig = Config.layer2_lock;
+import godwokenConfig from "../../configs/godwoken_config.json";
 
 export interface DepositionLockArgs {
   owner_lock_hash: Hash;
@@ -58,9 +56,8 @@ export function getDepositionLockArgs(
 }
 
 export function getRollupTypeHash(): HexString {
-  const rollupTypeScript: Script = runnerConfig.godwokenConfig.chain.rollup_type_script as Script;
+  const rollupTypeScript: Script = godwokenConfig.chain.rollup_type_script as Script;
   const hash: HexString = utils.computeScriptHash(rollupTypeScript);
-  //const hash: HexString = runnerConfig.godwokenConfig.chain.rollup_type_hash;
   console.log("rollupTypeHash:", hash);
   return hash;
 }
