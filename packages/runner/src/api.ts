@@ -321,6 +321,8 @@ export class Api {
     const raw_l2tx = this.polyjuice.generateTransaction(
       from_id,
       0,
+      21000n, //todo remove hard-code
+      50n, //todo remove hard-code
       0n,
       init_code,
       nonce
@@ -411,6 +413,8 @@ export class Api {
     const raw_l2tx = this.polyjuice.generateTransaction(
       from_id,
       parseInt(to_id_str),
+      21000n, //todo remove hard-code
+      50n, //todo remove hard-code
       0n,
       input_data,
       nonce
@@ -534,6 +538,8 @@ export class Api {
     const raw_l2tx = this.polyjuice.generateTransaction(
       from_id,
       0,
+      21000n, //todo remove hard-code
+      50n, //todo remove hard-code
       0n,
       init_code,
       nonce
