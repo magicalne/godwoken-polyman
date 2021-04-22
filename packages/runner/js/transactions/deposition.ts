@@ -1,5 +1,5 @@
 import { Reader } from "ckb-js-toolkit";
-import { SerializeDepositionLockArgs } from "@godwoken-examples/godwoken/schemas";
+import { SerializeDepositionLockArgs } from "@godwoken-examples/godwoken/schemas/godwoken";
 import { DeploymentConfig } from "../base";
 import { deploymentConfig } from "../utils/deployment_config";
 import { Script, HexString, Hash, PackedSince, utils } from "@ckb-lumos/base";

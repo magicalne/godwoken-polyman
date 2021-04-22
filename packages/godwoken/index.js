@@ -9,7 +9,7 @@ const {
   NormalizeRawWithdrawalRequest,
 } = require("./normalizer");
 const normalizer = require("./normalizer");
-const core = require("./schemas");
+const core = require("./schemas/godwoken");
 
 function numberToUInt32LE(value) {
   const buf = Buffer.alloc(4);
@@ -69,6 +69,7 @@ class Godwoken {
 
   async getBlockHash(block_number) {
     return await this.rpc.get_block_hash(block_number);
+    
   }
 
   async getBlock(block_hash) {
@@ -100,8 +101,6 @@ class Godwoken {
     return await this.rpc.get_storage_at(account_id, key);
   }
   async getAccountIdByScriptHash(script_hash) {
-    // const script_hash = Buffer.from(_script_hash).toString();
-    console.log(script_hash);
     return await this.rpc.get_account_id_by_script_hash(script_hash);
   }
   async getNonce(account_id) {
