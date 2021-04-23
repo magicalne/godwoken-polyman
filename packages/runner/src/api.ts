@@ -268,7 +268,7 @@ export class Api {
     const raw_l2tx = _createAccountRawL2Transaction(
       from_id,
       parseInt(nonce+''),
-      this.validator_code_hash,
+      deploymentConfig.polyjuice_validator.code_hash,
       script_args
     );
 
@@ -495,7 +495,7 @@ export class Api {
     const raw_l2tx = _createAccountRawL2Transaction(
       from_id,
       nonce,
-      this.validator_code_hash,
+      deploymentConfig.polyjuice_validator.code_hash,
       script_args
     ); 
     const message = this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
