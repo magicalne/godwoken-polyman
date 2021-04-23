@@ -261,12 +261,13 @@ export class Api {
     rollup_type_hash: string,
     privkey: string
   ) {
-    const from_id = parseInt(from_id_str);
+    const from_id =  parseInt(from_id_str);
     const nonce = await this.godwoken.getNonce(from_id);
+    console.log(nonce);
     const script_args = numberToUInt32LE(parseInt(sudt_id_str));
     const raw_l2tx = _createAccountRawL2Transaction(
       from_id,
-      nonce,
+      parseInt(nonce+''),
       this.validator_code_hash,
       script_args
     );
