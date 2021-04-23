@@ -14,6 +14,7 @@ import {
   serializeArgs,
 } from "../js/transactions/deposition";
 import Config from "../configs/config.json";
+import { deploymentConfig } from "../js/utils/deployment_config";
 import { normalizers } from "ckb-js-toolkit";
 import base from "@ckb-lumos/base";
 import { key } from "@ckb-lumos/hd";
@@ -54,10 +55,9 @@ export async function waitForBlockSync(
 }
 
 export function caculateLayer2LockScriptHash(layer2LockArgs: string) {
-  const layer2LockConfig = Config.layer2_lock;
   const script = {
-    code_hash: layer2LockConfig.code_hash,
-    hash_type: layer2LockConfig.hash_type,
+    code_hash: deploymentConfig.l2_sudt_validator.code_hash,
+    hash_type: deploymentConfig.l2_sudt_validator.hash_type,
     args: layer2LockArgs,
   };
   return base.utils
