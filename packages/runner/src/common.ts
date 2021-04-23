@@ -7,6 +7,7 @@ import { Command } from "commander";
 import { core as base_core, Script, utils } from "@ckb-lumos/base";
 import { scriptToAddress } from "@ckb-lumos/helpers";
 import { getConfig, initializeConfig } from "@ckb-lumos/config-manager";
+import Config from "../configs/config.json";
 import {
   Godwoken,
   GodwokenUtils,
@@ -59,10 +60,10 @@ export function ethAddress(privkey: any) {
 }
 
 export function accountScriptHash(privkey: any) {
+  const layer2LockConfig = Config.layer2_lock;
   const script: Script = {
-    code_hash:
-      "0x0000000000000000000000000000000000000000000000000000000000000001",
-    hash_type: "data",
+    code_hash: layer2LockConfig.code_hash,
+    hash_type: layer2LockConfig.hash_type as "data" | "type", 
     args: ethAddress(privkey),
   };
   return utils
