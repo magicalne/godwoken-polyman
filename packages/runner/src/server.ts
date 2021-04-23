@@ -6,7 +6,7 @@ import timeout from "connect-timeout";
 import serverConfig from "../configs/server.json";
 import gpConfig from "../configs/config.json";
 import { getRollupTypeHash } from '../js/transactions/deposition';
-import { generateGodwokenConfig } from './util';
+// import { generateGodwokenConfig } from './util';
 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
@@ -140,8 +140,8 @@ export async function start() {
     await api.waitForGodwokenStart();
 
     // generate config file from config.toml
-    await generateGodwokenConfig('../configs/config.toml', 
-                                 '../configs/godwoken_config.json');
+    // await generateGodwokenConfig('../configs/config.toml', 
+    //                              '../configs/godwoken_config.json');
 
     var rollup_type_hash = getRollupTypeHash();
 
