@@ -18,7 +18,13 @@ import {
   numberToUInt32LE,
   u32ToHex,
   RunResult,
+  normalizer,
 } from "@godwoken-examples/godwoken";
+const NormalizeSUDTQuery = normalizer.NormalizeSUDTQuery;
+const NormalizeSUDTTransfer = normalizer.NormalizeSUDTTransfer;
+const SUDTQuery = normalizer.SUDTQuery;
+const SUDTTransfer = normalizer.SUDTTransfer;
+const UnoinType = normalizer.UnoinType;
 import { Polyjuice } from "@godwoken-examples/polyjuice";
 
 import gpConfig from "../configs/config.json";
@@ -40,7 +46,7 @@ import {
 } from "../js/transactions/deposition";
 import { common } from "@ckb-lumos/common-scripts";
 
-import { RPC } from "ckb-js-toolkit";
+import { RPC, Reader } from "ckb-js-toolkit";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import path from "path";
 import { initializeConfig } from "@ckb-lumos/config-manager";
@@ -484,6 +490,59 @@ export class Api {
     return run_result;
   }
 
+  async generateTransferTx(
+    sudt_id_str: string,
+    to_id_str: string,
+    amount_str: string,
+    fee_str: string,
+    rollup_type_hash: string,
+    eth_address: string,
+  ) {
+    const script_hash = caculateLayer2LockScriptHash(eth_address);
+    const fromId = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    if (!fromId) {
+      console.log("Can not find account id by script_hash:", script_hash);
+      throw new Error(`Can not find account id by script_hash: ${script_hash}`);
+    }
+    const sudtId = parseInt(sudt_id_str);
+    const toId = parseInt(to_id_str);
+    // TODO: should use big integer
+    const amount = parseInt(amount_str);
+    // TODO: should use big integer
+    const fee = parseInt(fee_str);
+    const nonce = await this.godwoken.getNonce(fromId);
+
+    const sudtTransfer: SUDTTransfer = {
+      to: "0x" + toId.toString(16),
+      amount: "0x" + amount.toString(16),
+      fee: "0x" + fee.toString(16),
+    };
+
+    const sudtArgs: UnoinType = {
+      type: "SUDTTransfer",
+      value: NormalizeSUDTTransfer(sudtTransfer),
+    };
+
+    const serializedSudtArgs = new Reader(
+      core.SerializeSUDTArgs(sudtArgs)
+    ).serializeJson();
+
+    console.log("serialized sudt args:", sudtArgs);
+
+    const raw_l2tx: RawL2Transaction = {
+      from_id: "0x" + fromId.toString(16),
+      to_id: "0x" + sudtId.toString(16),
+      nonce: "0x" + nonce.toString(16),
+      args: serializedSudtArgs,
+    };
+
+    const message = _generateTransactionMessageToSign(
+      raw_l2tx,
+      rollup_type_hash
+    );
+    return {type: 'transfer', raw_l2tx: raw_l2tx, message: message, l2_script_args: eth_address};
+  }
+
   async generateCreateCreatorAccountTx(
     from_id_str: string,
     sudt_id_str: string,
@@ -521,7 +580,7 @@ export class Api {
     creator_account_id_str: string,
     init_code: string,
     rollup_type_hash: string,
-    eth_address: string
+    eth_address: string,
   ){
     const creator_account_id = parseInt(creator_account_id_str);
     this.polyjuice = new Polyjuice(this.godwoken, {

@@ -41,6 +41,18 @@ class Api{
         return res.data;
     }; 
 
+  async transfer(to_id: string, amount: string, fee: string, eth_address: string) {
+    let res = await axios.post(`${this.base_url}/transfer`, {
+      data: {
+        to_id: to_id,
+        amount: amount,
+        fee: fee,
+        eth_address: eth_address,
+      }
+    });
+    return res.data;
+  }
+
     async deployContract(contract_code: string, eth_address: StringifyOptions ){
         let res = await axios.post(`${this.base_url}/deploy_contract`, { 
             data:{
