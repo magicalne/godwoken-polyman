@@ -143,7 +143,8 @@ const setUpRouters = (
         try {
             const eth_address = req.query.eth_address + '';
             await api.syncToTip();
-            const account_id = await api.getAccountIdByEthAddr(eth_address);
+            const _account_id = await api.getAccountIdByEthAddr(eth_address);
+            const account_id = parseInt(_account_id+'');
             if(!account_id)
                 return res.send({status:'failed', error: `account not exits. deposit first.`}); 
             const balance = await api.godwoken.getBalance(1, account_id);
@@ -169,8 +170,8 @@ export async function start() {
         await api.syncToTip();
         const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
         if(createCreatorId === null){
-            //const from_id = await api.deposit(user_private_key, undefined, amount);
-            const from_id = '0x2';
+            const from_id = await api.deposit(user_private_key, undefined, amount);
+            //const from_id = '0x2';
             console.log(`create deposit account.${from_id}`);
             const creator_account_id = await api.createCreatorAccount(
               from_id,

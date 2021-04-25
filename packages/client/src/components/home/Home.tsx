@@ -117,40 +117,40 @@ function Home() {
     }
   }
 
-    const transfer = async () => {
-        if(!selectedAddress)return notify(`metamask account not found.`);
-        const api = new Api();
-        try {
-            /* FIXME: get those fields from form instead */
-            const to_id = '1'; /* CKB token sudt_id account */
-            const amount = '500';
-            const fee = '50';
-            const res = await api.transfer(window.ethereum.selectedAddress);
-            if(res.status !== 'ok')return notify(JSON.stringify(res));
+    // const transfer = async () => {
+    //     if(!selectedAddress)return notify(`metamask account not found.`);
+    //     const api = new Api();
+    //     try {
+    //         /* FIXME: get those fields from form instead */
+    //         const to_id = '1'; /* CKB token sudt_id account */
+    //         const amount = '500';
+    //         const fee = '50';
+    //         const res = await api.transfer(window.ethereum.selectedAddress);
+    //         if(res.status !== 'ok')return notify(JSON.stringify(res));
 
-            const data: MsgSignType = res.data;
-            var signature;
-            try {
-                signature = await window.ethereum.request({
-                    method: 'personal_sign',
-                    params: [data.message, window.ethereum.selectedAddress],
-                });
-            } catch (error) {
-                console.log(error);
-                return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
-            }
+    //         const data: MsgSignType = res.data;
+    //         var signature;
+    //         try {
+    //             signature = await window.ethereum.request({
+    //                 method: 'personal_sign',
+    //                 params: [data.message, window.ethereum.selectedAddress],
+    //             });
+    //         } catch (error) {
+    //             console.log(error);
+    //             return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
+    //         }
 
-            // submit the signed tx to godwoken
-            const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
-            if(tx_res.status !== 'ok'){
-                console.log(tx_res);
-                return notify(JSON.stringify(tx_res.error));
-            }
-            notify('transfer success', 'success');
-        } catch (error) {
-            notify(JSON.stringify(error));
-        }
-    }
+    //         // submit the signed tx to godwoken
+    //         const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
+    //         if(tx_res.status !== 'ok'){
+    //             console.log(tx_res);
+    //             return notify(JSON.stringify(tx_res.error));
+    //         }
+    //         notify('transfer success', 'success');
+    //     } catch (error) {
+    //         notify(JSON.stringify(error));
+    //     }
+    // }
 
   const clickUploadContract = async () => {
     if(!inputFile)return notify(`input ref not found.`);
@@ -167,6 +167,7 @@ function Home() {
       if(res.status !== 'ok')return notify(JSON.stringify(res));
 
       const data: MsgSignType = res.data;
+      console.log(JSON.stringify(data, null, 2));
       var signature;
       try {
         signature = await window.ethereum.request({
@@ -203,6 +204,7 @@ function Home() {
     };
 
     const code_hex = res.data;
+    console.log('reading contract code hex:');
     console.log(code_hex);
     await _deployContract(code_hex);
     setIsLoading(false);
@@ -258,11 +260,7 @@ function Home() {
             </Grid>
           </Grid>
 
-          <Grid container spacing={3}>
-              <Grid item xs={12}>
-                  <FreshButton text={"Transfer"} onClick={transfer} custom_style={styles.button} />
-              </Grid>
-          </Grid>
+
 
           <Grid container spacing={3}>
             <Grid item xs={12}>

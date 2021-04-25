@@ -79,14 +79,14 @@ class Polyjuice {
     ).serializeJson();
   }
 
-  generateTransaction(from_id, to_id, gas_limit, gas_price, value, data, nonce) {
+  generateTransaction(from_id, to_id, gas_limit, gas_price, value, data, nonce, rollup_type_hash) {
     const args = encodeArgs(to_id, gas_limit, gas_price, value, data);
     const real_to_id = to_id > 0 ? to_id : this.creator_account_id;
     return {
       from_id: u32ToHex(from_id),
       to_id: u32ToHex(real_to_id),
       nonce: u32ToHex(nonce),
-      args,
+      args:  args,
     };
   }
   async generateCreateCreatorAccountTransaction(from_id, nonce) {

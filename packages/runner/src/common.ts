@@ -105,7 +105,7 @@ export function _createAccountRawL2Transaction(
   const script: Script = {
     code_hash: script_code_hash,
     hash_type: "type",
-    args: script_args,
+    args: getRollupTypeHash() + script_args.slice(2),
   };
   console.log(`creator args: ${JSON.stringify(script, null, 2)}`);
   return GodwokenUtils.createAccountRawL2Transaction(from_id, nonce, script);

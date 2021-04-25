@@ -94,7 +94,8 @@ class Godwoken {
   }
   async getBalance(sudt_id, account_id) {
     // TODO: maybe swap params later?
-    const hex = await this.rpc.get_balance(account_id, sudt_id);
+    console.log('0x'+account_id.toString(16), '0x'+sudt_id.toString(16));
+    const hex = await this.rpc.get_balance('0x'+account_id.toString(16), '0x'+sudt_id.toString(16));
     return BigInt(hex);
   }
   async getStorageAt(account_id, key) {
@@ -123,7 +124,7 @@ class GodwokenUtils {
     this.rollup_type_hash = rollup_type_hash;
   }
 
-  generateTransactionMessageToSign(raw_l2tx, _sender_scirpt_hash, _receiver_script_hash) {
+  async generateTransactionMessageToSign(raw_l2tx, _sender_scirpt_hash, _receiver_script_hash) {
     
     const raw_tx_data = core.SerializeRawL2Transaction(
       NormalizeRawL2Transaction(raw_l2tx)
@@ -141,6 +142,7 @@ class GodwokenUtils {
       prefix_buf,
       Buffer.from(message.slice(2), "hex"),
     ]);
+    console.log(`0x${keccak256(buf).toString("hex")}`);
     return `0x${keccak256(buf).toString("hex")}`;
   }
   

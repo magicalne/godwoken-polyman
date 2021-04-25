@@ -43,6 +43,7 @@ import {
   DepositionLockArgs,
   getDepositionLockArgs,
   serializeArgs,
+  getRollupTypeHash,
 } from "../js/transactions/deposition";
 import { common } from "@ckb-lumos/common-scripts";
 
@@ -282,7 +283,7 @@ export class Api {
     const sender_script_hash = await this.godwoken.getScriptHash(from_id);
     const receiver_script_hash = await this.godwoken.getScriptHash(0);
 
-    const message = _generateTransactionMessageToSign(
+    const message = await _generateTransactionMessageToSign(
       raw_l2tx,
       rollup_type_hash,
       sender_script_hash,
@@ -294,18 +295,19 @@ export class Api {
     const l2tx: L2Transaction = { raw: raw_l2tx, signature };
     const run_result = await this.godwoken.submitL2Transaction(l2tx);
     console.log("RunResult", run_result);
-    const new_account_id = UInt32LEToNumber(run_result.return_data);
-    console.log("Created account id:", new_account_id);
+    //const new_account_id = UInt32LEToNumber(run_result.return_data);
+    //console.log("Created account id:", new_account_id);
 
     // wait for confirm
     const l2_script: Script = {
       code_hash: deploymentConfig.polyjuice_validator.code_hash,
       hash_type: deploymentConfig.polyjuice_validator.hash_type as "type" | "data",
-      args: script_args,
+      args: getRollupTypeHash() + script_args.slice(2),
     };
     const l2_script_hash = serializeScript(l2_script);
     await this.waitForAccountIdOnChain(l2_script_hash);
 
+    const new_account_id = await this.godwoken.getAccountIdByScriptHash(l2_script_hash);
     return new_account_id.toString();
   }
 
@@ -338,13 +340,14 @@ export class Api {
       50n, //todo remove hard-code
       0n,
       init_code,
-      nonce
+      nonce,
+      getRollupTypeHash()
     );
 
     const sender_script_hash = await this.godwoken.getScriptHash(from_id);
     const receiver_script_hash = await this.godwoken.getScriptHash(0);
 
-    const message = _generateTransactionMessageToSign(
+    const message = await _generateTransactionMessageToSign(
       raw_l2tx,
       rollup_type_hash,
       sender_script_hash,
@@ -436,13 +439,14 @@ export class Api {
       50n, //todo remove hard-code
       0n,
       input_data,
-      nonce
+      nonce,
+      getRollupTypeHash()
     );
 
     const sender_script_hash = await this.godwoken.getScriptHash(from_id);
     const receiver_script_hash = await this.godwoken.getScriptHash(0);
     
-    const message = _generateTransactionMessageToSign(
+    const message = await _generateTransactionMessageToSign(
       raw_l2tx,
       rollup_type_hash,
       sender_script_hash,
@@ -494,7 +498,7 @@ export class Api {
     const sender_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.from_id));
     const receiver_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.to_id));
 
-    const message = _generateTransactionMessageToSign(
+    const message = await _generateTransactionMessageToSign(
       raw_l2tx,
       rollup_type_hash,
       sender_script_hash,
@@ -593,7 +597,7 @@ export class Api {
     const l2_script: Script = {
       code_hash: this.validator_code_hash,
       hash_type: "data",
-      args: script_args,
+      args: getRollupTypeHash() + script_args.slice(2),
     };
     const l2_script_hash = serializeScript(l2_script);
     await this.waitForAccountIdOnChain(l2_script_hash);
@@ -614,12 +618,14 @@ export class Api {
       creator_account_id,
     });
     const script_hash = caculateLayer2LockScriptHash(eth_address);
-    const from_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    const _from_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    const from_id = parseInt(_from_id + '');
     if (!from_id) {
       console.log("Can not find account id by script_hash:", script_hash);
       throw new Error(`Can not find account id by script_hash: ${script_hash}`);
     }
-    const nonce = await this.godwoken.getNonce(from_id);
+    const _nonce = '' + await this.godwoken.getNonce(parseInt(from_id+''));
+    const nonce = parseInt(_nonce, 16);
     const raw_l2tx = this.polyjuice.generateTransaction(
       from_id,
       0,
@@ -627,9 +633,10 @@ export class Api {
       50n, //todo remove hard-code
       0n,
       init_code,
-      nonce
+      nonce,
+      getRollupTypeHash()
     );
-    const message = this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
+    const message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
     return {type: 'deploy', raw_l2tx: raw_l2tx, message: message, l2_script_args: eth_address}
   }
 
@@ -640,10 +647,10 @@ export class Api {
   }
   
   async findCreateCreatorAccoundId(sudt_id_str: string) {
-    const script_args = numberToUInt32LE(parseInt(sudt_id_str));
+    const script_args = getRollupTypeHash() + numberToUInt32LE(parseInt(sudt_id_str)).slice(2);
     const l2_script: Script = {
       code_hash: this.validator_code_hash,
-      hash_type: "data",
+      hash_type: "type",
       args: script_args,
     };
     const l2_script_hash = serializeScript(l2_script);

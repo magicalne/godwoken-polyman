@@ -155,7 +155,7 @@ export declare class GodwokenUtils {
     raw_l2tx: RawL2Transaction,
     sender_script_hash: string,
     receiver_script_hash: string,
-  ): Hash;
+  ): Promise<Hash>;
   generateWithdrawalMessageToSign(
     raw_request: RawWithdrawalRequest
   ): Hash;

@@ -39,6 +39,7 @@ export declare class Polyjuice {
     data: HexString,
     // The nonce
     nonce: Uint32,
+    rollup_type_hash: string,
   ): RawL2Transaction;
   // Generate a RawL2Transaction for creating polyjuice base account (for creating polyjuice layer 2 account)
   generateCreateCreatorAccountTransaction(from_id: Uint32, nonce: Uint32): RawL2Transaction;

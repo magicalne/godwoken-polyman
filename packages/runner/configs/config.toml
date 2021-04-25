@@ -45,8 +45,8 @@ allowed_contract_type_hashes = [
 ]
 [chain.genesis_committed_info]
 number = '0x45'
-block_hash = '0x6fc9d833d3c5ec584d532fa6bd0f91edbbb7f91c3d4da871b681302a0e4f47b0'
-transaction_hash = '0x0f8199e79ea75d6cd92dd97a480e3172fb70bc955599d55ad52cecde711f7ab9'
+block_hash = '0x22d0edfc5cd69107c30b3df47fa0bbdc155a8074f3ab906a344f0637e74f2c66'
+transaction_hash = '0xc5ec6323338855f1a999d8a90e5447975e25675fb487d739d5a3c0ed7ce54761'
 
 [chain.rollup_type_script]
 code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
