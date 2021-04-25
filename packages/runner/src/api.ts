@@ -22,9 +22,9 @@ import {
 } from "@godwoken-examples/godwoken";
 const NormalizeSUDTQuery = normalizer.NormalizeSUDTQuery;
 const NormalizeSUDTTransfer = normalizer.NormalizeSUDTTransfer;
-const SUDTQuery = normalizer.SUDTQuery;
-const SUDTTransfer = normalizer.SUDTTransfer;
-const UnoinType = normalizer.UnoinType;
+//const SUDTQuery = normalizer.SUDTQuery;
+//const SUDTTransfer = normalizer.SUDTTransfer;
+//const UnoinType = normalizer.UnoinType;
 import { Polyjuice } from "@godwoken-examples/polyjuice";
 
 import gpConfig from "../configs/config.json";
@@ -513,6 +513,7 @@ export class Api {
     return run_result;
   }
 
+  /*
   async generateTransferTx(
     sudt_id_str: string,
     to_id_str: string,
@@ -565,6 +566,7 @@ export class Api {
     );
     return {type: 'transfer', raw_l2tx: raw_l2tx, message: message, l2_script_args: eth_address};
   }
+  */
 
   async generateCreateCreatorAccountTx(
     from_id_str: string,

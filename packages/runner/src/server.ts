@@ -94,20 +94,20 @@ const setUpRouters = (
         }
     } );
 
-  app.post("/transfer", async ( req, res ) => {
-    try {
-      const to_id_str = req.body.data.to_id + '';
-      const amount_str = req.body.data.amount + '';
-      const fee_str = req.body.data.fee + '';
-      const eth_address = req.body.data.eth_address + '';
-      await api.syncToTip();
-      const data = await api.generateTransferTx(sudt_id_str, to_id_str, amount_str, fee_str, rollup_type_hash, eth_address);
-      res.send({status:'ok', data: data});
-    } catch (error) {
-      console.log(error);
-      res.send({status:'failed', error: error});
-    }
-  });
+  // app.post("/transfer", async ( req, res ) => {
+  //   try {
+  //     const to_id_str = req.body.data.to_id + '';
+  //     const amount_str = req.body.data.amount + '';
+  //     const fee_str = req.body.data.fee + '';
+  //     const eth_address = req.body.data.eth_address + '';
+  //     await api.syncToTip();
+  //     const data = await api.generateTransferTx(sudt_id_str, to_id_str, amount_str, fee_str, rollup_type_hash, eth_address);
+  //     res.send({status:'ok', data: data});
+  //   } catch (error) {
+  //     console.log(error);
+  //     res.send({status:'failed', error: error});
+  //   }
+  // });
 
     app.get( "/create_creator_account", async ( req, res ) => {
         try {
