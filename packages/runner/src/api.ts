@@ -74,7 +74,7 @@ export class Api {
     this.ckb_rpc_url = _ckb_rpc_url;
     this.godwoken_rpc_url = _godwoken_rpc;
 
-    this.validator_code_hash = gpConfig.polyjuice.validator_code_hash;
+    this.validator_code_hash = deploymentConfig.polyjuice_validator.code_hash;
 
     this.indexer = null;
     this.transactionManager = null;
@@ -238,6 +238,7 @@ export class Api {
           txWithStatus.tx_status.block_hash
         );
         break;
+        //console.log(JSON.stringify(txWithStatus, null, 2));
       }
     }
     console.log(`tx ${txHash} is now onChain!`);
@@ -272,9 +273,14 @@ export class Api {
       script_args
     );
 
+    const sender_script_hash = await this.godwoken.getScriptHash(from_id);
+    const receiver_script_hash = await this.godwoken.getScriptHash(0);
+
     const message = _generateTransactionMessageToSign(
       raw_l2tx,
-      rollup_type_hash
+      rollup_type_hash,
+      sender_script_hash,
+      receiver_script_hash,
     );
     const signature = _signMessage(message, privkey);
     console.log("message", message);
@@ -287,8 +293,8 @@ export class Api {
 
     // wait for confirm
     const l2_script: Script = {
-      code_hash: this.validator_code_hash,
-      hash_type: "data",
+      code_hash: deploymentConfig.polyjuice_validator.code_hash,
+      hash_type: deploymentConfig.polyjuice_validator.hash_type as "type" | "data",
       args: script_args,
     };
     const l2_script_hash = serializeScript(l2_script);
@@ -306,7 +312,7 @@ export class Api {
   ) {
     const creator_account_id = parseInt(creator_account_id_str);
     this.polyjuice = new Polyjuice(this.godwoken, {
-      validator_code_hash: this.validator_code_hash,
+      validator_code_hash: deploymentConfig.polyjuice_validator.code_hash,
       sudt_id: 1,
       creator_account_id,
     });
@@ -328,9 +334,15 @@ export class Api {
       init_code,
       nonce
     );
+
+    const sender_script_hash = await this.godwoken.getScriptHash(from_id);
+    const receiver_script_hash = await this.godwoken.getScriptHash(0);
+
     const message = _generateTransactionMessageToSign(
       raw_l2tx,
-      rollup_type_hash
+      rollup_type_hash,
+      sender_script_hash,
+      receiver_script_hash,
     );
     const signature = _signMessage(message, privkey);
     const l2tx: L2Transaction = { raw: raw_l2tx, signature };
@@ -420,9 +432,15 @@ export class Api {
       input_data,
       nonce
     );
+
+    const sender_script_hash = await this.godwoken.getScriptHash(from_id);
+    const receiver_script_hash = await this.godwoken.getScriptHash(0);
+    
     const message = _generateTransactionMessageToSign(
       raw_l2tx,
-      rollup_type_hash
+      rollup_type_hash,
+      sender_script_hash,
+      receiver_script_hash,
     );
     const signature = _signMessage(message, privkey);
     const l2tx: L2Transaction = { raw: raw_l2tx, signature };
@@ -463,13 +481,18 @@ export class Api {
     );
   }
 
-  generateLayer2TransactionMessageToSign(
+  async generateLayer2TransactionMessageToSign(
     raw_l2tx: RawL2Transaction,
     rollup_type_hash: Hash
   ){
+    const sender_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.from_id));
+    const receiver_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.to_id));
+
     const message = _generateTransactionMessageToSign(
       raw_l2tx,
-      rollup_type_hash
+      rollup_type_hash,
+      sender_script_hash,
+      receiver_script_hash
     );
     return message;
   }

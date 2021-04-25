@@ -150,8 +150,8 @@ export async function start() {
         await api.syncToTip();
         const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
         if(createCreatorId === null){
-            const from_id = await api.deposit(user_private_key, undefined, amount);
-            // const from_id = '0x2';
+            //const from_id = await api.deposit(user_private_key, undefined, amount);
+            const from_id = '0x2';
             console.log(`create deposit account.${from_id}`);
             const creator_account_id = await api.createCreatorAccount(
               from_id,

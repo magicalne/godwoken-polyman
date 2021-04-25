@@ -43,12 +43,13 @@ export function getDepositionLockArgs(
   layer2_lock_args: HexString,
   cancelTimeout: PackedSince = "0xc00000000002a300"
 ): DepositionLockArgs {
+  const rollup_type_hash = getRollupTypeHash();
   const depositionLockArgs: DepositionLockArgs = {
     owner_lock_hash: ownerLockHash,
     layer2_lock: {
-      code_hash: deploymentConfig.l2_sudt_validator.code_hash,
-      hash_type: deploymentConfig.l2_sudt_validator.hash_type as "data" | "type",
-      args: layer2_lock_args,
+      code_hash: deploymentConfig.eth_account_lock.code_hash,
+      hash_type: deploymentConfig.eth_account_lock.hash_type as "data" | "type",
+      args:  rollup_type_hash + layer2_lock_args.slice(2),
     },
     cancel_timeout: cancelTimeout, // relative timestamp, 2 days
   };

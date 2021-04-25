@@ -40,7 +40,7 @@ class Polyjuice {
   constructor(
     client,
     {
-      validator_code_hash = "0x4b83dd9158e7f3407bbc3fefbcac5dfeecf40221ea28706eb97fd653d375e00c",
+      validator_code_hash, // = "0x4b83dd9158e7f3407bbc3fefbcac5dfeecf40221ea28706eb97fd653d375e00c",
       sudt_id = 1,
       creator_account_id,
     }
@@ -71,7 +71,7 @@ class Polyjuice {
           + numberToUInt32LE(nonce).slice(2);
     const script = {
       code_hash: this.validator_code_hash,
-      hash_type: "data",
+      hash_type: "type",
       args,
     };
     return base.utils.ckbHash(
@@ -94,7 +94,7 @@ class Polyjuice {
     script_args_buf.writeUInt32LE(this.sudt_id);
     const script = {
       code_hash: this.validator_code_hash,
-      hash_type: "data",
+      hash_type: "type",
       args: `0x${script_args_buf.toString("hex")}`,
     };
     return GodwokenUtils.createAccountRawL2Transaction(from_id, nonce, script);

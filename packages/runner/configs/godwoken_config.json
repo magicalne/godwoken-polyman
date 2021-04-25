@@ -35,14 +35,23 @@
       "required_staking_capacity": "0x2540be400",
       "challenge_maturity_blocks": "0x5",
       "finality_blocks": "0x14",
-      "reward_burn_rate": "0x32"
+      "reward_burn_rate": "0x32",
+      "allowed_eoa_type_hashes": [
+        "0xeeb39042bd7a1907e35823438db35f0a67fd495464abd0d183220e1ee8dda009",
+        "0xf0e03a329803bd033eae42e80c8cd6c6dc81b48afe9f4a630f27e78be54db14c"
+      ],
+      "allowed_contract_type_hashes": [
+        "0x626a11234aea67084fe311cb035fbc082f9fb1481565fb3bd5ff2ba6429d657d",
+        "0x46c2d947cf3aaa73e7a9c1906e01ebb295cdff47a9ae9b8889f26b1c97f8bb54",
+        "0xbac49534a21667c9d09d76bb5729523f0550f32a952c6c4f9915b673dee44725"
+      ]
     }
   },
   "chain": {
     "genesis_committed_info": {
       "number": "0x45",
-      "block_hash": "0x5e96ae8a83f9426cd1577a2c5e2c08e21e641522c61cd9fea446b2fe86b4a5d0",
-      "transaction_hash": "0xd5d7da8661460aa21ea41160c409460eba36979fe84379be7b7b62795ab8b1b8"
+      "block_hash": "0x6fc9d833d3c5ec584d532fa6bd0f91edbbb7f91c3d4da871b681302a0e4f47b0",
+      "transaction_hash": "0x0f8199e79ea75d6cd92dd97a480e3172fb70bc955599d55ad52cecde711f7ab9"
     },
     "rollup_type_script": {
       "code_hash": "0x00000000000000000000000000000000000000000000000000545950455f4944",

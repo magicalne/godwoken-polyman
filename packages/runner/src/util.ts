@@ -25,6 +25,7 @@ import { generateAddress } from "@ckb-lumos/helpers";
 import TOML from '@iarna/toml';
 import fs from 'fs';
 import path from 'path';
+import { getRollupTypeHash } from "../js/transactions/deposition";
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));
@@ -55,10 +56,11 @@ export async function waitForBlockSync(
 }
 
 export function caculateLayer2LockScriptHash(layer2LockArgs: string) {
+  const rollup_type_hash = getRollupTypeHash();
   const script = {
-    code_hash: deploymentConfig.l2_sudt_validator.code_hash,
-    hash_type: deploymentConfig.l2_sudt_validator.hash_type,
-    args: layer2LockArgs,
+    code_hash: deploymentConfig.eth_account_lock.code_hash,
+    hash_type: deploymentConfig.eth_account_lock.hash_type,
+    args: rollup_type_hash + layer2LockArgs.slice(2),
   };
   return base.utils
     .ckbHash(base.core.SerializeScript(normalizers.NormalizeScript(script)))
