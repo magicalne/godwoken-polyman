@@ -179,7 +179,7 @@ function Home() {
         return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
       }
 
-      console.log(`messageL ${data.message}`);
+      console.log(`message: ${data.message}`);
       console.log(`signature: ${signature}`);
 
       // submit the signed tx to godwoken
@@ -195,26 +195,6 @@ function Home() {
     } catch (error) {
       notify(JSON.stringify(error));
     }
-  }
-
-  const test_sig = async () => {
-    const message = "0x33145551813ccd1abc9b6de9abab432103925399378a779240ff4cd40bf7a242";
-    let signature;
-    try {
-      signature = await window.ethereum.request({
-        method: 'personal_sign',
-        params: [message, window.ethereum.selectedAddress],
-      }); 
-    } catch (error) {
-      console.log(error);
-      return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
-    }
-    let v = Number.parseInt(signature.slice(-2), 16);
-    if (v >= 27) v -= 27;
-    signature = signature.slice(0, -2) + v.toString(16).padStart(2, "0");
-
-    console.log(`messageL ${message}`);
-    console.log(`signature: ${signature}`);
   }
 
   const deployContract = async (e: any) => {
@@ -274,12 +254,6 @@ function Home() {
             <Grid item xs={12} style={styles.header}>
               <h3> {selectedAddress} </h3>
               <div><span style={styles.balance}>{balance} CKB </span></div>
-            </Grid>
-          </Grid>
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <FreshButton text={"test"} onClick={test_sig} custom_style={styles.button} />
             </Grid>
           </Grid>
 

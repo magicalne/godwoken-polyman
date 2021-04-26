@@ -22,7 +22,7 @@ export declare class Polyjuice {
   // == Utils functions ==
   addressToAccountId(address: ETHAddress): Uint32;
   accountIdToAddress(id: Uint32): ETHAddress;
-  calculateScriptHash(from_id: Uint32, nonce: Uint32): Hash;
+  calculateScriptHash(from_id: Uint32, nonce: Uint32, rollup_type_hash: string): Hash;
 
   generateTransaction(
     // The sender account id

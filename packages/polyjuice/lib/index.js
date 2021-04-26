@@ -65,14 +65,14 @@ class Polyjuice {
   addressToAccountId(address) {
     return UInt32LEToNumber(address);
   }
-  calculateScriptHash(from_id, nonce) {
+  calculateScriptHash(from_id, nonce, rollup_type_hash) {
     const args = numberToUInt32LE(this.sudt_id)
           + numberToUInt32LE(from_id).slice(2)
           + numberToUInt32LE(nonce).slice(2);
     const script = {
       code_hash: this.validator_code_hash,
       hash_type: "type",
-      args,
+      args: rollup_type_hash + args.slice(2),
     };
     return base.utils.ckbHash(
       base.core.SerializeScript(normalizers.NormalizeScript(script))

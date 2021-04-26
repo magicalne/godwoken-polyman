@@ -117,6 +117,9 @@ class Godwoken {
   async getData(data_hash) {
     return await this.rpc.get_data(data_hash);
   }
+  async getTransactionReceipt(tx_hash) {
+    return await this.rpc.get_transaction_receipt(tx_hash);
+  } 
 }
 
 class GodwokenUtils {

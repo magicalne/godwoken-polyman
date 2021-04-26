@@ -356,16 +356,16 @@ export class Api {
     const signature = _signMessage(message, privkey);
     const l2tx: L2Transaction = { raw: raw_l2tx, signature };
     console.log("L2Transaction", l2tx);
-    const run_result = await this.godwoken.submitL2Transaction(l2tx);
-    console.log("RunResult", run_result);
+    const tx_hash = await this.godwoken.submitL2Transaction(l2tx);
+    console.log("RunResult", tx_hash);
 
     // todo: the method of caculateScriptHash seems go wrong.
-    // const new_script_hash = this.polyjuice.calculateScriptHash(from_id, nonce);
-    // console.log("new script hash", new_script_hash);
-    if (!run_result || !run_result.new_scripts)
-      throw new Error("run_result or run_result.new_scripts is empty.");
+    const new_script_hash = this.polyjuice.calculateScriptHash(from_id, nonce, rollup_type_hash);
+    console.log("new script hash", new_script_hash);
+    if (!tx_hash)
+      throw new Error("the return tx_hash of submitL2Transaction is empty.");
 
-    const contract_script_hash = Object.keys(run_result.new_scripts)[0];
+    const contract_script_hash = new_script_hash;
 
     // wait for confirm
     await this.waitForAccountIdOnChain(contract_script_hash);
@@ -411,6 +411,31 @@ export class Api {
       }
     }
     return;
+  }
+
+  async waitForTransactionReceipt(tx_hash: Hash){
+    while (true) {
+      await asyncSleep(1000);
+      const tx_receipt = await this.godwoken.getTransactionReceipt(
+        tx_hash
+      );
+      console.log(`tx_receipt: ${tx_receipt}`);
+
+      if (tx_receipt) {
+        break;
+      }
+    }
+    return;
+  }
+
+  async waitForDeolyedContractOnChain(raw_l2_tx: RawL2Transaction, rollup_type_hash: Hash){
+    const from_id = raw_l2_tx.from_id;
+    const nonce = raw_l2_tx.nonce;
+    const new_script_hash = this.polyjuice!.calculateScriptHash(parseInt(from_id), parseInt(nonce), rollup_type_hash);
+    console.log("caculte new script hash", new_script_hash);
+    const account_id = await this.watiForDeployTx(new_script_hash);
+    console.log("account_id:", account_id);
+    return account_id;
   }
 
   async _call(
@@ -522,6 +547,10 @@ export class Api {
     return run_result;
   }
 
+  async getTransactionReceipt(tx_hash: Hash){
+    return await this.godwoken.getTransactionReceipt(tx_hash);
+  }
+
   /*
   async generateTransferTx(
     sudt_id_str: string,
@@ -601,7 +630,7 @@ export class Api {
     // wait for confirm
     const l2_script: Script = {
       code_hash: this.validator_code_hash,
-      hash_type: "data",
+      hash_type: "type",
       args: getRollupTypeHash() + script_args.slice(2),
     };
     const l2_script_hash = serializeScript(l2_script);
@@ -652,8 +681,7 @@ export class Api {
 
   async watiForDeployTx(l2_script_hash: string){
     await this.waitForAccountIdOnChain(l2_script_hash);
-    const id = await this.getAccountId(l2_script_hash);
-    return id; 
+    return await this.getAccountId(l2_script_hash);
   }
   
   async findCreateCreatorAccoundId(sudt_id_str: string) {

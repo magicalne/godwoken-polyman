@@ -51,22 +51,25 @@ const setUpRouters = (
             const signature = req.body.data.signature;
             const type = req.body.data.type;
             await api.syncToTip();
-            const run_result = await api.sendLayer2Transaction(raw_l2tx, signature);
+            const tx_hash = await api.sendLayer2Transaction(raw_l2tx, signature);
             switch (type) {
                 case 'create_creator':
                     const id = await api.waitForCreateCreator(sudt_id_str);
-                    res.send({status:'ok', data: {run_result: run_result, account_id: id }});
+                    res.send({status:'ok', data: {run_result: tx_hash, account_id: id }});
                     break;
             
                 case 'deploy':
-                    const contract_id = await api.watiForDeployTx(Object.keys(run_result.new_scripts)[0]);
+                    const contract_id = await api.waitForDeolyedContractOnChain(raw_l2tx, rollup_type_hash);
+                    //const tx_receipt = await api.getTransactionReceipt(tx_hash);
+                    //console.log(`tx_receipt: ${JSON.stringify(tx_receipt, null, 2)}`);
+                    //const contract_id = await api.watiForDeployTx();
                     const contract_address = await api.polyjuice!.accountIdToAddress(contract_id);
-                    res.send({status:'ok', data: {run_result: run_result, account_id: contract_id, contract_address: contract_address }});
+                    res.send({status:'ok', data: {run_result: tx_hash, account_id: contract_id, contract_address: contract_address  }});
                     break;
 
-              case 'transfer':
-                res.send({status: 'ok', data: {run_result: run_result}});
-                break;
+                case 'transfer':
+                    res.send({status: 'ok', data: {run_result: tx_hash}});
+                    break;
     
                 case 'deposit':
                     break;

@@ -8,6 +8,7 @@ export type Uint256 = bigint;
 import { HexNumber, HexString, Hash, Script } from "@ckb-lumos/base";
 import * as core from "./schemas/godwoken";
 import * as normalizer from "./normalizer";
+import { TxReceipt } from "./schemas/store";
 // import { L2Block } from "./schemas/godwoken";
 export { core, normalizer };
 
@@ -138,7 +139,7 @@ export declare class Godwoken {
   getBlock(block_hash: Hash): Promise<L2Block>;
   getBlockByNumber(block_number: Uint32): Promise<L2Block>;
   executeL2Transaction(l2tx: L2Transaction): Promise<RunResult>;
-  submitL2Transaction(l2tx: L2Transaction): Promise<RunResult>;
+  submitL2Transaction(l2tx: L2Transaction): Promise<Hash>;
   submitWithdrawalRequest(request: WithdrawalRequest): Promise<void>;
   getBalance(sudt_id: Uint32, account_id: Uint32): Promise<9>;
   getStorageAt(account_id: Uint32, key: Hash): Promise<Hash>;
@@ -147,6 +148,7 @@ export declare class Godwoken {
   getScript(script_hash: Hash): Promise<Script>;
   getScriptHash(account_id: Uint32): Promise<Hash>;
   getData(data_hash: Hash): Promise<HexString>;
+  getTransactionReceipt(tx_hash: Hash): Promise<TxReceipt>
 }
 
 export declare class GodwokenUtils {
