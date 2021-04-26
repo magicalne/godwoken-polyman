@@ -493,7 +493,8 @@ export class Api {
 
   async generateLayer2TransactionMessageToSign(
     raw_l2tx: RawL2Transaction,
-    rollup_type_hash: Hash
+    rollup_type_hash: Hash,
+    add_prefix?: boolean
   ){
     const sender_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.from_id));
     const receiver_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.to_id));
@@ -502,16 +503,20 @@ export class Api {
       raw_l2tx,
       rollup_type_hash,
       sender_script_hash,
-      receiver_script_hash
+      receiver_script_hash,
+      add_prefix
     );
     return message;
   }
 
   async sendLayer2Transaction(
     raw_l2tx: RawL2Transaction,
-    signature: Hash
+    _signature: Hash
   ) {
-    const l2tx: L2Transaction = { raw: raw_l2tx, signature };
+    let v = Number.parseInt(_signature.slice(-2), 16);
+    if (v >= 27) v -= 27;
+    const signature = _signature.slice(0, -2) + v.toString(16).padStart(2, "0");
+    const l2tx: L2Transaction = { raw: raw_l2tx, signature: signature };
     const run_result = await this.godwoken.submitL2Transaction(l2tx);
     console.log("RunResult", run_result);
     return run_result;
@@ -636,7 +641,12 @@ export class Api {
       nonce,
       getRollupTypeHash()
     );
-    const message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
+    const add_prefix_in_message = false; //metamask will add prefix.
+    const message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash, add_prefix_in_message);
+    
+    const prefixd_message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
+    console.log(`prefixd_message: ${prefixd_message}`);
+    console.log(`un_prefix_message: ${message}`);
     return {type: 'deploy', raw_l2tx: raw_l2tx, message: message, l2_script_args: eth_address}
   }
 

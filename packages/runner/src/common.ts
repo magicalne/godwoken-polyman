@@ -90,10 +90,11 @@ export function _generateTransactionMessageToSign(
   rollup_type_hash: string,
   sender_script_hash: string,
   receiver_script_hash: string,
+  add_prefix?: boolean
 ) {
   console.log("RawL2Transaction", raw_l2tx);
   const godwoken_utils = new GodwokenUtils(rollup_type_hash);
-  return godwoken_utils.generateTransactionMessageToSign(raw_l2tx, sender_script_hash, receiver_script_hash);
+  return godwoken_utils.generateTransactionMessageToSign(raw_l2tx, sender_script_hash, receiver_script_hash, add_prefix);
 }
 
 export function _createAccountRawL2Transaction(

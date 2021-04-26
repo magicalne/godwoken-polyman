@@ -124,8 +124,7 @@ class GodwokenUtils {
     this.rollup_type_hash = rollup_type_hash;
   }
 
-  async generateTransactionMessageToSign(raw_l2tx, _sender_scirpt_hash, _receiver_script_hash) {
-    
+  async generateTransactionMessageToSign(raw_l2tx, _sender_scirpt_hash, _receiver_script_hash, add_prefix = true) {
     const raw_tx_data = core.SerializeRawL2Transaction(
       NormalizeRawL2Transaction(raw_l2tx)
     );
@@ -137,12 +136,20 @@ class GodwokenUtils {
       Buffer.concat([rollup_type_hash, sender_scirpt_hash, receiver_script_hash, toBuffer(raw_tx_data)])
     );
     const message = utils.ckbHash(data).serializeJson();
+    
+    if(add_prefix === false){ 
+      // do not add `\x19Ethereum Signed Message:\n32` prefix when generating message
+      // set true when you want to pass message for metamask signing, 
+      // metamask will add this automattically.
+      
+      return message;
+    }
+
     const prefix_buf = Buffer.from(`\x19Ethereum Signed Message:\n32`);
     const buf = Buffer.concat([
       prefix_buf,
       Buffer.from(message.slice(2), "hex"),
     ]);
-    console.log(`0x${keccak256(buf).toString("hex")}`);
     return `0x${keccak256(buf).toString("hex")}`;
   }
   
