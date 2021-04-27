@@ -17,7 +17,7 @@ validator_script_type_hash = '0xbac49534a21667c9d09d76bb5729523f0550f32a952c6c4f
 path = './store.db'
 
 [genesis]
-timestamp = 0
+timestamp = 1619486607381
 rollup_type_hash = '0xf70aa98a96fba847185be1b58c1d1e3cae7ad91f971eecc5749799d5e72939f0'
 meta_contract_validator_type_hash = '0x626a11234aea67084fe311cb035fbc082f9fb1481565fb3bd5ff2ba6429d657d'
 
@@ -44,9 +44,9 @@ allowed_contract_type_hashes = [
     '0xbac49534a21667c9d09d76bb5729523f0550f32a952c6c4f9915b673dee44725',
 ]
 [chain.genesis_committed_info]
-number = '0x46'
-block_hash = '0x0620194eae0207be510bcdee9113389ef28dc27aeed14472b1d873744c4dd2e5'
-transaction_hash = '0x19d460fec0eb5bbff530113ce884031e7c86cbad761f088c603978829fa18c47'
+number = '0x45'
+block_hash = '0xce68503f24e80166dc895478ee4ef8b9184f4a4adfe31149c6c1cebc44434dfd'
+transaction_hash = '0xc91987f02c8199d87800765c01f345e142df8ad2b4f6e75ca232a78ba18e5939'
 
 [chain.rollup_type_script]
 code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
@@ -82,6 +82,13 @@ dep_type = 'code'
 
 [block_producer.deposit_cell_lock_dep.out_point]
 tx_hash = '0xa16bb7c556bc516196a1cfcf6638395f1092e194aa565f9779827935c4599fef'
+index = '0x0'
+
+[block_producer.stake_cell_lock_dep]
+dep_type = 'code'
+
+[block_producer.stake_cell_lock_dep.out_point]
+tx_hash = '0x49e6e7979ad01928cdf81339b0da0edcaea95f92cc6fcaf84400a594c13dd040'
 index = '0x0'
 
 [block_producer.wallet_config]

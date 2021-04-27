@@ -158,7 +158,7 @@ export declare class GodwokenUtils {
     sender_script_hash: string,
     receiver_script_hash: string,
     add_prefix?: boolean,
-  ): Promise<Hash>;
+  ): Promise<Hash>; //todo: remove this promise
   generateWithdrawalMessageToSign(
     raw_request: RawWithdrawalRequest
   ): Hash;
