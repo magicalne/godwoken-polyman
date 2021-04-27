@@ -7,6 +7,8 @@ import serverConfig from "../configs/server.json";
 import gpConfig from "../configs/config.json";
 import { getRollupTypeHash } from '../js/transactions/deposition';
 // import { generateGodwokenConfig } from './util';
+import godwoken_config from "../configs/godwoken_config.json";
+import { deploymentConfig } from "../js/utils/deployment_config";
 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
@@ -44,7 +46,15 @@ const setUpRouters = (
     app.get("/get_rollup_type_hash", ( req, res ) => {
        res.send({status: 'ok', data: rollup_type_hash}); 
     });
-    
+
+    app.get("/get_godwoken_config", ( req, res ) => {
+        res.send({status: 'ok', data: godwoken_config}); 
+    });
+
+    app.get("/get_eth_acccount_lock", ( req, res ) => {
+        res.send({status: 'ok', data: deploymentConfig.eth_account_lock });
+    });
+
     app.post( "/send_l2_tx", async ( req, res ) => {
         try {
             const raw_l2tx = req.body.data.raw_l2tx;

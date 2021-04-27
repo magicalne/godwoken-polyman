@@ -21,7 +21,15 @@ class Api{
             }
         });
         return res.data;
-    }; 
+    };
+    
+    async getEthAccountLockConfig(){
+        let res = await axios.get(`${this.base_url}/get_eth_acccount_lock`, {
+            params:{
+            }
+        });
+        return res.data;
+    };
 
     async getBalance(eth_address: string){
         let res = await axios.get(`${this.base_url}/get_layer2_balance`, { 

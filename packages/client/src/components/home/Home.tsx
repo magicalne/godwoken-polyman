@@ -47,6 +47,11 @@ const styles = {...common_styles, ...{
 }
 }
 
+export interface EthAccountLockConfig {
+  code_hash: string;
+  hash_type: 'hash' | 'type';
+}
+
 function Home() {
   const inputFile = useRef<HTMLInputElement>(null);
   const [selectedAddress, setSelectedAddress] = useState<string>();
@@ -54,6 +59,7 @@ function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [deployedContracts, setDeployedContracts] = useState<string[]>([]);
   const [rollupTypeHash, setRollupTypeHash] = useState<string>();
+  const [ethAccountLockConfig, setEthAccountLockConfig] = useState<EthAccountLockConfig>();
 
   useEffect(() => {
     // connect account
@@ -62,6 +68,7 @@ function Home() {
       setSelectedAddress(window.ethereum.selectedAddress);
     };
     getRollupTypeHash();
+    getEthAccountLockConfig();
   }, []);
 
   useEffect(() => {
@@ -95,6 +102,18 @@ function Home() {
       if(res.status !== 'ok')
         return notify(`failed to get rollup type hash. ${JSON.stringify(res.error)}`);
       setRollupTypeHash(res.data);
+    } catch (error) {
+      notify(JSON.stringify(error));
+    } 
+  }
+
+  const getEthAccountLockConfig = async () => {
+    const api = new Api();
+    try {
+      const res = await api.getEthAccountLockConfig();
+      if(res.status !== 'ok')
+        return notify(`failed to get eth_account_lock config. ${JSON.stringify(res.error)}`);
+      setEthAccountLockConfig(res.data);
     } catch (error) {
       notify(JSON.stringify(error));
     } 
@@ -231,13 +250,13 @@ function Home() {
   } 
 
   const web3CodeString = `
-  const godwoken_rpc_url = 'http://127.0.0.1:8119';
+  const godwoken_rpc_url = 'http://127.0.0.1:8024';
   const provider_config =  {
     godwoken: {
         rollup_type_hash: "${rollupTypeHash}",
-        layer2_lock: {
-            code_hash: "0x0000000000000000000000000000000000000000000000000000000000000001",
-            hash_type: "data"
+        eth_account_lock: {
+            code_hash: "${ethAccountLockConfig?.code_hash}",
+            hash_type: "${ethAccountLockConfig?.hash_type}"
         }
     }
   }
@@ -252,8 +271,8 @@ function Home() {
           <NotifyPlace />
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.header}>
-              <h3> {selectedAddress} </h3>
-              <div><span style={styles.balance}>{balance} CKB </span></div>
+              <h3>Your EthAddress: {selectedAddress} </h3>
+              <div>Balance: <span style={styles.balance}>{balance} CKB </span></div>
             </Grid>
           </Grid>
 
@@ -262,8 +281,6 @@ function Home() {
               <FreshButton text={"Deposit"} onClick={deposit} custom_style={styles.button} />
             </Grid>
           </Grid>
-
-
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -281,17 +298,14 @@ function Home() {
 
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.contract_container}>
-
-              Web3.js init code: 
-              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
-                {web3CodeString}
-              </SyntaxHighlighter>
-
               Contract Address: 
               <SyntaxHighlighter language="javascript" style={gruvboxDark}>
                 {deployedContracts.join('\n')}
               </SyntaxHighlighter>
-
+              Web3.js init code: 
+              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
+                {web3CodeString}
+              </SyntaxHighlighter>
             </Grid>
           </Grid>
         </header>
