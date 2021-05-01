@@ -56,6 +56,7 @@ function Home() {
   const inputFile = useRef<HTMLInputElement>(null);
   const [selectedAddress, setSelectedAddress] = useState<string>();
   const [balance, setBalance] = useState<string>('0');
+  const [sudtBalance, setSudtBalance] = useState<string>('0');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [deployedContracts, setDeployedContracts] = useState<string[]>([]);
   const [rollupTypeHash, setRollupTypeHash] = useState<string>();
@@ -74,6 +75,7 @@ function Home() {
   useEffect(() => {
     if(selectedAddress){
       getBalance();
+      getSudtBalance();
     };
   }, [selectedAddress]);
 
@@ -90,6 +92,19 @@ function Home() {
       if(res.status !== 'ok')
         return notify(`failed to get balance from account. ${JSON.stringify(res.error)}`);
       setBalance(utils.shannon2CKB(res.data));
+    } catch (error) {
+      notify(JSON.stringify(error));
+    }
+  }
+
+  const getSudtBalance = async () => {
+    if(!selectedAddress)return;
+    const api = new Api();
+    try {
+      const res = await api.getSudtBalance(selectedAddress);
+      if(res.status !== 'ok')
+        return notify(`failed to get sudt balance from account. ${JSON.stringify(res.error)}`);
+      setSudtBalance(utils.shannon2CKB(res.data));
     } catch (error) {
       notify(JSON.stringify(error));
     }
@@ -130,6 +145,54 @@ function Home() {
         getBalance();
       }else{
         notify(JSON.stringify(res.error));
+      }
+    } catch (error) {
+      notify(JSON.stringify(error));
+    }
+  }
+
+  const depositSudt =  async () => {
+    if(!selectedAddress)return notify(`metamask account not found.`);
+    const api = new Api();
+    try {
+      const res = await api.deposit_sudt(selectedAddress);
+      console.log(res);
+      if(res.status === 'ok'){
+        notify(`your account id: ${res.data.account_id}`, 'success');
+        console.log(`res.data.l2_sudt_script_hash: ${res.data.l2_sudt_script_hash}`)
+        getSudtBalance();
+      }else{
+        notify(JSON.stringify(res.error));
+      }
+    } catch (error) {
+      notify(JSON.stringify(error));
+    }
+  }
+
+  const deploySudtContract = async () => {
+    const api = new Api();
+    try{
+      const res = await api.deploySudtContract();
+      console.log(res);
+      if(res.status === 'ok'){
+        notify('ok');
+      }else{
+        notify(JSON.stringify(res.error, null, 2));
+      }
+    } catch (error) {
+      notify(JSON.stringify(error));
+    }
+  }
+
+  const issueToken = async () => {
+    const api = new Api();
+    try{
+      const res = await api.issueToken();
+      console.log(res);
+      if(res.status === 'ok'){
+        notify(`issue a sudt token: ${res.data.sudt_token}`, 'success');
+      }else{
+        notify(JSON.stringify(res.error, null, 2));
       }
     } catch (error) {
       notify(JSON.stringify(error));
@@ -291,6 +354,34 @@ function Home() {
                   onChange={deployContract}
                   hidden
               />
+            </Grid>
+          </Grid>
+
+          <hr></hr>
+
+          <h2>Sudt Section: </h2>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <div>Balance: <span style={styles.balance}>{sudtBalance} Sudt </span></div>
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <FreshButton text={"deploy Sudt contract"} onClick={deploySudtContract} custom_style={styles.button} />
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <FreshButton text={"issue sudt token"} onClick={issueToken} custom_style={styles.button} />
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <FreshButton text={"Deposit Sudt"} onClick={depositSudt} custom_style={styles.button} />
             </Grid>
           </Grid>
 

@@ -5,6 +5,7 @@ import { deploymentConfig } from "../utils/deployment_config";
 import { Script, HexString, Hash, PackedSince, utils } from "@ckb-lumos/base";
 import { NormalizeDepositionLockArgs } from "@godwoken-examples/godwoken/normalizer";
 import godwokenConfig from "../../configs/godwoken_config.json";
+import { deposit } from "@ckb-lumos/common-scripts/lib/dao";
 
 export interface DepositionLockArgs {
   owner_lock_hash: Hash;
@@ -62,3 +63,15 @@ export function getRollupTypeHash(): HexString {
   console.log("rollupTypeHash:", hash);
   return hash;
 }
+
+export function getL2SudtScriptHash(l1_sudt_script: Script): HexString {
+  const script_hash = utils.computeScriptHash(l1_sudt_script);
+  const sudt_script = {
+    code_hash: deploymentConfig.l2_sudt_validator.code_hash,
+    hash_type: deploymentConfig.l2_sudt_validator.hash_type as "data" | "type",
+    args: getRollupTypeHash() + script_hash.slice(2)
+  }
+  console.log(`sudt_script: ${JSON.stringify(sudt_script)}`);
+  return utils.computeScriptHash(sudt_script);
+}
+

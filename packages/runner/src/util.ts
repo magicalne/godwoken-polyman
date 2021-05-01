@@ -107,3 +107,10 @@ export async function generateGodwokenConfig(_input_file: string, _output_file: 
   await fs.writeFileSync(json_path, JSON.stringify(toml_file_obj, null, 2));
   console.log(`create godwoken_config.json file in ${json_path}. done.`);
 }
+
+export function toBigUInt64LE(num:number | bigint) {
+  const bnum = BigInt(num);
+  const buf = Buffer.alloc(8);
+  buf.writeBigUInt64LE(bnum);
+  return `0x${buf.toString("hex")}`;
+}

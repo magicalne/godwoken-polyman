@@ -15,8 +15,13 @@ const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 const ckb_rpc = process.env.MODE === "docker-compose" ? gpConfig.ckb.rpc[0] : gpConfig.ckb.rpc[1];
 const godwoken_rpc = process.env.MODE === "docker-compose" ? gpConfig.godwoken.rpc[0] : gpConfig.godwoken.rpc[1] ;
 const sudt_id_str = serverConfig.default_sudt_id_str;
-const amount = serverConfig.default_amount;
+const default_deposit_amount = serverConfig.default_amount;
+const default_sudt_capacity = serverConfig.default_amount; 
 const user_private_key = serverConfig.user_private_key;
+const user_ckb_address = serverConfig.user_ckb_devnet_addr;
+const miner_private_key = serverConfig.miner_private_key;
+const miner_ckb_address = serverConfig.miner_ckb_devnet_addr;
+const change_amount = '10000000000'; // 100 ckb change for pay fee.
 
 const api = new Api(ckb_rpc, godwoken_rpc, indexer_path);
 api.syncLayer1();
@@ -36,7 +41,10 @@ app.use(express.json({limit: '1mb'}));
 const setUpRouters = (  
     rollup_type_hash: string, 
     sudt_id_str: string,
-    user_private_key: string
+    user_private_key: string,
+    user_ckb_address: string,
+    miner_private_key: string,
+    miner_ckb_address: string
 ) => {
 
     app.get( "/", ( req, res ) => {
@@ -98,7 +106,7 @@ const setUpRouters = (
         try {
             const eth_address = req.query.eth_address + '';
             await api.syncToTip();
-            const account_id = await api.deposit(user_private_key, eth_address, amount);
+            const account_id = await api.deposit(user_private_key, eth_address, default_deposit_amount);
             console.log(account_id);
             res.send({status:'ok', data: {eth_address: eth_address, account_id: account_id}});
         } catch (error) {
@@ -106,6 +114,43 @@ const setUpRouters = (
             res.send({status:'failed', error: error});
         }
     } );
+
+    app.get( "/deposit_sudt", async ( req, res) => {
+        try {
+            const eth_address = req.query.eth_address + '';
+            const {account_id, l2_sudt_script_hash} = await api.deposit_sudt(user_private_key, eth_address, default_deposit_amount, default_deposit_amount);
+            res.send({status:'ok', data: {account_id, l2_sudt_script_hash}});
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error}); 
+        }
+    } );
+
+    app.get( "/issue_token", async ( req, res) => {
+        try {
+            const sudt_token = await api.issueToken(default_deposit_amount, user_private_key);
+            res.send({status:'ok', data: {sudt_token: sudt_token}});
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});
+        }
+    } );
+
+    app.get( "/prepare_change_money", async ( req, res) => {
+        try {
+            await api.giveUserLayer1AccountSomeMoney(
+                miner_ckb_address, 
+                miner_private_key, 
+                user_ckb_address, 
+                BigInt(change_amount) 
+            );
+            res.send({status:'ok', data: {amount: change_amount }});
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});
+        }
+    } );
+
 
   // app.post("/transfer", async ( req, res ) => {
   //   try {
@@ -151,6 +196,15 @@ const setUpRouters = (
             res.send({status:'failed', error: error});
         }
     } );
+
+    app.post( "/deploy_sudt_contract", async (req, res) => {
+        try {
+            await api.deployLayer1Sudt(miner_private_key);
+            res.send({status:'ok', data: null});
+        } catch (error) {
+            res.send({status:'failed', error: JSON.stringify(error)});
+        }
+    } )
     
     app.get( "/get_layer2_balance", async ( req, res ) => {
         try {
@@ -160,7 +214,34 @@ const setUpRouters = (
             const account_id = parseInt(_account_id+'');
             if(!account_id)
                 return res.send({status:'failed', error: `account not exits. deposit first.`}); 
+            
             const balance = await api.godwoken.getBalance(1, account_id);
+            res.send({status:'ok', data: balance.toString()});
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});
+        }
+    } );
+
+    // todo: merge this two methods to one with a simpel flag.
+    
+    app.get( "/get_layer2_sudt_balance", async ( req, res ) => {
+        try {
+            const eth_address = req.query.eth_address + '';
+            const sudt_token_args = req.query.sudt_token + '';
+            await api.syncToTip();
+
+            const _account_id = await api.getAccountIdByEthAddr(eth_address);
+            const account_id = parseInt(_account_id+'');
+            if(!account_id)
+                return res.send({status:'failed', error: `account not exits. deposit first.`}); 
+            const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
+            const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
+            console.log(`sudt_id: ${sudt_id}`)
+            if(!sudt_id)
+                return res.send({status:'failed', error: `sudt account not exits. deposit sudt first.`});
+
+            const balance = await api.godwoken.getBalance(parseInt(sudt_id+''), account_id);
             res.send({status:'ok', data: balance.toString()});
         } catch (error) {
             console.log(error);
@@ -183,7 +264,7 @@ export async function start() {
         await api.syncToTip();
         const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
         if(createCreatorId === null){
-            const from_id = await api.deposit(user_private_key, undefined, amount);
+            const from_id = await api.deposit(user_private_key, undefined, default_deposit_amount);
             //const from_id = '0x2';
             console.log(`create deposit account.${from_id}`);
             const creator_account_id = await api.createCreatorAccount(
@@ -205,7 +286,10 @@ export async function start() {
     setUpRouters(
         rollup_type_hash,
         sudt_id_str,
-        user_private_key
+        user_private_key,
+        user_ckb_address,
+        miner_private_key,
+        miner_ckb_address,
     );
     app.listen( serverConfig.server_port, () => {
         console.log( `api server started at http://localhost:${ serverConfig.server_port }` );
