@@ -175,7 +175,7 @@ function Home() {
       const res = await api.deploySudtContract();
       console.log(res);
       if(res.status === 'ok'){
-        notify('ok');
+        notify('ok', 'success');
       }else{
         notify(JSON.stringify(res.error, null, 2));
       }

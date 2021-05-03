@@ -118,3 +118,4 @@ packages/runner/temp-db/
 packages/runner/configs/lumos-config.json
 
 .DS_Store
+core

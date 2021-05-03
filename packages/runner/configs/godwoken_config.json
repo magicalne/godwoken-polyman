@@ -3,60 +3,60 @@
     {
       "validator_path": "godwoken-scripts/c/build/meta-contract-validator",
       "generator_path": "godwoken-scripts/c/build/meta-contract-generator",
-      "validator_script_type_hash": "0x8243f43582970f29a045673a8bce0023ebcd63f5e605004e5c705c8d4fc444c8"
+      "validator_script_type_hash": "0x4a7e44675619a6147c3c8e0f7c6900261bde5756de787e843c58ee9d9526482a"
     },
     {
       "validator_path": "godwoken-scripts/c/build/sudt-validator",
       "generator_path": "godwoken-scripts/c/build/sudt-generator",
-      "validator_script_type_hash": "0x9a8b58568bac0d8b71e7e6581c191106ecf17d961cd78d864f566311d5e682fc"
+      "validator_script_type_hash": "0xea99b0a03612f5b831c26375c072e988e413bd60e78fe5480b262a128a4e2635"
     },
     {
       "validator_path": "deploy/polyjuice-validator",
       "generator_path": "deploy/polyjuice-generator",
-      "validator_script_type_hash": "0x5da617bfc4ed2abe26a85b1a7a004fdda77e331cbbb0417427c0b612c1653b1f"
+      "validator_script_type_hash": "0xad2345db471295d335c80166d30242e40269606e470f133b14b5c96cab2ef8a0"
     }
   ],
   "store": {
     "path": "./store.db"
   },
   "genesis": {
-    "timestamp": 1619856974907,
-    "rollup_type_hash": "0xfcc96ed014759fadc6f7bd5d23e0ee885dfd659df657c6c7b8050b8d1ca27bc2",
-    "meta_contract_validator_type_hash": "0x8243f43582970f29a045673a8bce0023ebcd63f5e605004e5c705c8d4fc444c8",
+    "timestamp": 1619933384853,
+    "rollup_type_hash": "0x9aac5f99b48b6ac8a2b2ef73a99e8988f5edf42d473af8f495d8982e3d320df0",
+    "meta_contract_validator_type_hash": "0x4a7e44675619a6147c3c8e0f7c6900261bde5756de787e843c58ee9d9526482a",
     "rollup_config": {
       "l1_sudt_script_type_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      "custodian_script_type_hash": "0xba9e433a3e831822a697f135c1e810e99fe1f4c5bf07afde98e8aeb3d0b445d9",
-      "deposition_script_type_hash": "0x434899405de285bb5f75db13fc1d02088e99af737d36ae0ba767f3b5315fd36b",
-      "withdrawal_script_type_hash": "0x24f70a6c5369108dc7c9de03e75b6d57b08d91594247c8ae0b0479b300c9f776",
-      "challenge_script_type_hash": "0xaf786b151f85f11a50db4b9245e17e0ba03afa38b1ef24e41ec17a5759bb30af",
-      "stake_script_type_hash": "0xabd43f199b6b6cdaa939e4621227fccdb7fba64a7875cebc38131bf3e383ee14",
-      "l2_sudt_validator_script_type_hash": "0x9a8b58568bac0d8b71e7e6581c191106ecf17d961cd78d864f566311d5e682fc",
+      "custodian_script_type_hash": "0x962055fd33763df2292d8a62ed2d4fc55afd97f456b63cddecbe53ecc2d8ca1f",
+      "deposition_script_type_hash": "0x010e1fa5ec3e2ad26920ce5e44011dfed76332ba788cb4ae83715c3f48bd6ca7",
+      "withdrawal_script_type_hash": "0x7c4bb29ead6a0fc2c8172a014d041763bfe3c9eb88216f944825056637e50539",
+      "challenge_script_type_hash": "0xbf75ebb13efbfc245a3a422160a14b97e2b071f980481b434f1751772cb7caf3",
+      "stake_script_type_hash": "0x0790b1a034c73adca5b4efb656856b2a0befd09f3b7accbaba5972cca021e801",
+      "l2_sudt_validator_script_type_hash": "0xea99b0a03612f5b831c26375c072e988e413bd60e78fe5480b262a128a4e2635",
       "burn_lock_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
       "required_staking_capacity": "0x2540be400",
       "challenge_maturity_blocks": "0x5",
       "finality_blocks": "0x14",
       "reward_burn_rate": "0x32",
       "allowed_eoa_type_hashes": [
-        "0x15999da773ef70b7b523cc9daaef4ee43d558f5220641527e2159e8906608352",
+        "0x8848bb8ece6094a0c67d42b5168c97afae179a8d6dad1fc9aa753b04de6e0f68",
         "0xf0e03a329803bd033eae42e80c8cd6c6dc81b48afe9f4a630f27e78be54db14c"
       ],
       "allowed_contract_type_hashes": [
-        "0x8243f43582970f29a045673a8bce0023ebcd63f5e605004e5c705c8d4fc444c8",
-        "0x9a8b58568bac0d8b71e7e6581c191106ecf17d961cd78d864f566311d5e682fc",
-        "0x5da617bfc4ed2abe26a85b1a7a004fdda77e331cbbb0417427c0b612c1653b1f"
+        "0x4a7e44675619a6147c3c8e0f7c6900261bde5756de787e843c58ee9d9526482a",
+        "0xea99b0a03612f5b831c26375c072e988e413bd60e78fe5480b262a128a4e2635",
+        "0xad2345db471295d335c80166d30242e40269606e470f133b14b5c96cab2ef8a0"
       ]
     }
   },
   "chain": {
     "genesis_committed_info": {
-      "number": "0x7f2",
-      "block_hash": "0x8d6ee45f2645109fc5eb747435adc289ac128dd08fc69a4b0693eb42cace7860",
-      "transaction_hash": "0x7c97a385d1e37ccca69a8ee9b1c2cd23b9d77e6b7964de0cce3b21f7e044feef"
+      "number": "0xd34",
+      "block_hash": "0x24dba0d09f374c77a41b83b6787f889b71343a3b2c2dca9b57877255bb43ad06",
+      "transaction_hash": "0x231a2e6edbccb443ed6d67b26e9d40f7fb517cb52f7037ae4b1b698dbd3d6035"
     },
     "rollup_type_script": {
       "code_hash": "0x00000000000000000000000000000000000000000000000000545950455f4944",
       "hash_type": "type",
-      "args": "0xd6d5f208b7bb5783a25671c349b62f3c5fe5481c4bf23de391ef577d4e8d7fbd"
+      "args": "0x9678ccfcfbe7377b0b464a2f4c6c3c83837774e69de7a902a9da5fb8f676cf7e"
     }
   },
   "rpc_client": {
@@ -71,28 +71,28 @@
     "rollup_cell_lock_dep": {
       "dep_type": "code",
       "out_point": {
-        "tx_hash": "0x0b24b5745f0b0ed621e5b3a4f4f00736c5c1ea224bde622b5124ef4172938f2b",
+        "tx_hash": "0x6d0dfa589f1bf9c7d0a8c6267dd7e3cd2f1917ea108d41307b08e1381e774aef",
         "index": "0x0"
       }
     },
     "rollup_cell_type_dep": {
       "dep_type": "code",
       "out_point": {
-        "tx_hash": "0xfc09615188766ae39e3a8212ba604d8484e66771a952436cf98b5e6a9e999a9b",
+        "tx_hash": "0x42f1aba5c8eba339e3c6ece480275122f46e5f758310da608c1db22d01451eb9",
         "index": "0x0"
       }
     },
     "deposit_cell_lock_dep": {
       "dep_type": "code",
       "out_point": {
-        "tx_hash": "0xae207d8db6c1ad177eaa13d1f4e8ac45085748b81bc5a8be1af60f3d7fcca331",
+        "tx_hash": "0x8994a6692a2fa66ba6113a52a4d8ce77647537b04c5c85dcc038f1324efec001",
         "index": "0x0"
       }
     },
     "stake_cell_lock_dep": {
       "dep_type": "code",
       "out_point": {
-        "tx_hash": "0x5c4982a73be78c0dc29d42a424bd785516295f023ff617c6f6aefa4dab2e1ba1",
+        "tx_hash": "0x2e442074bc46fe99e3be0e4f2bd6511457ec3fe53cff1b2f0ae83c81af5f7db7",
         "index": "0x0"
       }
     },

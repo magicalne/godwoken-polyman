@@ -66,6 +66,8 @@ import {
   privateKeyToCkbAddress,
   privateKeyToEthAddress,
   toBigUInt64LE,
+  deepCompare,
+  DeepDiffMapper,
 } from "./util";
 import { TxReceipt } from "@godwoken-examples/godwoken/schemas/store";
 
@@ -99,17 +101,21 @@ export class Api {
     this.polyjuice = null;
   }
 
-  async syncLayer1() {
+  async syncLayer1(reinit:boolean=false) {
     if (process.env.LUMOS_CONFIG_FILE) {
       process.env.LUMOS_CONFIG_FILE = path.resolve(
         process.env.LUMOS_CONFIG_FILE
       );
     }
 
-    //console.log("LUMOS_CONFIG_FILE:", process.env.LUMOS_CONFIG_FILE);
     initializeConfig();
 
-    const indexerPath = path.resolve(this.indexer_path);
+    var indexerPath;
+    if(reinit === true){
+      indexerPath = path.resolve(this.indexer_path + `_${Date.now()}`);
+    }else{
+      indexerPath = path.resolve(this.indexer_path);
+    }
 
     this.indexer = new Indexer(this.ckb_rpc_url, indexerPath);
     this.indexer.startForever();
@@ -1185,7 +1191,6 @@ export class Api {
     return hasher.digestHex();
   }
 
-
   async genSudtConfig(outpoint: OutPoint, code_hash: HexString){
     const sudt = {
       "CODE_HASH": code_hash,
@@ -1206,13 +1211,24 @@ export class Api {
 
   async reinit_lumos(){
     const origin_config = getConfig();
-    
+
     this.indexer!.stop();
     this.indexer = null;
-    initializeConfig();
-    await this.syncLayer1();
-    const config = getConfig();
-    console.log('config reload: ', origin_config.SCRIPTS.SUDT!.TX_HASH === config.SCRIPTS.SUDT!.TX_HASH)
+    
+    const isReInitEnable = true;
+    await this.syncLayer1(isReInitEnable);
+    
+    const new_config = getConfig();
+    
+    const isConfigChanged = ! deepCompare(origin_config, new_config);
+    console.log(`config reload: is config changed ? ${isConfigChanged}`);
+    
+    if(isConfigChanged){
+      const deepDiffMapper: any = new DeepDiffMapper();
+      const result = deepDiffMapper.map(origin_config, new_config);
+      const diff_parts = await deepDiffMapper.filterDiff(result);
+      console.log(`change part is: ${JSON.stringify(diff_parts, null, 2)}`);
+    }
   }
   
   async getSudtContractCodeHex(){
@@ -1221,5 +1237,5 @@ export class Api {
     const complied_code = await fs.readFileSync(contract_file);
     return '0x' + complied_code.toString('hex');
   }
-
+  
 }
