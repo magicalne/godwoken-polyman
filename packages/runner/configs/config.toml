@@ -17,7 +17,7 @@ validator_script_type_hash = '0xbac49534a21667c9d09d76bb5729523f0550f32a952c6c4f
 path = './store.db'
 
 [genesis]
-timestamp = 1620175255776
+timestamp = 1620226771227
 rollup_type_hash = '0xf70aa98a96fba847185be1b58c1d1e3cae7ad91f971eecc5749799d5e72939f0'
 meta_contract_validator_type_hash = '0x0d00e8c9f59b5b6520bf20826d8f9670b1f5c3d1f61a40f7b4e3feedce69ff17'
 
@@ -45,8 +45,8 @@ allowed_contract_type_hashes = [
 ]
 [chain.genesis_committed_info]
 number = '0x46'
-block_hash = '0x277117386c505369e830ed052d5d02bb85a46ee9a66a8f955c9feba06b33c8c6'
-transaction_hash = '0xe636e6bb9f9b2c8efb568a51a4e5603cf11150529b6b4a22c99bc6a4de275e4d'
+block_hash = '0x883863474cd7d466ec3cce785cd8ee53ad08bb64275ef5fe1550bbc23ee5a848'
+transaction_hash = '0x64994a2ad6bb0237622611d659bca99709228056b29227ceed39e603b7f98ce7'
 
 [chain.rollup_type_script]
 code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'

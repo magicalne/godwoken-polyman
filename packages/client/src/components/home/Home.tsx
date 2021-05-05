@@ -91,7 +91,8 @@ function Home() {
       const res = await api.getBalance(selectedAddress);
       if(res.status !== 'ok')
         return notify(`failed to get balance from account. ${JSON.stringify(res.error)}`);
-      setBalance(utils.shannon2CKB(res.data));
+      await setBalance(utils.shannon2CKB(res.data));
+      console.log(utils.shannon2CKB(res.data));
     } catch (error) {
       notify(JSON.stringify(error));
     }
@@ -104,7 +105,8 @@ function Home() {
       const res = await api.getSudtBalance(selectedAddress);
       if(res.status !== 'ok')
         return notify(`failed to get sudt balance from account. ${JSON.stringify(res.error)}`);
-      setSudtBalance(utils.shannon2CKB(res.data));
+      await setSudtBalance(utils.shannon2CKB(res.data));
+      console.log(utils.shannon2CKB(res.data));
     } catch (error) {
       notify(JSON.stringify(error));
     }
@@ -142,7 +144,7 @@ function Home() {
       console.log(res);
       if(res.status === 'ok'){
         notify(`your account id: ${res.data.account_id}`, 'success');
-        getBalance();
+        await getBalance();
       }else{
         notify(JSON.stringify(res.error));
       }
@@ -160,7 +162,7 @@ function Home() {
       if(res.status === 'ok'){
         notify(`your account id: ${res.data.account_id}`, 'success');
         console.log(`res.data.l2_sudt_script_hash: ${res.data.l2_sudt_script_hash}`)
-        getSudtBalance();
+        await getSudtBalance();
       }else{
         notify(JSON.stringify(res.error));
       }

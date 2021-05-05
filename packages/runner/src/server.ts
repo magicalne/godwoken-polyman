@@ -215,6 +215,7 @@ const setUpRouters = (
             if(!account_id)
                 return res.send({status:'failed', error: `account not exits. deposit first.`}); 
             
+            // todo: add block parameter
             const balance = await api.godwoken.getBalance(1, account_id);
             res.send({status:'ok', data: balance.toString()});
         } catch (error) {

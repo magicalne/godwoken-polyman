@@ -217,11 +217,11 @@ export class DeepDiffMapper {
   // extract the updated parts in diff result from map method.
   async filterDiff (diff_obj: any, target=[], paths=[]) {
     for await (const [key, value] of Object.entries(diff_obj)) {
-      if(key === "type" && value !== "updated"){ 
+      if(key === "type" && value === "unchanged"){ 
         // reached the end of one unchanged part, let's clear the last parent paths.
         delete paths[paths.length-1];
       }
-      if(key === "type" && value === "updated"){
+      if(key === "type" && value !== "unchanged"){
         var path_str = paths.join('.');
         // remove the dead end branch path
         path_str = path_str.replace(/([A-Za-z0-9_]+\.(\.+))/g, '');
