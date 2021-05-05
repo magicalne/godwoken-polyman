@@ -218,12 +218,17 @@ export class DeepDiffMapper {
   async filterDiff (diff_obj: any, target=[], paths=[]) {
     for await (const [key, value] of Object.entries(diff_obj)) {
       if(key === "type" && value !== "updated"){ 
-        // reached the end of one unchanged part, let's clear the paths.
+        // reached the end of one unchanged part, let's clear the last parent paths.
         delete paths[paths.length-1];
       }
       if(key === "type" && value === "updated"){
-        target.push(paths.join('.'));
-        target.push( diff_obj );
+        var path_str = paths.join('.');
+        // remove the dead end branch path
+        path_str = path_str.replace(/([A-Za-z0-9_]+\.(\.+))/g, '');
+        // push the result into target
+        const item: any = {};
+        item[path_str] = diff_obj;
+        target.push( item );
         break;
       }
       if( this.isObject(value) ){
