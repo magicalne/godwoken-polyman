@@ -1,119 +1,119 @@
 {
   "custodian_lock": {
-    "script_type_hash": "0xfde06344bda540a6ff8f8e717e162c8bc2ee17b6e6f49368e430f265c0f86b0a",
+    "script_type_hash": "0xeb02124558d12708887dec032f234602050cb3fa2e05168f6da535762d8d71e9",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0x6d7515b3f1719c49ee9fb713cea9d2e695764f2f60929eeb103a848d2a4ede4d",
+        "tx_hash": "0xd291d59cd141ed5850eecfeeb8e220fffe07fab5d826685cc24f75c37f94964d",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "deposition_lock": {
-    "script_type_hash": "0xe0544d88ab4ff555a1729d0b50503b088a7ba7b751565e0570f29150195a0a54",
+    "script_type_hash": "0xf70aa98a96fba847185be1b58c1d1e3cae7ad91f971eecc5749799d5e72939f0",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0x29eae27f9f167aa2b1e8cf59e9bfb41dfd67108bc86f4906936a5217f45e3e7b",
+        "tx_hash": "0x137fbe25a63dd193c4457bff1b883fa393528342f70d690dd4bc99a2f30bc4e6",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "withdrawal_lock": {
-    "script_type_hash": "0x0e78959e98a419b6d0ab37fab3cb2b40a4b7f69446676f9c899b8e99c7f6c696",
+    "script_type_hash": "0xc32f6e6ac99eac51f5054c61318a331123011c7515cc6d631b9336cd78c39cc7",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0x3cf242328b251e9014d8abb8a809eeb7caac61063f14d17731f42651500dbf41",
+        "tx_hash": "0xbe9e211b7b2e9c1e553fd3a6753dbd86546236baeb1085fbdd02c6d98e311af8",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "challenge_lock": {
-    "script_type_hash": "0x134f9b8b981449e8972799dd06aa90dcc0fc1781fb6fa9c01894d570a892546c",
+    "script_type_hash": "0x74a5942d33d0db3077e554189810c840aec823931a962e60fe5e440b6490e97f",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0x8ea635ac04bf3dfe07299f153ef2ffcebea4c37b5a353a016ebf3fd0fe3c42a4",
+        "tx_hash": "0x44c838053c62fae9b1a12f569ea3deba5a643bcea65ac1af953e862f8cb913bf",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "stake_lock": {
-    "script_type_hash": "0x754906dec4d96a8304ad4fcd76ccfea1a13fbded51d014cbb749bc864a0769cf",
+    "script_type_hash": "0x74608e5d8ce349e4019336303df74c471a57bf171c27fd595246f69a32ecaa54",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xd707e3779439f3b8a7244ac71bd26d1c4c0110fab54a60cd2b8eb563ef461b36",
+        "tx_hash": "0xa8e24f7da2321ca447ec975ad394850c64ae9f7254c7a62642e7b09e581c5562",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "state_validator": {
-    "script_type_hash": "0x6b81c6240dbd5558bd6f84336ebc94d0133f695c1c9634a81a923c01882c4dda",
+    "script_type_hash": "0x619519cff96dd0bb0e3ae44d11775385075025a78a8a4e86ffb60b0df15cee02",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xcbc93179b9fe7f9a933faa5dc27ecbdb328286d6224ae4e72301d65c78a64209",
+        "tx_hash": "0x58d8f3f896073886945cdc2ae3d90bcd4ecc9e38b5c729cfc8a26164c72c8285",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "meta_contract_validator": {
-    "script_type_hash": "0x0d00e8c9f59b5b6520bf20826d8f9670b1f5c3d1f61a40f7b4e3feedce69ff17",
+    "script_type_hash": "0x5489d540a42e4765dbf2a8ef75b417977567a70a26b2be72a8ea93a242bc3f21",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xa005a1f506a30ce32b3b2f397f51032945923ed2d6631129dcd8206d92a65417",
+        "tx_hash": "0x5cbc2ddd55d75bcb87054188ca9257c8e95661cd1115d89e8d137516ec77a299",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "l2_sudt_validator": {
-    "script_type_hash": "0x0f920a0e007c461eaaa55a3667b798273f16b7b24e6d4761c48f802b2436f0b5",
+    "script_type_hash": "0x5e5b591e25dc22d33e3bb07b3d75292c6f2b5ce2f208d2ccaa175383e8c40622",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xa0ea958db34d689828ecbbafd50004278af48c76c7e4588e5116737a186d97d1",
+        "tx_hash": "0x0426f354dd134723b2c249f8f4c261e3cc368801378da2dc64be1981f0875919",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "eth_account_lock": {
-    "script_type_hash": "0xac03c02194e4625b7224e5f59735d397148c25a142ba29d451a360611154052d",
+    "script_type_hash": "0xe4d25413dfab3a4e07733fcb3972cb469136c8495013faff856d7ed6781cbc3b",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xbf4dcd5d0f69dff789b88041c331bfcdaa0384c8f9c7782a8da2bbfcdf5b7ee5",
+        "tx_hash": "0x43a6bdc1ff4ecb5fdc33a8f5aa36b50e5e905eab132beb8c0146098cf21143bf",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "polyjuice_validator": {
-    "script_type_hash": "0xbac49534a21667c9d09d76bb5729523f0550f32a952c6c4f9915b673dee44725",
+    "script_type_hash": "0x80267c5e2b7a6ad04755249253aba268df90fc33171095075ab6d4458930940b",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xc54f8587f2e790c9c4218ead552e7450eaeaada9c162ddcd646b1003a7d2e7aa",
+        "tx_hash": "0x28ae643cf441a6333a0a4f9bacfbb6a85b524762262922f36c6ea8bec82f5b1e",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "state_validator_lock": {
-    "script_type_hash": "0x3bcd5dd6af0c2c1d865f787e648044f90177382288072c61c57bc989a2375f16",
+    "script_type_hash": "0x4a31251f9722a8674a7619fb81ecef443615b43a91415f7beba76b7195ec36d9",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xc4edb174e2a09d16e848494c8f56d2fa960bf8bb43d7b4059cd59c5f41f7e7fd",
+        "tx_hash": "0x1b84f7d022593ee7f1318c553d9d1fa2f6ad4bade408a41b4cf3ba62ed02c70a",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "poa_state": {
-    "script_type_hash": "0xeb02124558d12708887dec032f234602050cb3fa2e05168f6da535762d8d71e9",
+    "script_type_hash": "0x4ec26267dc6a75f71e461b9a553de3886cf00bdffe9c3fe7929aa35f9865f0bc",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0x55aead25af5b67ce4b2beae73d041712630d17f0f194227e8fc0d308395d69f3",
+        "tx_hash": "0x1f312294688fedc330404c2a542a691a8be133bd92f4948ecec7209dcc4ec4de",
         "index": "0x0"
       },
       "dep_type": "code"

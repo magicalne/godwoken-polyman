@@ -281,6 +281,8 @@ function Home() {
     }
   }
 
+
+
   const deployContract = async (e: any) => {
     const codefile = e.target.files[0]; 
     setIsLoading(true);
@@ -295,6 +297,46 @@ function Home() {
     console.log(code_hex);
     await _deployContract(code_hex);
     setIsLoading(false);
+  }
+
+  const deployErc20ProxyContract = async () => {
+    if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
+
+    const api = new Api();
+    try {
+      const res: any = await api.deployErc20ProxyContract(selectedAddress); 
+      if(res.status !== 'ok')
+        notify(JSON.stringify(res.error, null, 2));
+
+      const data: MsgSignType = res.data;
+      console.log(JSON.stringify(data, null, 2));
+      var signature;
+      try {
+        signature = await window.ethereum.request({
+          method: 'personal_sign',
+          params: [data.message, window.ethereum.selectedAddress],
+        }); 
+      } catch (error) {
+        console.log(error);
+        return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
+      }
+
+      console.log(`message: ${data.message}`);
+      console.log(`signature: ${signature}`);
+
+      // submit the signed tx to godwoken
+      const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
+      if(tx_res.status !== 'ok'){
+        console.log(tx_res);
+        return notify(JSON.stringify(tx_res.error));
+      }
+
+      console.log(tx_res.data);
+      notify(`your contract address: ${tx_res.data.contract_address}`, 'success');
+      setDeployedContracts(oldArray => [...oldArray, tx_res.data.contract_address]);
+    } catch (error) {
+      notify(JSON.stringify(error));
+    } 
   }
 
   const readContractCode = (codefile: Blob) => {
@@ -343,13 +385,13 @@ function Home() {
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <FreshButton text={"Deposit"} onClick={deposit} custom_style={styles.button} />
+              <FreshButton text={"Deposit CKB"} onClick={deposit} custom_style={styles.button} />
             </Grid>
           </Grid>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <FreshButton text={"Deploy Contract"} isLoading={isLoading} onClick={clickUploadContract} custom_style={styles.button} />
+              <FreshButton text={"Deploy ETH Contract"} isLoading={isLoading} onClick={clickUploadContract} custom_style={styles.button} />
               <input
                   type="file"
                   ref={inputFile}
@@ -361,7 +403,7 @@ function Home() {
 
           <hr></hr>
 
-          <h2>Sudt Section: </h2>
+          <h2>test Sudt Section: </h2>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -371,19 +413,25 @@ function Home() {
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <FreshButton text={"deploy Sudt contract"} onClick={deploySudtContract} custom_style={styles.button} />
+              <FreshButton text={"Deploy L1 Sudt Contract"} onClick={deploySudtContract} custom_style={styles.button} />
             </Grid>
           </Grid>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <FreshButton text={"issue sudt token"} onClick={issueToken} custom_style={styles.button} />
+              <FreshButton text={"Issue Sudt Token"} onClick={issueToken} custom_style={styles.button} />
             </Grid>
           </Grid>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <FreshButton text={"Deposit Sudt"} onClick={depositSudt} custom_style={styles.button} />
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <FreshButton text={"Deploy L2 Erc20-Proxy Contract"} onClick={deployErc20ProxyContract} custom_style={styles.button} />
             </Grid>
           </Grid>
 
