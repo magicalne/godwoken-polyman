@@ -908,6 +908,24 @@ export class Api {
     return id;
   }
 
+  async generateDeployErc20ProxyContractTx(
+    sudt_id_hex_str: string,
+    creator_account_id_str: string,
+    init_code: string,
+    rollup_type_hash: string,
+    eth_address: string,
+  ){
+    if(sudt_id_hex_str.slice(2).length > 2)
+      throw new Error(`sudt_id {sudt_id_hex_str.slice(2)} should be not be larger than 255.`);
+      
+    const pack_sudt_id = sudt_id_hex_str.slice(2).length === 1 ? '0' + sudt_id_hex_str.slice(2) : sudt_id_hex_str.slice(2); 
+    console.log(`sudt_id_pack: ${pack_sudt_id}`);
+    let args = `000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000204fce5e3e25026110000000000000000000000000000000000000000000000000000000000000000000000${pack_sudt_id}0000000000000000000000000000000000000000000000000000000000000004746573740000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000027474000000000000000000000000000000000000000000000000000000000000`;
+    let contract_code_with_constructor = init_code.trimEnd().concat(args);
+    console.log(`erc20_proxy code: ${contract_code_with_constructor}`);
+    return this.generateDeployTx(creator_account_id_str, contract_code_with_constructor, rollup_type_hash, eth_address);
+  }
+
   async generateDeployTx(
     creator_account_id_str: string,
     init_code: string,

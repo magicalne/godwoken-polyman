@@ -1,6 +1,5 @@
 import { RawL2Transaction } from '@godwoken-examples/godwoken';
 import axios from 'axios';
-import { StringifyOptions } from 'node:querystring';
 import config from '../config/constant.json';
 import { OpType } from '../types/polyjuice';
 import utils from '../utils/index';
@@ -87,7 +86,7 @@ class Api{
     return res.data;
   }
 
-    async deployContract(contract_code: string, eth_address: StringifyOptions ){
+    async deployContract(contract_code: string, eth_address: string ){
         let res = await axios.post(`${this.base_url}/deploy_contract`, { 
             data:{
                 contract_code: contract_code,
@@ -96,6 +95,15 @@ class Api{
         });
         return res.data;
     };
+
+    async deployErc20ProxyContract(eth_address: string){
+        let res = await axios.post(`${this.base_url}/deploy_erc20_proxy_contract`, { 
+            data:{
+                eth_address: eth_address,
+            }
+        });
+        return res.data;
+    }; 
 
     async deploySudtContract() {
         let res = await axios.post(`${this.base_url}/deploy_sudt_contract`, { 

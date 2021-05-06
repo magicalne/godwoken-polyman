@@ -9,6 +9,7 @@ import { getRollupTypeHash } from '../js/transactions/deposition';
 // import { generateGodwokenConfig } from './util';
 import godwoken_config from "../configs/godwoken_config.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
+import fs from 'fs';
 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
@@ -197,6 +198,37 @@ const setUpRouters = (
         }
     } );
 
+    app.post( "/deploy_erc20_proxy_contract", async ( req, res ) => {
+        try {
+            const creator_account_id = await api.findCreateCreatorAccoundId(sudt_id_str);
+            if(!creator_account_id)
+                return res.send({status:'failed', error: `creator_account_id not found.`});
+            
+            const contract_file = path.resolve(__dirname, "../configs/erc20proxy.bin");
+            const contract_code = '0x' + await fs.readFileSync(contract_file).toString('utf-8');
+            const eth_address = req.body.data.eth_address + '';
+            await api.syncToTip();
+            // get sudt id
+            const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
+            const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
+            console.log(`sudt_id: ${sudt_id}`);
+            if(!sudt_id)
+                return res.send({status:'failed', error: `sudt account not exits. deposit sudt first.`});
+
+            const data = await api.generateDeployErc20ProxyContractTx(
+                sudt_id + '',
+                creator_account_id.toString(), 
+                contract_code, 
+                rollup_type_hash, 
+                eth_address
+            );
+            res.send({status:'ok', data: data});
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});
+        }
+    } );
+
     app.post( "/deploy_sudt_contract", async (req, res) => {
         try {
             await api.deployLayer1Sudt(miner_private_key);
@@ -238,7 +270,7 @@ const setUpRouters = (
                 return res.send({status:'failed', error: `account not exits. deposit first.`}); 
             const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
             const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
-            console.log(`sudt_id: ${sudt_id}`)
+            console.log(`sudt_id: ${sudt_id}`);
             if(!sudt_id)
                 return res.send({status:'failed', error: `sudt account not exits. deposit sudt first.`});
 
