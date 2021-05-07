@@ -5,7 +5,18 @@ const { u32ToHex, UInt32LEToNumber, numberToUInt32LE, GodwokenUtils } = require(
 
 // {gas_limit: u64, gas_price: u128, value: u128}
 function encodeArgs(to_id, gas_limit, gas_price, value, data) {
+
   const call_kind = to_id > 0 ? 0 : 3;
+
+  const header = Buffer.from([
+    0xff, 0xff, 0xff, 
+    'P'.charCodeAt(0), 
+    'O'.charCodeAt(0), 
+    'L'.charCodeAt(0), 
+    'Y'.charCodeAt(0),
+    call_kind,
+  ]);
+
   const data_buf = Buffer.from(data.slice(2), "hex");
 
   const gas_limit_buf = Buffer.alloc(8);
@@ -15,24 +26,39 @@ function encodeArgs(to_id, gas_limit, gas_price, value, data) {
   gas_price_buf.writeBigUInt64LE(gas_price & BigInt("0xFFFFFFFFFFFFFFFF"), 0);
   gas_price_buf.writeBigUInt64LE(gas_price >> BigInt(64), 8);
 
-  const value_buf = Buffer.alloc(32);
-  value_buf.writeBigUInt64BE(value & BigInt("0xFFFFFFFFFFFFFFFF"), 24);
-  value_buf.writeBigUInt64BE(value >> BigInt(64), 16);
+  const value_buf = Buffer.alloc(16);
+  value_buf.writeBigUInt64LE(value & BigInt("0xFFFFFFFFFFFFFFFF"), 0);
+  value_buf.writeBigUInt64LE(value >> BigInt(64), 8);
 
   const data_size_buf = Buffer.alloc(4);
   data_size_buf.writeUInt32LE(data_buf.length);
-  const total_size = 62 + data_buf.length;
+  const total_size = 52 + data_buf.length;
 
   const buf = Buffer.alloc(total_size);
 
-  buf[0] = call_kind;
-  // not static call
-  buf[1] = 0;
-  gas_limit_buf.copy(buf, 2);
-  gas_price_buf.copy(buf, 10);
-  value_buf.copy(buf, 26);
-  data_size_buf.copy(buf, 58);
-  data_buf.copy(buf, 62);
+  // buf[0, 7] = header;
+  header.copy(buf, 0);
+  gas_limit_buf.copy(buf, 8);
+  gas_price_buf.copy(buf, 16);
+  value_buf.copy(buf, 32);
+  data_size_buf.copy(buf, 48);
+  data_buf.copy(buf, 52);
+
+  console.log(`header: `);
+  console.log(header);
+  console.log(`gas_limit: `);
+  console.log(gas_limit);
+  console.log(`gas price:`);
+  console.log(gas_price);
+  console.log(`value: `);
+  console.log(value_buf);
+  console.log(`data_size_buf: `);
+  console.log(data_size_buf);
+  console.log(`data_buf: `);
+  console.log(data_buf);
+  console.log('polyjuice args: ');
+  console.log(buf);
+
   return `0x${buf.toString("hex")}`;
 }
 

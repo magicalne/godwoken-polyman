@@ -252,30 +252,46 @@ function Home() {
 
       const data: MsgSignType = res.data;
       console.log(JSON.stringify(data, null, 2));
+
       var signature;
       try {
-        signature = await window.ethereum.request({
-          method: 'personal_sign',
-          params: [data.message, window.ethereum.selectedAddress],
-        }); 
+        const transactionParameters = {
+          nonce: '0x00', // ignored by MetaMask
+          gasPrice: '0x09184e72a000', // customizable by user during MetaMask confirmation.
+          gas: '0x2710', // customizable by user during MetaMask confirmation.
+          to: '0x0000000000000000000000000000000000000000', // Required except during contract publications.
+          from: window.ethereum.selectedAddress, // must match user's active address.
+          value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+          data: contractCode, // Optional, but used for defining smart contract creation and interaction.
+          chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+        };
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [transactionParameters],
+        });
+
+       // signature = await window.ethereum.request({
+       //   method: 'eth_sign',
+       //   params: [window.ethereum.selectedAddress, data.message],
+       // }); 
       } catch (error) {
         console.log(error);
         return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
       }
 
-      console.log(`message: ${data.message}`);
-      console.log(`signature: ${signature}`);
-
-      // submit the signed tx to godwoken
-      const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
-      if(tx_res.status !== 'ok'){
-        console.log(tx_res);
-        return notify(JSON.stringify(tx_res.error));
-      }
-
-      console.log(tx_res.data);
-      notify(`your contract address: ${tx_res.data.contract_address}`, 'success');
-      setDeployedContracts(oldArray => [...oldArray, tx_res.data.contract_address]);
+      // console.log(`message: ${data.message}`);
+      // console.log(`signature: ${signature}`);
+// 
+      // // submit the signed tx to godwoken
+      // const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
+      // if(tx_res.status !== 'ok'){
+      //   console.log(tx_res);
+      //   return notify(JSON.stringify(tx_res.error));
+      // }
+// 
+      // console.log(tx_res.data);
+      // notify(`your contract address: ${tx_res.data.contract_address}`, 'success');
+      // setDeployedContracts(oldArray => [...oldArray, tx_res.data.contract_address]);
     } catch (error) {
       notify(JSON.stringify(error));
     }

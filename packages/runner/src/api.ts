@@ -57,6 +57,7 @@ import { deploymentConfig } from "../js/utils/deployment_config";
 import path from "path";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 import fs from "fs";
+import { calcMessage } from "./convert-tx";
 
 import {
   asyncSleep,
@@ -793,6 +794,7 @@ export class Api {
     const sender_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.from_id));
     const receiver_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.to_id));
 
+
     const message = await _generateTransactionMessageToSign(
       raw_l2tx,
       rollup_type_hash,
@@ -957,13 +959,29 @@ export class Api {
       nonce,
       getRollupTypeHash()
     );
-    console.log(`gas limit: `)
-    const add_prefix_in_message = false; //metamask will add prefix.
-    const message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash, add_prefix_in_message);
+    console.log(`layer2 tx: ${JSON.stringify(raw_l2tx)}`);
+
+    //const add_prefix_in_message = false; //metamask will add prefix.
+    //const message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash, add_prefix_in_message);
+    //const prefixd_message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
+    //console.log(`prefixd_message: ${prefixd_message}`);
+    //console.log(`un_prefix_message: ${message}`);
+
+    // const message = calcMessage({
+    //   nonce: '0x' + nonce.toString(16),
+    //   gasPrice: '0x' + 50n.toString(16),
+    //   gasLimit: '0x' + 1000011221000n.toString(16),
+    //   to: '0x',
+    //   value: '0x' + 0n.toString(16),
+    //   data: init_code,
+    //   v: '0x3',
+    //   r: '0x',
+    //   s: '0x',
+    // });
+    const message = null;
+    console.log(`message: ${message}`);
     
-    const prefixd_message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
-    console.log(`prefixd_message: ${prefixd_message}`);
-    console.log(`un_prefix_message: ${message}`);
+
     return {type: 'deploy', raw_l2tx: raw_l2tx, message: message, l2_script_args: eth_address}
   }
 
