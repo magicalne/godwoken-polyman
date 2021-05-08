@@ -110,20 +110,20 @@
     }
   },
   "state_validator_lock": {
-    "script_type_hash": "0x7ce179cfba9595c6d5d44b740daa8c4c62be41af95b6c7237427901cf37cf033",
+    "script_type_hash": "0xb86e10f95249939d25df4fc888b6ad21b37082fd6012681d635a59af855b4994",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xab06a324ea2bd4e01254af4615a96040402c41828dd259ebe6182b06f695420d",
+        "tx_hash": "0xd2fe220cd19aa3fe63ebf8574698df4fd5b517890c4a4a0b087a9432d3745dbe",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "poa_state": {
-    "script_type_hash": "0x3bcd5dd6af0c2c1d865f787e648044f90177382288072c61c57bc989a2375f16",
+    "script_type_hash": "0x7ce179cfba9595c6d5d44b740daa8c4c62be41af95b6c7237427901cf37cf033",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xa2908edf34ae3edce9c2681bc7f057c356e36121c71f8a2e3a5d66e48bdb1290",
+        "tx_hash": "0xc2b446c700bcf7fdf165c844d74c848b7cca14a2231af9db88aaec5a649d1698",
         "index": "0x0"
       },
       "dep_type": "code"

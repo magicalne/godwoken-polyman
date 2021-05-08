@@ -125,7 +125,23 @@ class Api{
         return res.data;
     };
 
-
+    async getTransactionReceipt(tx_hash: string){
+        let res = await axios.get(`${this.base_url}/get_tx_receipt`, { 
+            params:{
+                tx_hash: tx_hash
+            }
+        });
+        return res.data;
+    }
+    //
+    async getContractAddrByAccountId(account_id: string){
+        let res = await axios.get(`${this.base_url}/get_contract_addr_by_account_id`, { 
+            params:{
+                account_id: account_id
+            }
+        });
+        return res.data;
+    }
 
 }
 

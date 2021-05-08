@@ -10,6 +10,7 @@ import { getRollupTypeHash } from '../js/transactions/deposition';
 import godwoken_config from "../configs/godwoken_config.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import fs from 'fs';
+import { UInt32ToLeBytes } from "./util";
 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
@@ -250,6 +251,34 @@ const setUpRouters = (
             // todo: add block parameter
             const balance = await api.godwoken.getBalance(1, account_id);
             res.send({status:'ok', data: balance.toString()});
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});
+        }
+    } );
+
+    app.get( "/get_tx_receipt", async ( req, res ) => {
+        try {
+            const tx_hash = req.query.tx_hash + '';
+            await api.syncToTip();
+            const receipt = await api.getTransactionReceipt(tx_hash);
+            res.send({status:'ok', data: receipt});
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});
+        }
+    } );
+
+    app.get( "/get_contract_addr_by_account_id", async ( req, res ) => {
+        try {
+            const account_id_str = req.query.account_id + '';
+            const account_id = parseInt(account_id_str, 16);
+            await api.syncToTip();
+            const account_script_hash = await api.getScriptHashByAccountId(account_id);
+            const contract_addr = '0x' +
+                account_script_hash.slice(2, 16 * 2 + 2) +
+                UInt32ToLeBytes(account_id);
+            res.send({status:'ok', data: contract_addr});
         } catch (error) {
             console.log(error);
             res.send({status:'failed', error: error});

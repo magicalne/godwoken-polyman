@@ -253,7 +253,6 @@ function Home() {
       const data: MsgSignType = res.data;
       console.log(JSON.stringify(data, null, 2));
 
-      var signature;
       try {
         const transactionParameters = {
           nonce: '0x0', // ignored by MetaMask
@@ -270,6 +269,23 @@ function Home() {
           params: [transactionParameters],
         });
         console.log(`txHash: ${txHash}`);
+        
+        const txReceipt = await api.getTransactionReceipt(txHash);
+        console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
+
+        const account_id = txReceipt.data.logs[0].account_id;
+        console.log(`account_id: ${account_id}`);
+
+        const result = await api.getContractAddrByAccountId(account_id);
+        console.log(result);
+        if(result.status !== 'ok')
+          return notify(result.error);
+
+        const contractAddr = result.data; 
+        console.log(`contract address: ${contractAddr}`);
+
+        notify(`your contract address: ${contractAddr}`, 'success');
+        setDeployedContracts(oldArray => [...oldArray, contractAddr]);
       } catch (error) {
         console.log(error);
         return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
@@ -339,6 +355,24 @@ function Home() {
           params: [transactionParameters],
         });
         console.log(`txHash: ${txHash}`);
+
+        const txReceipt = await api.getTransactionReceipt(txHash);
+        console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
+
+        const account_id = txReceipt.data.logs[0].account_id;
+        console.log(`account_id: ${account_id}`);
+
+        const result = await api.getContractAddrByAccountId(account_id);
+        console.log(result);
+        if(result.status !== 'ok')
+          return notify(result.error);
+
+        const contractAddr = result.data; 
+        console.log(`contract address: ${contractAddr}`);
+
+        notify(`your contract address: ${contractAddr}`, 'success');
+        setDeployedContracts(oldArray => [...oldArray, contractAddr]);
+
       } catch (error) {
         console.log(error);
         return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
@@ -476,10 +510,6 @@ function Home() {
               Contract Address: 
               <SyntaxHighlighter language="javascript" style={gruvboxDark}>
                 {deployedContracts.join('\n')}
-              </SyntaxHighlighter>
-              Web3.js init code: 
-              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
-                {web3CodeString}
               </SyntaxHighlighter>
             </Grid>
           </Grid>
