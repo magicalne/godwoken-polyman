@@ -133,6 +133,15 @@ class Api{
         });
         return res.data;
     }
+    //
+    async getContractAddrByAccountId(account_id: string){
+        let res = await axios.get(`${this.base_url}/get_contract_addr_by_account_id`, { 
+            params:{
+                account_id: account_id
+            }
+        });
+        return res.data;
+    }
 
 }
 

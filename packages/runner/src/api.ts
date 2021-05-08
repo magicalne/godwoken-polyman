@@ -632,6 +632,10 @@ export class Api {
     return id;
   }
 
+  async getScriptHashByAccountId(account_id: number) {
+    return await this.godwoken.getScriptHash(account_id);
+  }
+
   async getAccountIdByEthAddr(eth_address: string){
     const id = await this.godwoken.getAccountIdByScriptHash(caculateLayer2LockScriptHash(eth_address));
     return id;

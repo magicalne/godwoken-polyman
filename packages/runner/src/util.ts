@@ -108,6 +108,12 @@ export async function generateGodwokenConfig(_input_file: string, _output_file: 
   console.log(`create godwoken_config.json file in ${json_path}. done.`);
 }
 
+export function UInt32ToLeBytes(num: number): HexString {
+  const buf = Buffer.allocUnsafe(4);
+  buf.writeUInt32LE(+num, 0);
+  return '0x' + buf.toString('hex');
+}
+
 export function toBigUInt64LE(num:number | bigint) {
   const bnum = BigInt(num);
   const buf = Buffer.alloc(8);

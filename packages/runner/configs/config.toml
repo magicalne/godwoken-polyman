@@ -17,8 +17,8 @@ validator_script_type_hash = '0x679712bed3d8136b03ba965be779f975c515d3b0c6a9b481
 path = './store.db'
 
 [genesis]
-timestamp = 1620459551206
-rollup_type_hash = '0xeb02124558d12708887dec032f234602050cb3fa2e05168f6da535762d8d71e9'
+timestamp = 1620465274506
+rollup_type_hash = '0xbac49534a21667c9d09d76bb5729523f0550f32a952c6c4f9915b673dee44725'
 meta_contract_validator_type_hash = '0xdcca15153ee053d995db6693b93212187da5c9f1ad7ee16935126646daf47f5d'
 
 [genesis.rollup_config]
@@ -51,14 +51,14 @@ dep_type = 'code'
 tx_hash = '0x6dd0b20f37a03939f40f26a6a41a9ad3baa9abdc37086e74879c52dd35c8664c'
 index = '0x3'
 [chain.genesis_committed_info]
-number = '0x44'
-block_hash = '0x46b042ff5c3834880da51e2070257551dc86eb50caf44977bbd9c641fe1b9e6d'
-transaction_hash = '0xa497d1862b80c98353b66127f8507a1562bea34e5e4567df1c368b7c1425693e'
+number = '0x3e'
+block_hash = '0xb510acf53e56645af691af425ec594b00cc966abc58e2d165efffe1dc1c0da20'
+transaction_hash = '0x5105bc2d2b0dc16dfbfa086991730577eaeb42b9de508bce469f5a7a7ca274df'
 
 [chain.rollup_type_script]
 code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
 hash_type = 'type'
-args = '0x2f0ba8110ce39cf99fd2b30f9a824cbaff1eac1a274478db0fa5c592c4e43de6'
+args = '0xdcf4d82c815406eafaee0f3d567f82d88283cba28e5fbc8c1608a60693a06955'
 
 [rpc_client]
 indexer_url = 'http://127.0.0.1:8116'
@@ -95,14 +95,14 @@ index = '0x0'
 dep_type = 'code'
 
 [block_producer.poa_lock_dep.out_point]
-tx_hash = '0xab06a324ea2bd4e01254af4615a96040402c41828dd259ebe6182b06f695420d'
+tx_hash = '0xd2fe220cd19aa3fe63ebf8574698df4fd5b517890c4a4a0b087a9432d3745dbe'
 index = '0x0'
 
 [block_producer.poa_state_dep]
 dep_type = 'code'
 
 [block_producer.poa_state_dep.out_point]
-tx_hash = '0xa2908edf34ae3edce9c2681bc7f057c356e36121c71f8a2e3a5d66e48bdb1290'
+tx_hash = '0xc2b446c700bcf7fdf165c844d74c848b7cca14a2231af9db88aaec5a649d1698'
 index = '0x0'
 
 [block_producer.wallet_config]
