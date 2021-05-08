@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Home.css';
 import Api from '../../api/index';
+import Web3Api from '../../api/web3';
 import FreshButton from '../widget/fresh_button';
 import NotifyPlace, {notify} from '../widget/notify';
 import { MsgSignType  } from '../../types/polyjuice';
@@ -98,19 +99,19 @@ function Home() {
     }
   }
 
-  const getSudtBalance = async () => {
-    if(!selectedAddress)return;
-    const api = new Api();
-    try {
-      const res = await api.getSudtBalance(selectedAddress);
-      if(res.status !== 'ok')
-        return notify(`failed to get sudt balance from account. ${JSON.stringify(res.error)}`);
-      await setSudtBalance(utils.shannon2CKB(res.data));
-      console.log(utils.shannon2CKB(res.data));
-    } catch (error) {
-      notify(JSON.stringify(error));
-    }
-  }
+//  const getSudtBalance = async () => {
+//    if(!selectedAddress)return;
+//    const api = new Api();
+//    try {
+//      const res = await api.getSudtBalance(selectedAddress);
+//      if(res.status !== 'ok')
+//        return notify(`failed to get sudt balance from account. ${JSON.stringify(res.error)}`);
+//      await setSudtBalance(utils.shannon2CKB(res.data));
+//      console.log(utils.shannon2CKB(res.data));
+//    } catch (error) {
+//      notify(JSON.stringify(error));
+//    }
+//  }
 
   const getRollupTypeHash = async () => {
     const api = new Api();
@@ -153,53 +154,53 @@ function Home() {
     }
   }
 
-  const depositSudt =  async () => {
-    if(!selectedAddress)return notify(`metamask account not found.`);
-    const api = new Api();
-    try {
-      const res = await api.deposit_sudt(selectedAddress);
-      console.log(res);
-      if(res.status === 'ok'){
-        notify(`your account id: ${res.data.account_id}`, 'success');
-        console.log(`res.data.l2_sudt_script_hash: ${res.data.l2_sudt_script_hash}`)
-        await getSudtBalance();
-      }else{
-        notify(JSON.stringify(res.error));
-      }
-    } catch (error) {
-      notify(JSON.stringify(error));
-    }
-  }
-
-  const deploySudtContract = async () => {
-    const api = new Api();
-    try{
-      const res = await api.deploySudtContract();
-      console.log(res);
-      if(res.status === 'ok'){
-        notify('ok', 'success');
-      }else{
-        notify(JSON.stringify(res.error, null, 2));
-      }
-    } catch (error) {
-      notify(JSON.stringify(error));
-    }
-  }
-
-  const issueToken = async () => {
-    const api = new Api();
-    try{
-      const res = await api.issueToken();
-      console.log(res);
-      if(res.status === 'ok'){
-        notify(`issue a sudt token: ${res.data.sudt_token}`, 'success');
-      }else{
-        notify(JSON.stringify(res.error, null, 2));
-      }
-    } catch (error) {
-      notify(JSON.stringify(error));
-    }
-  }
+//  const depositSudt =  async () => {
+//    if(!selectedAddress)return notify(`metamask account not found.`);
+//    const api = new Api();
+//    try {
+//      const res = await api.deposit_sudt(selectedAddress);
+//      console.log(res);
+//      if(res.status === 'ok'){
+//        notify(`your account id: ${res.data.account_id}`, 'success');
+//        console.log(`res.data.l2_sudt_script_hash: ${res.data.l2_sudt_script_hash}`)
+//        await getSudtBalance();
+//      }else{
+//        notify(JSON.stringify(res.error));
+//      }
+//    } catch (error) {
+//      notify(JSON.stringify(error));
+//    }
+//  }
+//
+//  const deploySudtContract = async () => {
+//    const api = new Api();
+//    try{
+//      const res = await api.deploySudtContract();
+//      console.log(res);
+//      if(res.status === 'ok'){
+//        notify('ok', 'success');
+//      }else{
+//        notify(JSON.stringify(res.error, null, 2));
+//      }
+//    } catch (error) {
+//      notify(JSON.stringify(error));
+//    }
+//  }
+//
+//  const issueToken = async () => {
+//    const api = new Api();
+//    try{
+//      const res = await api.issueToken();
+//      console.log(res);
+//      if(res.status === 'ok'){
+//        notify(`issue a sudt token: ${res.data.sudt_token}`, 'success');
+//      }else{
+//        notify(JSON.stringify(res.error, null, 2));
+//      }
+//    } catch (error) {
+//      notify(JSON.stringify(error));
+//    }
+//  }
 
     // const transfer = async () => {
     //     if(!selectedAddress)return notify(`metamask account not found.`);
@@ -245,71 +246,39 @@ function Home() {
     if(!contractCode)return notify(`upload contract binary file first!`);
     if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
 
-    const api = new Api();
+    const godwokenWeb3 = new Web3Api();
     try {
-      const res = await api.deployContract(contractCode, window.ethereum.selectedAddress);
-      if(res.status !== 'ok')return notify(JSON.stringify(res));
+      const transactionParameters = {
+        nonce: '0x0', // ignored by MetaMask
+        gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+        gas: '0x2710', // customizable by user during MetaMask confirmation.
+        to: '0x', // Required except during contract publications.
+        from: window.ethereum.selectedAddress, // must match user's active address.
+        value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+        data: contractCode, // Optional, but used for defining smart contract creation and interaction.
+        chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+      };
+      const txHash = await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [transactionParameters],
+      });
+      console.log(`txHash: ${txHash}`);
+      
+      await godwokenWeb3.waitForTransactionReceipt(txHash);
+      
+      const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
+      console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 
-      const data: MsgSignType = res.data;
-      console.log(JSON.stringify(data, null, 2));
+      const contractAddr = txReceipt.contractAddress; 
+      console.log(`contract address: ${contractAddr}`);
 
-      try {
-        const transactionParameters = {
-          nonce: '0x0', // ignored by MetaMask
-          gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
-          gas: '0x2710', // customizable by user during MetaMask confirmation.
-          to: '0x', // Required except during contract publications.
-          from: window.ethereum.selectedAddress, // must match user's active address.
-          value: '0x00', // Only required to send ether to the recipient from the initiating external account.
-          data: contractCode, // Optional, but used for defining smart contract creation and interaction.
-          chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
-        };
-        const txHash = await window.ethereum.request({
-          method: 'eth_sendTransaction',
-          params: [transactionParameters],
-        });
-        console.log(`txHash: ${txHash}`);
-        
-        const txReceipt = await api.getTransactionReceipt(txHash);
-        console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
-
-        const account_id = txReceipt.data.logs[0].account_id;
-        console.log(`account_id: ${account_id}`);
-
-        const result = await api.getContractAddrByAccountId(account_id);
-        console.log(result);
-        if(result.status !== 'ok')
-          return notify(result.error);
-
-        const contractAddr = result.data; 
-        console.log(`contract address: ${contractAddr}`);
-
-        notify(`your contract address: ${contractAddr}`, 'success');
-        setDeployedContracts(oldArray => [...oldArray, contractAddr]);
-      } catch (error) {
-        console.log(error);
-        return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
-      }
-
-      // console.log(`message: ${data.message}`);
-      // console.log(`signature: ${signature}`);
-// 
-      // // submit the signed tx to godwoken
-      // const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
-      // if(tx_res.status !== 'ok'){
-      //   console.log(tx_res);
-      //   return notify(JSON.stringify(tx_res.error));
-      // }
-// 
-      // console.log(tx_res.data);
-      // notify(`your contract address: ${tx_res.data.contract_address}`, 'success');
-      // setDeployedContracts(oldArray => [...oldArray, tx_res.data.contract_address]);
+      notify(`your contract address: ${contractAddr}`, 'success');
+      setDeployedContracts(oldArray => [...oldArray, contractAddr]);
     } catch (error) {
-      notify(JSON.stringify(error));
+      console.log(error);
+      return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
     }
   }
-
-
 
   const deployContract = async (e: any) => {
     const codefile = e.target.files[0]; 
@@ -327,85 +296,60 @@ function Home() {
     setIsLoading(false);
   }
 
-  const deployErc20ProxyContract = async () => {
-    if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
-
-    const api = new Api();
-    try {
-      const res: any = await api.deployErc20ProxyContract(selectedAddress); 
-      if(res.status !== 'ok')
-        notify(JSON.stringify(res.error, null, 2));
-
-      const contract_code_with_constructor = res.data;
-      console.log(JSON.stringify(contract_code_with_constructor, null, 2));
-
-      try {
-        const transactionParameters = {
-          nonce: '0x0', // ignored by MetaMask
-          gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
-          gas: '0x2710', // customizable by user during MetaMask confirmation.
-          to: '0x', // Required except during contract publications.
-          from: window.ethereum.selectedAddress, // must match user's active address.
-          value: '0x00', // Only required to send ether to the recipient from the initiating external account.
-          data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
-          chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
-        };
-        const txHash = await window.ethereum.request({
-          method: 'eth_sendTransaction',
-          params: [transactionParameters],
-        });
-        console.log(`txHash: ${txHash}`);
-
-        const txReceipt = await api.getTransactionReceipt(txHash);
-        console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
-
-        const account_id = txReceipt.data.logs[0].account_id;
-        console.log(`account_id: ${account_id}`);
-
-        const result = await api.getContractAddrByAccountId(account_id);
-        console.log(result);
-        if(result.status !== 'ok')
-          return notify(result.error);
-
-        const contractAddr = result.data; 
-        console.log(`contract address: ${contractAddr}`);
-
-        notify(`your contract address: ${contractAddr}`, 'success');
-        setDeployedContracts(oldArray => [...oldArray, contractAddr]);
-
-      } catch (error) {
-        console.log(error);
-        return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
-      }
-
-      // var signature;
-      // try {
-      //   signature = await window.ethereum.request({
-      //     method: 'personal_sign',
-      //     params: [data.message, window.ethereum.selectedAddress],
-      //   }); 
-      // } catch (error) {
-      //   console.log(error);
-      //   return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
-      // }
-
-      // console.log(`message: ${data.message}`);
-      // console.log(`signature: ${signature}`);
-
-      // submit the signed tx to godwoken
-      // const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
-      // if(tx_res.status !== 'ok'){
-      //   console.log(tx_res);
-      //   return notify(JSON.stringify(tx_res.error));
-      // }
-// 
-      // console.log(tx_res.data);
-      // notify(`your contract address: ${tx_res.data.contract_address}`, 'success');
-      // setDeployedContracts(oldArray => [...oldArray, tx_res.data.contract_address]);
-    } catch (error) {
-      notify(JSON.stringify(error));
-    } 
-  }
+//  const deployErc20ProxyContract = async () => {
+//    if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
+//
+//    const api = new Api();
+//    try {
+//      const res: any = await api.deployErc20ProxyContract(selectedAddress); 
+//      if(res.status !== 'ok')
+//        notify(JSON.stringify(res.error, null, 2));
+//
+//      const contract_code_with_constructor = res.data;
+//      console.log(JSON.stringify(contract_code_with_constructor, null, 2));
+//
+//      try {
+//        const transactionParameters = {
+//          nonce: '0x0', // ignored by MetaMask
+//          gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+//          gas: '0x2710', // customizable by user during MetaMask confirmation.
+//          to: '0x', // Required except during contract publications.
+//          from: window.ethereum.selectedAddress, // must match user's active address.
+//          value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+//          data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
+//          chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+//        };
+//        const txHash = await window.ethereum.request({
+//          method: 'eth_sendTransaction',
+//          params: [transactionParameters],
+//        });
+//        console.log(`txHash: ${txHash}`);
+//
+//        const txReceipt = await api.getTransactionReceipt(txHash);
+//        console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
+//
+//        const account_id = txReceipt.data.logs[0].account_id;
+//        console.log(`account_id: ${account_id}`);
+//
+//        const result = await api.getContractAddrByAccountId(account_id);
+//        console.log(result);
+//        if(result.status !== 'ok')
+//          return notify(result.error);
+//
+//        const contractAddr = result.data; 
+//        console.log(`contract address: ${contractAddr}`);
+//
+//        notify(`your contract address: ${contractAddr}`, 'success');
+//        setDeployedContracts(oldArray => [...oldArray, contractAddr]);
+//
+//      } catch (error) {
+//        console.log(error);
+//        return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
+//      }
+//    } catch (error) {
+//      notify(JSON.stringify(error));
+//    } 
+//  }
 
   const readContractCode = (codefile: Blob) => {
     return new Promise((resolve, reject) => {
@@ -424,20 +368,20 @@ function Home() {
     });  
   } 
 
-  const web3CodeString = `
-  const godwoken_rpc_url = 'http://127.0.0.1:8024';
-  const provider_config =  {
-    godwoken: {
-        rollup_type_hash: "${rollupTypeHash}",
-        eth_account_lock: {
-            code_hash: "${ethAccountLockConfig?.code_hash}",
-            hash_type: "${ethAccountLockConfig?.hash_type}"
-        }
-    }
-  }
-  const provider = new PolyjuiceHttpProvider(godwoken_rpc_url, provider_config);
-  const web3 = new Web3(provider);
-                  `
+// const web3CodeString = `
+// const godwoken_rpc_url = 'http://127.0.0.1:8024';
+// const provider_config =  {
+//   godwoken: {
+//       rollup_type_hash: "${rollupTypeHash}",
+//       eth_account_lock: {
+//           code_hash: "${ethAccountLockConfig?.code_hash}",
+//           hash_type: "${ethAccountLockConfig?.hash_type}"
+//       }
+//   }
+// }
+// const provider = new PolyjuiceHttpProvider(godwoken_rpc_url, provider_config);
+// const web3 = new Web3(provider);
+//                   `
 
   return (
     <div>

@@ -54,6 +54,10 @@ const get_env_mode = () => {
     return mode === 'development' ? 'development' : 'production';
 }
 
+const asyncSleep = (ms = 0) => {
+    return new Promise((r) => setTimeout(r, ms));
+ }
+
 export default {
     convertTimestamp: convertTimestamp,
     hex2dec: hex2dec,
@@ -62,5 +66,6 @@ export default {
     CKB2shannon: CKB2shannon,
     isObjectInArray: isObjectInArray,
     arrayBufferToBuffer: arrayBufferToBuffer,
-    get_env_mode: get_env_mode
+    get_env_mode: get_env_mode,
+    asyncSleep: asyncSleep,
 }
