@@ -57,6 +57,7 @@ import { deploymentConfig } from "../js/utils/deployment_config";
 import path from "path";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 import fs from "fs";
+import { calcMessage } from "./convert-tx";
 
 import {
   asyncSleep,
@@ -793,6 +794,7 @@ export class Api {
     const sender_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.from_id));
     const receiver_script_hash = await this.godwoken.getScriptHash(parseInt(raw_l2tx.to_id));
 
+
     const message = await _generateTransactionMessageToSign(
       raw_l2tx,
       rollup_type_hash,
@@ -926,6 +928,24 @@ export class Api {
     return this.generateDeployTx(creator_account_id_str, contract_code_with_constructor, rollup_type_hash, eth_address);
   }
 
+  async generateErc20ProxyContractCode(
+    sudt_id_hex_str: string,
+    creator_account_id_str: string,
+    init_code: string,
+    rollup_type_hash: string,
+    eth_address: string,
+  ){
+    if(sudt_id_hex_str.slice(2).length > 2)
+      throw new Error(`sudt_id {sudt_id_hex_str.slice(2)} should be not be larger than 255.`);
+      
+    const pack_sudt_id = sudt_id_hex_str.slice(2).length === 1 ? '0' + sudt_id_hex_str.slice(2) : sudt_id_hex_str.slice(2); 
+    console.log(`sudt_id_pack: ${pack_sudt_id}`);
+    let args = `000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000204fce5e3e25026110000000000000000000000000000000000000000000000000000000000000000000000${pack_sudt_id}0000000000000000000000000000000000000000000000000000000000000004746573740000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000027474000000000000000000000000000000000000000000000000000000000000`;
+    let contract_code_with_constructor = init_code.trimEnd().concat(args);
+    console.log(`erc20_proxy code: ${contract_code_with_constructor}`);
+    return contract_code_with_constructor; 
+  }
+
   async generateDeployTx(
     creator_account_id_str: string,
     init_code: string,
@@ -957,13 +977,29 @@ export class Api {
       nonce,
       getRollupTypeHash()
     );
-    console.log(`gas limit: `)
-    const add_prefix_in_message = false; //metamask will add prefix.
-    const message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash, add_prefix_in_message);
+    console.log(`layer2 tx: ${JSON.stringify(raw_l2tx)}`);
+
+    //const add_prefix_in_message = false; //metamask will add prefix.
+    //const message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash, add_prefix_in_message);
+    //const prefixd_message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
+    //console.log(`prefixd_message: ${prefixd_message}`);
+    //console.log(`un_prefix_message: ${message}`);
+
+    // const message = calcMessage({
+    //   nonce: '0x' + nonce.toString(16),
+    //   gasPrice: '0x' + 50n.toString(16),
+    //   gasLimit: '0x' + 1000011221000n.toString(16),
+    //   to: '0x',
+    //   value: '0x' + 0n.toString(16),
+    //   data: init_code,
+    //   v: '0x3',
+    //   r: '0x',
+    //   s: '0x',
+    // });
+    const message = null;
+    console.log(`message: ${message}`);
     
-    const prefixd_message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
-    console.log(`prefixd_message: ${prefixd_message}`);
-    console.log(`un_prefix_message: ${message}`);
+
     return {type: 'deploy', raw_l2tx: raw_l2tx, message: message, l2_script_args: eth_address}
   }
 
