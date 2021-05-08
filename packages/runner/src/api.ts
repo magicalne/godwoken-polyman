@@ -819,6 +819,7 @@ export class Api {
   }
 
   async getTransactionReceipt(tx_hash: Hash){
+    await this.waitForTransactionReceipt(tx_hash);
     return await this.godwoken.getTransactionReceipt(tx_hash);
   }
 

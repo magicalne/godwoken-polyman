@@ -125,7 +125,14 @@ class Api{
         return res.data;
     };
 
-
+    async getTransactionReceipt(tx_hash: string){
+        let res = await axios.get(`${this.base_url}/get_tx_receipt`, { 
+            params:{
+                tx_hash: tx_hash
+            }
+        });
+        return res.data;
+    }
 
 }
 

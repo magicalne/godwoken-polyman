@@ -256,6 +256,18 @@ const setUpRouters = (
         }
     } );
 
+    app.get( "/get_tx_receipt", async ( req, res ) => {
+        try {
+            const tx_hash = req.query.tx_hash + '';
+            await api.syncToTip();
+            const receipt = await api.getTransactionReceipt(tx_hash);
+            res.send({status:'ok', data: receipt});
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});
+        }
+    } );
+
     // todo: merge this two methods to one with a simpel flag.
     
     app.get( "/get_layer2_sudt_balance", async ( req, res ) => {
