@@ -87,13 +87,13 @@ function Home() {
 
   const getBalance = async () => {
     if(!selectedAddress)return;
-    const api = new Api();
+    const web3Api = new Web3Api(); 
     try {
-      const res = await api.getBalance(selectedAddress);
-      if(res.status !== 'ok')
-        return notify(`failed to get balance from account. ${JSON.stringify(res.error)}`);
-      await setBalance(utils.shannon2CKB(res.data));
-      console.log(utils.shannon2CKB(res.data));
+      const data = await web3Api.getBalance(selectedAddress);
+      const balance = BigInt(data).toString();
+      console.log(balance);
+      await setBalance(utils.shannon2CKB(balance));
+      console.log(utils.shannon2CKB(balance));
     } catch (error) {
       notify(JSON.stringify(error));
     }
@@ -265,7 +265,7 @@ function Home() {
       console.log(`txHash: ${txHash}`);
       
       await godwokenWeb3.waitForTransactionReceipt(txHash);
-      
+
       const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
       console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 

@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../config/constant.json';
 import util from '../utils/index';
 
-axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = false;
 
 export default class Web3Api{
 
@@ -22,8 +22,8 @@ export default class Web3Api{
         }, {
               headers: {
                 'Content-Type': 'application/json',
-                //'Access-Control-Allow-Origin': '*'
               },
+            
         });
         return response.data.result;
     }
@@ -37,7 +37,6 @@ export default class Web3Api{
         }, {
               headers: {
                 'Content-Type': 'application/json',
-                //'Access-Control-Allow-Origin': '*'
               },
         });
         return response.data.result;
