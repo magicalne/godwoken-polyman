@@ -343,6 +343,10 @@ function Home() {
           params: [transactionParameters],
         });
         console.log(`txHash: ${txHash}`);
+
+        const txReceipt = await api.getTransactionReceipt(txHash);
+        console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
+
       } catch (error) {
         console.log(error);
         return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
