@@ -215,7 +215,7 @@ const setUpRouters = (
             if(!sudt_id)
                 return res.send({status:'failed', error: `sudt account not exits. deposit sudt first.`});
 
-            const data = await api.generateDeployErc20ProxyContractTx(
+            const data = await api.generateErc20ProxyContractCode(
                 sudt_id + '',
                 creator_account_id.toString(), 
                 contract_code, 
