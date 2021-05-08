@@ -75,7 +75,7 @@ function Home() {
   useEffect(() => {
     if(selectedAddress){
       getBalance();
-      getSudtBalance();
+      //getSudtBalance();
     };
   }, [selectedAddress]);
 
@@ -471,7 +471,7 @@ function Home() {
 
           <hr></hr>
 
-          <h2>test Sudt Section: </h2>
+{/*           <h2>test Sudt Section: </h2>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -504,6 +504,7 @@ function Home() {
           </Grid>
 
           <hr></hr>
+*/}
 
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.contract_container}>

@@ -277,7 +277,7 @@ const setUpRouters = (
             const account_script_hash = await api.getScriptHashByAccountId(account_id);
             const contract_addr = '0x' +
                 account_script_hash.slice(2, 16 * 2 + 2) +
-                UInt32ToLeBytes(account_id);
+                UInt32ToLeBytes(account_id).slice(2);
             res.send({status:'ok', data: contract_addr});
         } catch (error) {
             console.log(error);
