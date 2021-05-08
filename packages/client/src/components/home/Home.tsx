@@ -286,7 +286,6 @@ function Home() {
 
         notify(`your contract address: ${contractAddr}`, 'success');
         setDeployedContracts(oldArray => [...oldArray, contractAddr]);
-        return;
       } catch (error) {
         console.log(error);
         return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
@@ -359,6 +358,20 @@ function Home() {
 
         const txReceipt = await api.getTransactionReceipt(txHash);
         console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
+
+        const account_id = txReceipt.data.logs[0].account_id;
+        console.log(`account_id: ${account_id}`);
+
+        const result = await api.getContractAddrByAccountId(account_id);
+        console.log(result);
+        if(result.status !== 'ok')
+          return notify(result.error);
+
+        const contractAddr = result.data; 
+        console.log(`contract address: ${contractAddr}`);
+
+        notify(`your contract address: ${contractAddr}`, 'success');
+        setDeployedContracts(oldArray => [...oldArray, contractAddr]);
 
       } catch (error) {
         console.log(error);
