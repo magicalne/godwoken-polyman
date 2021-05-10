@@ -30,7 +30,7 @@ import { Polyjuice } from "@godwoken-examples/polyjuice";
 import gpConfig from "../configs/config.json";
 import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
-import { Indexer } from "@ckb-lumos/indexer";
+import { Indexer, CellCollector } from "@ckb-lumos/indexer";
 import { key } from "@ckb-lumos/hd";
 import TransactionManager from "@ckb-lumos/transaction-manager";
 import {
@@ -562,6 +562,17 @@ export class Api {
       throw new Error(e);
     }
     
+  }
+
+  async checkIfL1SudtScriptExits(){
+    const config = getConfig();
+    if(!config.SCRIPTS.SUDT){
+        console.error("sudt scripts not found in lumos config, please deploy first.");
+        return false;
+    }
+    //todo: check if sudt cell exits and is live.
+    
+    return true;
   }
 
   getL2SudtScriptHash(private_key: string) {
@@ -1146,7 +1157,6 @@ export class Api {
     var capacity;
     try {
       capacity = minimalCellCapacity(outputCell, {validate:false});
-      //capacity = BigInt((contract_code_hex.length - 2) / 2 / 8 + 200);
       console.log('capacity needed: ', capacity);
       outputCell.cell_output.capacity = '0x' + capacity.toString(16);
     } catch (error) {
@@ -1223,7 +1233,7 @@ export class Api {
         index: '0x1'
       }
 
-      this.genSudtConfig(outpoint, sudt_code_hash);
+      await this.genSudtConfig(outpoint, sudt_code_hash);
     } catch (error) {
       console.log(error);
       throw new Error(error);

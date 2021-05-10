@@ -76,7 +76,7 @@ function Home() {
   useEffect(() => {
     if(selectedAddress){
       getBalance();
-      //getSudtBalance();
+      getSudtBalance();
     };
   }, [selectedAddress]);
 
@@ -99,19 +99,19 @@ function Home() {
     }
   }
 
-//  const getSudtBalance = async () => {
-//    if(!selectedAddress)return;
-//    const api = new Api();
-//    try {
-//      const res = await api.getSudtBalance(selectedAddress);
-//      if(res.status !== 'ok')
-//        return notify(`failed to get sudt balance from account. ${JSON.stringify(res.error)}`);
-//      await setSudtBalance(utils.shannon2CKB(res.data));
-//      console.log(utils.shannon2CKB(res.data));
-//    } catch (error) {
-//      notify(JSON.stringify(error));
-//    }
-//  }
+  const getSudtBalance = async () => {
+    if(!selectedAddress)return;
+    const api = new Api();
+    try {
+      const res = await api.getSudtBalance(selectedAddress);
+      if(res.status !== 'ok')
+        return notify(`failed to get sudt balance from account. ${JSON.stringify(res.error)}`);
+      await setSudtBalance(utils.shannon2CKB(res.data));
+      console.log(utils.shannon2CKB(res.data));
+    } catch (error) {
+      notify(JSON.stringify(error));
+    }
+  }
 
   const getRollupTypeHash = async () => {
     const api = new Api();
@@ -154,53 +154,53 @@ function Home() {
     }
   }
 
-//  const depositSudt =  async () => {
-//    if(!selectedAddress)return notify(`metamask account not found.`);
-//    const api = new Api();
-//    try {
-//      const res = await api.deposit_sudt(selectedAddress);
-//      console.log(res);
-//      if(res.status === 'ok'){
-//        notify(`your account id: ${res.data.account_id}`, 'success');
-//        console.log(`res.data.l2_sudt_script_hash: ${res.data.l2_sudt_script_hash}`)
-//        await getSudtBalance();
-//      }else{
-//        notify(JSON.stringify(res.error));
-//      }
-//    } catch (error) {
-//      notify(JSON.stringify(error));
-//    }
-//  }
-//
-//  const deploySudtContract = async () => {
-//    const api = new Api();
-//    try{
-//      const res = await api.deploySudtContract();
-//      console.log(res);
-//      if(res.status === 'ok'){
-//        notify('ok', 'success');
-//      }else{
-//        notify(JSON.stringify(res.error, null, 2));
-//      }
-//    } catch (error) {
-//      notify(JSON.stringify(error));
-//    }
-//  }
-//
-//  const issueToken = async () => {
-//    const api = new Api();
-//    try{
-//      const res = await api.issueToken();
-//      console.log(res);
-//      if(res.status === 'ok'){
-//        notify(`issue a sudt token: ${res.data.sudt_token}`, 'success');
-//      }else{
-//        notify(JSON.stringify(res.error, null, 2));
-//      }
-//    } catch (error) {
-//      notify(JSON.stringify(error));
-//    }
-//  }
+ const depositSudt =  async () => {
+   if(!selectedAddress)return notify(`metamask account not found.`);
+   const api = new Api();
+   try {
+     const res = await api.deposit_sudt(selectedAddress);
+     console.log(res);
+     if(res.status === 'ok'){
+       notify(`your account id: ${res.data.account_id}`, 'success');
+       console.log(`res.data.l2_sudt_script_hash: ${res.data.l2_sudt_script_hash}`)
+       await getSudtBalance();
+     }else{
+       notify(JSON.stringify(res.error));
+     }
+   } catch (error) {
+     notify(JSON.stringify(error));
+   }
+ }
+
+ const deploySudtContract = async () => {
+   const api = new Api();
+   try{
+     const res = await api.deploySudtContract();
+     console.log(res);
+     if(res.status === 'ok'){
+       notify('ok', 'success');
+     }else{
+       notify(JSON.stringify(res.error, null, 2));
+     }
+   } catch (error) {
+     notify(JSON.stringify(error));
+   }
+ }
+
+ const issueToken = async () => {
+   const api = new Api();
+   try{
+     const res = await api.issueToken();
+     console.log(res);
+     if(res.status === 'ok'){
+       notify(`issue a sudt token: ${res.data.sudt_token}`, 'success');
+     }else{
+       notify(JSON.stringify(res.error, null, 2));
+     }
+   } catch (error) {
+     notify(JSON.stringify(error));
+   }
+ }
 
     // const transfer = async () => {
     //     if(!selectedAddress)return notify(`metamask account not found.`);
@@ -296,60 +296,60 @@ function Home() {
     setIsLoading(false);
   }
 
-//  const deployErc20ProxyContract = async () => {
-//    if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
-//
-//    const api = new Api();
-//    try {
-//      const res: any = await api.deployErc20ProxyContract(selectedAddress); 
-//      if(res.status !== 'ok')
-//        notify(JSON.stringify(res.error, null, 2));
-//
-//      const contract_code_with_constructor = res.data;
-//      console.log(JSON.stringify(contract_code_with_constructor, null, 2));
-//
-//      try {
-//        const transactionParameters = {
-//          nonce: '0x0', // ignored by MetaMask
-//          gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
-//          gas: '0x2710', // customizable by user during MetaMask confirmation.
-//          to: '0x', // Required except during contract publications.
-//          from: window.ethereum.selectedAddress, // must match user's active address.
-//          value: '0x00', // Only required to send ether to the recipient from the initiating external account.
-//          data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
-//          chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
-//        };
-//        const txHash = await window.ethereum.request({
-//          method: 'eth_sendTransaction',
-//          params: [transactionParameters],
-//        });
-//        console.log(`txHash: ${txHash}`);
-//
-//        const txReceipt = await api.getTransactionReceipt(txHash);
-//        console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
-//
-//        const account_id = txReceipt.data.logs[0].account_id;
-//        console.log(`account_id: ${account_id}`);
-//
-//        const result = await api.getContractAddrByAccountId(account_id);
-//        console.log(result);
-//        if(result.status !== 'ok')
-//          return notify(result.error);
-//
-//        const contractAddr = result.data; 
-//        console.log(`contract address: ${contractAddr}`);
-//
-//        notify(`your contract address: ${contractAddr}`, 'success');
-//        setDeployedContracts(oldArray => [...oldArray, contractAddr]);
-//
-//      } catch (error) {
-//        console.log(error);
-//        return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
-//      }
-//    } catch (error) {
-//      notify(JSON.stringify(error));
-//    } 
-//  }
+  const deployErc20ProxyContract = async () => {
+    if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
+
+    const api = new Api();
+    try {
+      const res: any = await api.deployErc20ProxyContract(selectedAddress); 
+      if(res.status !== 'ok')
+        notify(JSON.stringify(res.error, null, 2));
+
+      const contract_code_with_constructor = res.data;
+      console.log(JSON.stringify(contract_code_with_constructor, null, 2));
+
+      try {
+        const transactionParameters = {
+          nonce: '0x0', // ignored by MetaMask
+          gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+          gas: '0x2710', // customizable by user during MetaMask confirmation.
+          to: '0x', // Required except during contract publications.
+          from: window.ethereum.selectedAddress, // must match user's active address.
+          value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+          data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
+          chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+        };
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [transactionParameters],
+        });
+        console.log(`txHash: ${txHash}`);
+
+        const txReceipt = await api.getTransactionReceipt(txHash);
+        console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
+
+        const account_id = txReceipt.data.logs[0].account_id;
+        console.log(`account_id: ${account_id}`);
+
+        const result = await api.getContractAddrByAccountId(account_id);
+        console.log(result);
+        if(result.status !== 'ok')
+          return notify(result.error);
+
+        const contractAddr = result.data; 
+        console.log(`contract address: ${contractAddr}`);
+
+        notify(`your contract address: ${contractAddr}`, 'success');
+        setDeployedContracts(oldArray => [...oldArray, contractAddr]);
+
+      } catch (error) {
+        console.log(error);
+        return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
+      }
+    } catch (error) {
+      notify(JSON.stringify(error));
+    } 
+  }
 
   const readContractCode = (codefile: Blob) => {
     return new Promise((resolve, reject) => {
@@ -415,7 +415,7 @@ function Home() {
 
           <hr></hr>
 
-{/*           <h2>test Sudt Section: </h2>
+           <h2>test Sudt Section </h2>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -423,12 +423,12 @@ function Home() {
             </Grid>
           </Grid>
 
-          <Grid container spacing={3}>
+{/*         <Grid container spacing={3}>
             <Grid item xs={12}>
               <FreshButton text={"Deploy L1 Sudt Contract"} onClick={deploySudtContract} custom_style={styles.button} />
             </Grid>
           </Grid>
-
+*/}
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <FreshButton text={"Issue Sudt Token"} onClick={issueToken} custom_style={styles.button} />
@@ -448,7 +448,7 @@ function Home() {
           </Grid>
 
           <hr></hr>
-*/}
+
 
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.contract_container}>
