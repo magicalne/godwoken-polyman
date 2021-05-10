@@ -284,11 +284,13 @@ export class Api {
     );
     
     console.log(JSON.stringify(createTransactionFromSkeleton(txSkeleton), null, 2));
+    
+    console.log("ready to pay fee..");
 
     txSkeleton = await common.payFee(
       txSkeleton,
       [fromAddress],
-      BigInt(100000000)
+      BigInt(1000)
     );
     console.log('pay fee..');
 
@@ -547,12 +549,12 @@ export class Api {
 
       // wait for confirm
       await this.waitForAccountIdOnChain(script_hash);
+      await this.waitForAccountIdOnChain(l2_sudt_script_hash);
 
       const account_id = await this.godwoken.getAccountIdByScriptHash(
         script_hash
       );
       
-      //const l2_sudt_script_hash = getL2SudtScriptHash();
       return {
         account_id: account_id.toString(),
         l2_sudt_script_hash: l2_sudt_script_hash

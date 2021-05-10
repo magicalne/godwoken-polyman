@@ -300,6 +300,7 @@ function Home() {
     if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
 
     const api = new Api();
+    const godwokenWeb3 = new Web3Api();
     try {
       const res: any = await api.deployErc20ProxyContract(selectedAddress); 
       if(res.status !== 'ok')
@@ -325,23 +326,16 @@ function Home() {
         });
         console.log(`txHash: ${txHash}`);
 
-        const txReceipt = await api.getTransactionReceipt(txHash);
+        await godwokenWeb3.waitForTransactionReceipt(txHash);
+
+        const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
         console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 
-        const account_id = txReceipt.data.logs[0].account_id;
-        console.log(`account_id: ${account_id}`);
-
-        const result = await api.getContractAddrByAccountId(account_id);
-        console.log(result);
-        if(result.status !== 'ok')
-          return notify(result.error);
-
-        const contractAddr = result.data; 
+        const contractAddr = txReceipt.contractAddress; 
         console.log(`contract address: ${contractAddr}`);
 
         notify(`your contract address: ${contractAddr}`, 'success');
         setDeployedContracts(oldArray => [...oldArray, contractAddr]);
-
       } catch (error) {
         console.log(error);
         return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);

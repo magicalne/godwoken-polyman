@@ -18,7 +18,8 @@ const ckb_rpc = process.env.MODE === "docker-compose" ? gpConfig.ckb.rpc[0] : gp
 const godwoken_rpc = process.env.MODE === "docker-compose" ? gpConfig.godwoken.rpc[0] : gpConfig.godwoken.rpc[1] ;
 const sudt_id_str = serverConfig.default_sudt_id_str;
 const default_deposit_amount = serverConfig.default_amount;
-const default_sudt_capacity = serverConfig.default_amount; 
+const default_sudt_issue_amount = serverConfig.default_issue_sudt_amount;
+const default_sudt_capacity = serverConfig.default_deposit_sudt_capacity; 
 const user_private_key = serverConfig.user_private_key;
 const user_ckb_address = serverConfig.user_ckb_devnet_addr;
 const miner_private_key = serverConfig.miner_private_key;
@@ -120,7 +121,7 @@ const setUpRouters = (
     app.get( "/deposit_sudt", async ( req, res) => {
         try {
             const eth_address = req.query.eth_address + '';
-            const {account_id, l2_sudt_script_hash} = await api.deposit_sudt(user_private_key, eth_address, default_deposit_amount, default_deposit_amount);
+            const {account_id, l2_sudt_script_hash} = await api.deposit_sudt(user_private_key, eth_address, default_deposit_amount, default_sudt_capacity);
             res.send({status:'ok', data: {account_id, l2_sudt_script_hash}});
         } catch (error) {
             console.log(error);
@@ -130,7 +131,7 @@ const setUpRouters = (
 
     app.get( "/issue_token", async ( req, res) => {
         try {
-            const sudt_token = await api.issueToken(default_deposit_amount, user_private_key);
+            const sudt_token = await api.issueToken(default_sudt_issue_amount, user_private_key);
             res.send({status:'ok', data: {sudt_token: sudt_token}});
         } catch (error) {
             console.log(error);

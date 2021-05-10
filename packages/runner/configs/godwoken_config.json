@@ -20,7 +20,7 @@
     "path": "./store.db"
   },
   "genesis": {
-    "timestamp": 1620635068123,
+    "timestamp": 1620638484317,
     "rollup_type_hash": "0xf70aa98a96fba847185be1b58c1d1e3cae7ad91f971eecc5749799d5e72939f0",
     "meta_contract_validator_type_hash": "0xdcca15153ee053d995db6693b93212187da5c9f1ad7ee16935126646daf47f5d",
     "rollup_config": {
@@ -56,9 +56,9 @@
   },
   "chain": {
     "genesis_committed_info": {
-      "number": "0x45",
-      "block_hash": "0xebe335448a5233930c5c66345209679a25e59322e2a0906b210a556f8cec22b4",
-      "transaction_hash": "0xdd942a254eed15f6329fd25aa85811c56365fa8520b44c828af92205966d1610"
+      "number": "0x46",
+      "block_hash": "0x82c9c87e831d3384d815a99cda8ee2e53296e23088c0c79bcfa3f7da265f2ed4",
+      "transaction_hash": "0x23cf94b84bcf8c76748df27f62800110dd8e89d1b7649d1f5e989a8fb58f37e6"
     },
     "rollup_type_script": {
       "code_hash": "0x00000000000000000000000000000000000000000000000000545950455f4944",
