@@ -19,7 +19,8 @@ const godwoken_rpc = process.env.MODE === "docker-compose" ? gpConfig.godwoken.r
 const sudt_id_str = serverConfig.default_sudt_id_str;
 const default_deposit_amount = serverConfig.default_amount;
 const default_sudt_issue_amount = serverConfig.default_issue_sudt_amount;
-const default_sudt_capacity = serverConfig.default_deposit_sudt_capacity; 
+const default_sudt_capacity = serverConfig.default_deposit_sudt_capacity;
+const default_issue_sudt_capacity = serverConfig.default_issue_sudt_capacity;
 const user_private_key = serverConfig.user_private_key;
 const user_ckb_address = serverConfig.user_ckb_devnet_addr;
 const miner_private_key = serverConfig.miner_private_key;
@@ -131,7 +132,14 @@ const setUpRouters = (
 
     app.get( "/issue_token", async ( req, res) => {
         try {
-            const sudt_token = await api.issueToken(default_sudt_issue_amount, user_private_key);
+            console.log('prepare some changes money.');
+            await api.giveUserLayer1AccountSomeMoney(
+                miner_ckb_address, 
+                miner_private_key, 
+                user_ckb_address, 
+                BigInt(change_amount) 
+            );
+            const sudt_token = await api.issueToken(default_sudt_issue_amount, user_private_key, BigInt(default_issue_sudt_capacity) );
             res.send({status:'ok', data: {sudt_token: sudt_token}});
         } catch (error) {
             console.log(error);

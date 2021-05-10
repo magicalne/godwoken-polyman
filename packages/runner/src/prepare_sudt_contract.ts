@@ -20,7 +20,7 @@ const intervals = 5000; // 5 seconds
 
 export const run = async (maxRetryLimit: number) => {
   try {
-    const isSudtScriptAlreadyExits = await api.checkIfL1SudtScriptExits();
+    const isSudtScriptAlreadyExits = await api.checkIfL1SudtScriptExits(ckb_rpc);
     if(isSudtScriptAlreadyExits){
       console.log(`sudt script already prepared.`);
       console.log(`finished~`);

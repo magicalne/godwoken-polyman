@@ -57,7 +57,6 @@ import { deploymentConfig } from "../js/utils/deployment_config";
 import path from "path";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 import fs from "fs";
-import { calcMessage } from "./convert-tx";
 
 import {
   asyncSleep,
@@ -282,12 +281,17 @@ export class Api {
       `Layer 2 sudt script hash:`,
       utils.computeScriptHash(layer2SudtScript)
     );
+
+    // if(txSkeleton.get("outputs").get(1)){
+    //   txSkeleton.get("outputs").get(1).cell_output.type = null;
+    //   txSkeleton.get("outputs").get(1).data = '0x';
+    // }
     
     console.log(JSON.stringify(createTransactionFromSkeleton(txSkeleton), null, 2));
     
     console.log("ready to pay fee..");
 
-    txSkeleton = await common.payFee(
+    txSkeleton = await common.payFeeByFeeRate(
       txSkeleton,
       [fromAddress],
       BigInt(1000)
@@ -566,13 +570,22 @@ export class Api {
     
   }
 
-  async checkIfL1SudtScriptExits(){
+  async checkIfL1SudtScriptExits(ckb_rpc_url: string){
     const config = getConfig();
     if(!config.SCRIPTS.SUDT){
         console.error("sudt scripts not found in lumos config, please deploy first.");
         return false;
     }
-    //todo: check if sudt cell exits and is live.
+    
+    // check if sudt cell exits and is live
+    const rpc = new RPC(ckb_rpc_url);
+    const result = await rpc.get_transaction(config.SCRIPTS.SUDT.TX_HASH);
+    const cell = result.transaction.outputs[parseInt(config.SCRIPTS.SUDT.INDEX, 16)];
+    console.log(JSON.stringify(cell, null, 2)); 
+    if(!cell){
+      console.log('sudt cell not found!');
+      return false;
+    }
     
     return true;
   }
