@@ -132,13 +132,6 @@ const setUpRouters = (
 
     app.get( "/issue_token", async ( req, res) => {
         try {
-            console.log('prepare some changes money.');
-            await api.giveUserLayer1AccountSomeMoney(
-                miner_ckb_address, 
-                miner_private_key, 
-                user_ckb_address, 
-                BigInt(change_amount) 
-            );
             const sudt_token = await api.issueToken(default_sudt_issue_amount, user_private_key, BigInt(default_issue_sudt_capacity) );
             res.send({status:'ok', data: {sudt_token: sudt_token}});
         } catch (error) {
@@ -299,7 +292,7 @@ const setUpRouters = (
     app.get( "/get_layer2_sudt_balance", async ( req, res ) => {
         try {
             const eth_address = req.query.eth_address + '';
-            const sudt_token_args = req.query.sudt_token + '';
+            // const sudt_token_args = req.query.sudt_token + '';
             await api.syncToTip();
 
             const _account_id = await api.getAccountIdByEthAddr(eth_address);
@@ -309,6 +302,7 @@ const setUpRouters = (
             const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
             const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
             console.log(`sudt_id: ${sudt_id}`);
+
             if(!sudt_id)
                 return res.send({status:'failed', error: `sudt account not exits. deposit sudt first.`});
 
@@ -319,6 +313,22 @@ const setUpRouters = (
             res.send({status:'failed', error: error});
         }
     } );
+
+    app.get( "/get_sudt_token", async ( req, res ) => {
+        try {
+            const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
+            const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
+            console.log(`sudt_id: ${sudt_id}`); 
+            if(!sudt_id)
+                return res.send({status:'failed', error: "sudt_id not exits. issue sudt token first!"});    
+            
+            const sudt_token = api.getL1SudtToken(user_private_key);
+            return res.send({status:'ok', data: {sudt_token: sudt_token}});   
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});   
+        }
+    });
 }
 
 export async function start() {

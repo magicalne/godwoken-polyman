@@ -56,6 +56,13 @@ class Api{
         return res.data; 
     }
 
+    async getSudtToken(){
+        let res = await axios.get(`${this.base_url}/get_sudt_token`, {
+
+        });
+        return res.data;
+    }
+
     async deposit(eth_address: string){
         let res = await axios.get(`${this.base_url}/deposit`, { 
             params:{

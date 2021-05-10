@@ -44,6 +44,17 @@ const styles = {...common_styles, ...{
   },
   contract_li: {
     listStyleType: 'none' as const,
+  },
+  descrip_sudt: {
+    width: '600px',
+    fontSize: '13px',
+    margin: '30px auto',
+    textAlign: 'left' as const,
+  },
+  placeholder_for_experimental: {
+    width: '700px',
+    margin: '0 auto',
+    marginTop: '50px',
   }
 }
 }
@@ -62,6 +73,7 @@ function Home() {
   const [deployedContracts, setDeployedContracts] = useState<string[]>([]);
   const [rollupTypeHash, setRollupTypeHash] = useState<string>();
   const [ethAccountLockConfig, setEthAccountLockConfig] = useState<EthAccountLockConfig>();
+  const [sudtToken, setSudtToken] = useState<string>();
 
   useEffect(() => {
     // connect account
@@ -76,7 +88,8 @@ function Home() {
   useEffect(() => {
     if(selectedAddress){
       getBalance();
-      getSudtBalance();
+      //getSudtBalance();
+      getSudtToken();
     };
   }, [selectedAddress]);
 
@@ -105,12 +118,27 @@ function Home() {
     try {
       const res = await api.getSudtBalance(selectedAddress);
       if(res.status !== 'ok')
-        return notify(`failed to get sudt balance from account. ${JSON.stringify(res.error)}`);
+        return notify(`failed to get sudt balance from account. issue sudt token then ${JSON.stringify(res.error)}`);
       await setSudtBalance(utils.shannon2CKB(res.data));
       console.log(utils.shannon2CKB(res.data));
     } catch (error) {
       notify(JSON.stringify(error));
     }
+  }
+
+  const getSudtToken = async () => {
+    const api = new Api();
+    try {
+      const res = await api.getSudtToken();
+      console.log(res);
+      if(res.status !== 'ok')
+        return console.log(`failed to get sudt token. ${JSON.stringify(res.error)}`);
+
+      await setSudtToken(res.data.sudt_token);
+      await getSudtBalance();
+    } catch (error) {
+      notify(JSON.stringify(error));
+    } 
   }
 
   const getRollupTypeHash = async () => {
@@ -409,7 +437,25 @@ function Home() {
 
           <hr></hr>
 
-           <h2>test Sudt Section </h2>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} style={styles.contract_container}>
+              Contract Address: 
+              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
+                {deployedContracts.length > 0 ? deployedContracts.join('\n') : 'nothing.'}
+              </SyntaxHighlighter>
+            </Grid>
+          </Grid>
+
+          <hr></hr>
+
+
+
+          <div style={styles.placeholder_for_experimental}>
+            <hr style={{width: '100%'}}></hr>
+          </div>
+
+          <h4> Sudt Section (experimental) </h4>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -417,12 +463,23 @@ function Home() {
             </Grid>
           </Grid>
 
-{/*         <Grid container spacing={3}>
+          <hr></hr>
+
+         <Grid container spacing={5}>
             <Grid item xs={12}>
-              <FreshButton text={"Deploy L1 Sudt Contract"} onClick={deploySudtContract} custom_style={styles.button} />
+              <div style={styles.descrip_sudt}>
+                <p>you should issue sudt token first if sudt token is empty.</p>
+                <p>depositting sudt by defaut will give you 400 sudt each time. and the capacity of ckb required is also 400 ckb, so the balance of your layer2 ckb will also increase. </p>
+              </div>
+            </Grid>
+          </Grid> 
+
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <h5>Sudt Token:  {sudtToken ? sudtToken?.slice(0,6): ''}..{sudtToken ? sudtToken?.slice(60) : ''}</h5>
             </Grid>
           </Grid>
-*/}
+
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <FreshButton text={"Issue Sudt Token"} onClick={issueToken} custom_style={styles.button} />
@@ -437,21 +494,10 @@ function Home() {
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <FreshButton text={"Deploy L2 Erc20-Proxy Contract"} onClick={deployErc20ProxyContract} custom_style={styles.button} />
+              <FreshButton text={"Deploy Erc20-Proxy Contract"} onClick={deployErc20ProxyContract} custom_style={styles.button} />
             </Grid>
           </Grid>
 
-          <hr></hr>
-
-
-          <Grid container spacing={3}>
-            <Grid item xs={12} style={styles.contract_container}>
-              Contract Address: 
-              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
-                {deployedContracts.join('\n')}
-              </SyntaxHighlighter>
-            </Grid>
-          </Grid>
         </header>
       </div>
     </div>

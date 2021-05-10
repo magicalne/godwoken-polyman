@@ -603,6 +603,12 @@ export class Api {
     return getL2SudtScriptHash(l1_sudt_script);
   }
 
+  getL1SudtToken(private_key: string) {
+    const lock = parseAddress(privateKeyToCkbAddress(private_key));
+    const lock_hash = utils.computeScriptHash(lock);
+    return lock_hash;
+  }
+
   async issueToken(
     amount: string,
     privateKey: HexString,
