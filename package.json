@@ -23,6 +23,8 @@
     "prepare-ui": "yarn build:client && rm -rf ./packages/runner/ui && cp -r ./packages/client/build ./packages/runner/ui",
     "prepare-money": "yarn workspace @godwoken-examples/runner prepare-money",
     "prepare-money:normal": "yarn workspace @godwoken-examples/runner prepare-money:normal",
+    "prepare-sudt": "yarn workspace @godwoken-examples/runner prepare-sudt",
+    "prepare-sudt:normal": "yarn workspace @godwoken-examples/runner prepare-sudt:normal",
     "gen-config": "yarn workspace @godwoken-examples/runner generateConfig",
     "clean": "rm -rf packages/runner/db && rm -rf packages/runner/temp-db"
   }
