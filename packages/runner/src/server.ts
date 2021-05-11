@@ -323,14 +323,24 @@ const setUpRouters = (
 
     app.get( "/get_sudt_token", async ( req, res ) => {
         try {
-             const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
-             const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
-             console.log(`sudt_id: ${sudt_id}`); 
-             if(!sudt_id)
-                 return res.send({status:'failed', error: "sudt_id not exits. issue sudt token first!"});    
-            
+             // const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
+             // const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
+             // console.log(`sudt_id: ${sudt_id}`); 
+             // if(!sudt_id)
+             //     return res.send({status:'failed', error: "sudt_id not exits. issue sudt token first!"});    
             const sudt_token = api.getL1SudtToken(user_private_key);
             return res.send({status:'ok', data: {sudt_token: sudt_token}});   
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error});   
+        }
+    });
+
+    app.get( "/get_sudt_token_total_amount", async ( req, res ) => {
+        try {
+            const sudt_token = api.getL1SudtToken(user_private_key);
+            const total_amount = await api.getL1SudtTokenTotalAmount(sudt_token);
+            return res.send({status:'ok', data: {total_amount: total_amount.toString()}}); 
         } catch (error) {
             console.log(error);
             res.send({status:'failed', error: error});   
