@@ -122,6 +122,13 @@ const setUpRouters = (
     app.get( "/deposit_sudt", async ( req, res) => {
         try {
             const eth_address = req.query.eth_address + '';
+            // FIXME: remove this with sudt transfer fixed.
+            await api.giveUserLayer1AccountSomeMoney(
+                miner_ckb_address, 
+                miner_private_key, 
+                user_ckb_address, 
+                BigInt(change_amount) 
+            ); 
             const {account_id, l2_sudt_script_hash} = await api.deposit_sudt(user_private_key, eth_address, default_deposit_amount, default_sudt_capacity);
             res.send({status:'ok', data: {account_id, l2_sudt_script_hash}});
         } catch (error) {
@@ -316,11 +323,11 @@ const setUpRouters = (
 
     app.get( "/get_sudt_token", async ( req, res ) => {
         try {
-            const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
-            const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
-            console.log(`sudt_id: ${sudt_id}`); 
-            if(!sudt_id)
-                return res.send({status:'failed', error: "sudt_id not exits. issue sudt token first!"});    
+             const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
+             const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
+             console.log(`sudt_id: ${sudt_id}`); 
+             if(!sudt_id)
+                 return res.send({status:'failed', error: "sudt_id not exits. issue sudt token first!"});    
             
             const sudt_token = api.getL1SudtToken(user_private_key);
             return res.send({status:'ok', data: {sudt_token: sudt_token}});   
