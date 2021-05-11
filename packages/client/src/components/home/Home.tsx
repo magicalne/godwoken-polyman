@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './Home.css';
 import Api from '../../api/index';
 import Web3Api from '../../api/web3';
 import FreshButton from '../widget/fresh_button';
@@ -10,6 +9,9 @@ import common_styles from '../widget/common_style';
 import utils from '../../utils/index';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { MetaMaskIcon } from '../widget/metamask/icon';
+
+import './Home.css';
 
 declare global {
   interface Window { ethereum: any; }
@@ -25,6 +27,7 @@ const styles = {...common_styles, ...{
   },
   balance: {
     color: 'whitesmoke',
+    fontSize: '20px',
   },
   button: {
     fontSize: '25px',
@@ -74,6 +77,7 @@ function Home() {
   const [rollupTypeHash, setRollupTypeHash] = useState<string>();
   const [ethAccountLockConfig, setEthAccountLockConfig] = useState<EthAccountLockConfig>();
   const [sudtToken, setSudtToken] = useState<string>();
+  const [sudtTotalAmount, setSudtTotalAmount] = useState<string>();
 
   useEffect(() => {
     // connect account
@@ -88,8 +92,9 @@ function Home() {
   useEffect(() => {
     if(selectedAddress){
       getBalance();
-      //getSudtBalance();
+      getSudtBalance();
       getSudtToken();
+      getSudtTotalAmount();
     };
   }, [selectedAddress]);
 
@@ -104,6 +109,7 @@ function Home() {
     try {
       console.log(selectedAddress);
       const data = await web3Api.getBalance(selectedAddress);
+      console.log(data);
       if(!data)
         return console.log(`balance is undefinded.`);
         
@@ -124,7 +130,7 @@ function Home() {
     try {
       const res = await api.getSudtBalance(selectedAddress);
       if(res.status !== 'ok')
-        return notify(`failed to get sudt balance from account. issue sudt token then ${JSON.stringify(res.error)}`);
+        return console.error(`failed to get sudt balance from account. issue sudt token then ${JSON.stringify(res.error)}`);
       await setSudtBalance(utils.shannon2CKB(res.data));
       console.log(utils.shannon2CKB(res.data));
     } catch (error) {
@@ -143,12 +149,27 @@ function Home() {
         return console.log(`failed to get sudt token. ${JSON.stringify(res.error)}`);
 
       await setSudtToken(res.data.sudt_token);
-      await getSudtBalance();
     } catch (error) {
       console.log(`get sudt token error`);
       console.log(error);
       notify(JSON.stringify(error));
     } 
+  }
+
+  const getSudtTotalAmount = async () => {
+    const api = new Api();
+    try {
+      const res = await api.getSudtTokenTotalAmount();
+      console.log(res);
+      if(res.status !== 'ok')
+        return console.log(`failed to get sudt token. ${JSON.stringify(res.error)}`);
+
+      await setSudtTotalAmount(res.data.total_amount);
+    } catch (error) {
+      console.log(`get sudt token amount error`);
+      console.log(error);
+      notify(JSON.stringify(error));
+    }  
   }
 
   const getRollupTypeHash = async () => {
@@ -214,20 +235,20 @@ function Home() {
    }
  }
 
- const deploySudtContract = async () => {
-   const api = new Api();
-   try{
-     const res = await api.deploySudtContract();
-     console.log(res);
-     if(res.status === 'ok'){
-       notify('ok', 'success');
-     }else{
-       notify(JSON.stringify(res.error, null, 2));
-     }
-   } catch (error) {
-     notify(JSON.stringify(error));
-   }
- }
+ // const deploySudtContract = async () => {
+ //   const api = new Api();
+ //   try{
+ //     const res = await api.deploySudtContract();
+ //     console.log(res);
+ //     if(res.status === 'ok'){
+ //       notify('ok', 'success');
+ //     }else{
+ //       notify(JSON.stringify(res.error, null, 2));
+ //     }
+ //   } catch (error) {
+ //     notify(JSON.stringify(error));
+ //   }
+ // }
 
  const issueToken = async () => {
    const api = new Api();
@@ -402,22 +423,37 @@ function Home() {
         }
         reader.readAsBinaryString(codefile);
     });  
-  } 
+  }
 
-// const web3CodeString = `
-// const godwoken_rpc_url = 'http://127.0.0.1:8024';
-// const provider_config =  {
-//   godwoken: {
-//       rollup_type_hash: "${rollupTypeHash}",
-//       eth_account_lock: {
-//           code_hash: "${ethAccountLockConfig?.code_hash}",
-//           hash_type: "${ethAccountLockConfig?.hash_type}"
-//       }
-//   }
-// }
-// const provider = new PolyjuiceHttpProvider(godwoken_rpc_url, provider_config);
-// const web3 = new Web3(provider);
-//                   `
+  const displayShortEthAddress = (eth_address: string) => {
+    const length = eth_address.length;
+    if(length !== 42)
+      return console.error('not a valide eth address');
+
+    return eth_address.slice(0,6) + '...' + eth_address.slice(length - 4);
+  }
+
+  const displayShortSudtToken = (sudt_token: string | undefined) => {
+    if(!sudt_token)
+      return 'undefined';
+
+    return sudt_token.slice(0, 6) + '...' + sudt_token.slice(sudt_token.length - 4);
+  }
+
+  const toEthBalance = (ckb_balance: string) => {
+    const ckb = parseFloat(ckb_balance);
+    const eth = ckb / parseFloat('10000000000');
+    return eth.toFixed(10 - ckb_balance.length + 1);
+
+  }
+
+const sudt_token_info = `
+symbol: MLMC
+sudt token: ${ displayShortSudtToken(sudtToken) }
+total amount: ${ utils.shannon2CKB(sudtTotalAmount || '') }
+decimal places: 8 (same with CKB)
+`
+
 
   return (
     <div>
@@ -426,8 +462,8 @@ function Home() {
           <NotifyPlace />
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.header}>
-              <h3>Your EthAddress: {selectedAddress} </h3>
-              <div>Balance: <span style={styles.balance}>{balance} CKB </span></div>
+              <h3>  <MetaMaskIcon /> { displayShortEthAddress(selectedAddress ? selectedAddress : '') } </h3>
+              <div style={styles.balance}>Balance: <span>{balance} CKB = {toEthBalance(balance)}  pETH </span></div>
             </Grid>
           </Grid>
 
@@ -473,7 +509,7 @@ function Home() {
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <div>Balance: <span style={styles.balance}>{sudtBalance} Sudt </span></div>
+              <div style={styles.balance}>Balance: <span>{sudtBalance} MLMC </span></div>
             </Grid>
           </Grid>
 
@@ -482,15 +518,18 @@ function Home() {
          <Grid container spacing={5}>
             <Grid item xs={12}>
               <div style={styles.descrip_sudt}>
-                <p>you should issue sudt token first if sudt token is empty.</p>
+                <p>you should issue sudt token first if sudt token total amount is 0.</p>
                 <p>depositting sudt by defaut will give you 400 sudt each time. and the capacity of ckb required is also 400 ckb, so the balance of your layer2 ckb will also increase. </p>
               </div>
             </Grid>
           </Grid> 
 
           <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <h5>Sudt Token:  {sudtToken ? sudtToken?.slice(0,6): ''}..{sudtToken ? sudtToken?.slice(60) : ''}</h5>
+            <Grid item xs={12} style={styles.contract_container}>
+              <h5>My Little Meow Coin</h5>
+              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
+                {sudt_token_info}
+              </SyntaxHighlighter>
             </Grid>
           </Grid>
 

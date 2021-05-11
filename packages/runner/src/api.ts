@@ -609,6 +609,33 @@ export class Api {
     return lock_hash;
   }
 
+  async getL1SudtTokenTotalAmount(sudt_token: string){
+    const lumos_config = getConfig();
+    if(!lumos_config.SCRIPTS.SUDT){
+      throw new Error("SUDT scripts not exits in lumos config file.");
+    }
+
+    const type_script: Script = {
+      code_hash: lumos_config.SCRIPTS.SUDT.CODE_HASH,
+      hash_type: lumos_config.SCRIPTS.SUDT.HASH_TYPE,
+      args: sudt_token
+    }
+
+    // find cell with sudt
+    const cellCollector = new CellCollector(this.indexer, {
+      type: type_script
+    });
+    
+    var capacity = 0n;
+
+    for await (const cell of cellCollector.collect()) {
+      const c =  BigInt('0x'+cell.data.slice(2).match(/../g).reverse().join(''));
+      capacity = capacity + c; 
+    }
+
+    return capacity;
+  }
+
   async issueToken(
     amount: string,
     privateKey: HexString,
