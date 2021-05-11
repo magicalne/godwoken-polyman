@@ -102,12 +102,18 @@ function Home() {
     if(!selectedAddress)return;
     const web3Api = new Web3Api(); 
     try {
+      console.log(selectedAddress);
       const data = await web3Api.getBalance(selectedAddress);
+      if(!data)
+        return console.log(`balance is undefinded.`);
+        
       const balance = BigInt(data).toString();
       console.log(balance);
       await setBalance(utils.shannon2CKB(balance));
       console.log(utils.shannon2CKB(balance));
     } catch (error) {
+      console.log(`get bablance error`);
+      console.log(error);
       notify(JSON.stringify(error));
     }
   }
@@ -122,6 +128,8 @@ function Home() {
       await setSudtBalance(utils.shannon2CKB(res.data));
       console.log(utils.shannon2CKB(res.data));
     } catch (error) {
+      console.log(`get sudt bablance error`);
+      console.log(error);
       notify(JSON.stringify(error));
     }
   }
@@ -137,6 +145,8 @@ function Home() {
       await setSudtToken(res.data.sudt_token);
       await getSudtBalance();
     } catch (error) {
+      console.log(`get sudt token error`);
+      console.log(error);
       notify(JSON.stringify(error));
     } 
   }
@@ -149,6 +159,8 @@ function Home() {
         return notify(`failed to get rollup type hash. ${JSON.stringify(res.error)}`);
       setRollupTypeHash(res.data);
     } catch (error) {
+      console.log(`get rollup type hash error`);
+      console.log(error);
       notify(JSON.stringify(error));
     } 
   }
@@ -161,6 +173,8 @@ function Home() {
         return notify(`failed to get eth_account_lock config. ${JSON.stringify(res.error)}`);
       setEthAccountLockConfig(res.data);
     } catch (error) {
+      console.log(`get eth account lock error`);
+      console.log(error);
       notify(JSON.stringify(error));
     } 
   }
