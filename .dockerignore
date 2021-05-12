@@ -1,0 +1,6 @@
+.git
+node_modules
+npm-debug
+
+packages/runner/db
+packages/runner/temp-db
