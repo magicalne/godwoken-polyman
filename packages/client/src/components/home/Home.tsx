@@ -10,7 +10,7 @@ import utils from '../../utils/index';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { MetaMaskIcon } from '../widget/metamask/icon';
-
+import MetamaskWallet from '../widget/metamask/Wallet';
 import './Home.css';
 
 declare global {
@@ -427,8 +427,9 @@ function Home() {
 
   const displayShortEthAddress = (eth_address: string) => {
     const length = eth_address.length;
-    if(length !== 42)
-      return console.error('not a valide eth address');
+    if(length !== 42){
+      return eth_address;
+    }
 
     return eth_address.slice(0,6) + '...' + eth_address.slice(length - 4);
   }
@@ -460,9 +461,12 @@ decimal places: 8 (same with CKB)
       <div className="App">
         <header className="App-header">
           <NotifyPlace />
+
+          <MetamaskWallet />
+
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.header}>
-              <h3>  <MetaMaskIcon /> { displayShortEthAddress(selectedAddress ? selectedAddress : '') } </h3>
+              <h3>  <MetaMaskIcon /> { displayShortEthAddress(selectedAddress ? selectedAddress : 'not found.') } </h3>
               <div style={styles.balance}>Balance: <span>{balance} CKB = {toEthBalance(balance)}  pETH </span></div>
             </Grid>
           </Grid>
