@@ -2,5 +2,6 @@
     "development_server_url": "http://localhost:6101",
     "web3_server_url": "http://localhost:8024",
     "production_server_url": "https://your.domain",
+    "chain_id": "0x3",
     "mode": "development"
 }

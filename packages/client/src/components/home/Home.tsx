@@ -10,7 +10,7 @@ import utils from '../../utils/index';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { MetaMaskIcon } from '../widget/metamask/icon';
-
+import MetamaskWallet from '../widget/metamask/Wallet';
 import './Home.css';
 
 declare global {
@@ -70,7 +70,7 @@ export interface EthAccountLockConfig {
 function Home() {
   const inputFile = useRef<HTMLInputElement>(null);
   const [selectedAddress, setSelectedAddress] = useState<string>();
-  const [balance, setBalance] = useState<string>('0');
+  
   const [sudtBalance, setSudtBalance] = useState<string>('0');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [deployedContracts, setDeployedContracts] = useState<string[]>([]);
@@ -79,50 +79,22 @@ function Home() {
   const [sudtToken, setSudtToken] = useState<string>();
   const [sudtTotalAmount, setSudtTotalAmount] = useState<string>();
 
-  useEffect(() => {
-    // connect account
-    if(window.ethereum){
-      window.ethereum.request({ method: 'eth_requestAccounts' });
-      setSelectedAddress(window.ethereum.selectedAddress);
-    };
-    getRollupTypeHash();
-    getEthAccountLockConfig();
-  }, []);
+  const updateWallet = (new_wallet_addr?: string) => {
+    if(new_wallet_addr){
+      setSelectedAddress(new_wallet_addr);
+    }
+  } 
 
   useEffect(() => {
     if(selectedAddress){
-      getBalance();
       getSudtBalance();
       getSudtToken();
       getSudtTotalAmount();
     };
   }, [selectedAddress]);
 
-  // detect metamask account changes.
-  window.ethereum.on('accountsChanged', function (accounts: any) {
-    setSelectedAddress(accounts[0]);
-  });
 
-  const getBalance = async () => {
-    if(!selectedAddress)return;
-    const web3Api = new Web3Api(); 
-    try {
-      console.log(selectedAddress);
-      const data = await web3Api.getBalance(selectedAddress);
-      console.log(data);
-      if(!data)
-        return console.log(`balance is undefinded.`);
-        
-      const balance = BigInt(data).toString();
-      console.log(balance);
-      await setBalance(utils.shannon2CKB(balance));
-      console.log(utils.shannon2CKB(balance));
-    } catch (error) {
-      console.log(`get bablance error`);
-      console.log(error);
-      notify(JSON.stringify(error));
-    }
-  }
+  var updateBalance = () => {};
 
   const getSudtBalance = async () => {
     if(!selectedAddress)return;
@@ -208,7 +180,7 @@ function Home() {
       console.log(res);
       if(res.status === 'ok'){
         notify(`your account id: ${res.data.account_id}`, 'success');
-        await getBalance();
+        updateBalance();
       }else{
         notify(JSON.stringify(res.error));
       }
@@ -235,21 +207,6 @@ function Home() {
    }
  }
 
- // const deploySudtContract = async () => {
- //   const api = new Api();
- //   try{
- //     const res = await api.deploySudtContract();
- //     console.log(res);
- //     if(res.status === 'ok'){
- //       notify('ok', 'success');
- //     }else{
- //       notify(JSON.stringify(res.error, null, 2));
- //     }
- //   } catch (error) {
- //     notify(JSON.stringify(error));
- //   }
- // }
-
  const issueToken = async () => {
    const api = new Api();
    try{
@@ -264,41 +221,6 @@ function Home() {
      notify(JSON.stringify(error));
    }
  }
-
-    // const transfer = async () => {
-    //     if(!selectedAddress)return notify(`metamask account not found.`);
-    //     const api = new Api();
-    //     try {
-    //         /* FIXME: get those fields from form instead */
-    //         const to_id = '1'; /* CKB token sudt_id account */
-    //         const amount = '500';
-    //         const fee = '50';
-    //         const res = await api.transfer(window.ethereum.selectedAddress);
-    //         if(res.status !== 'ok')return notify(JSON.stringify(res));
-
-    //         const data: MsgSignType = res.data;
-    //         var signature;
-    //         try {
-    //             signature = await window.ethereum.request({
-    //                 method: 'personal_sign',
-    //                 params: [data.message, window.ethereum.selectedAddress],
-    //             });
-    //         } catch (error) {
-    //             console.log(error);
-    //             return notify(`could not finished signing process. \n\n ${JSON.stringify(error)}`);
-    //         }
-
-    //         // submit the signed tx to godwoken
-    //         const tx_res = await api.sendL2Transaction(data.raw_l2tx, signature, data.type, data.l2_script_args);
-    //         if(tx_res.status !== 'ok'){
-    //             console.log(tx_res);
-    //             return notify(JSON.stringify(tx_res.error));
-    //         }
-    //         notify('transfer success', 'success');
-    //     } catch (error) {
-    //         notify(JSON.stringify(error));
-    //     }
-    // }
 
   const clickUploadContract = async () => {
     if(!inputFile)return notify(`input ref not found.`);
@@ -427,8 +349,9 @@ function Home() {
 
   const displayShortEthAddress = (eth_address: string) => {
     const length = eth_address.length;
-    if(length !== 42)
-      return console.error('not a valide eth address');
+    if(length !== 42){
+      return eth_address;
+    }
 
     return eth_address.slice(0,6) + '...' + eth_address.slice(length - 4);
   }
@@ -440,12 +363,7 @@ function Home() {
     return sudt_token.slice(0, 6) + '...' + sudt_token.slice(sudt_token.length - 4);
   }
 
-  const toEthBalance = (ckb_balance: string) => {
-    const ckb = parseFloat(ckb_balance);
-    const eth = ckb / parseFloat('10000000000');
-    return eth.toFixed(10 - ckb_balance.length + 1);
-
-  }
+  
 
 const sudt_token_info = `
 symbol: MLMC
@@ -460,10 +378,10 @@ decimal places: 8 (same with CKB)
       <div className="App">
         <header className="App-header">
           <NotifyPlace />
+
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.header}>
-              <h3>  <MetaMaskIcon /> { displayShortEthAddress(selectedAddress ? selectedAddress : '') } </h3>
-              <div style={styles.balance}>Balance: <span>{balance} CKB = {toEthBalance(balance)}  pETH </span></div>
+              <MetamaskWallet onUpdateWalletAddress={updateWallet} triggerUpdateBalanceMethod={updateBalance} />
             </Grid>
           </Grid>
 

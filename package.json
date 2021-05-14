@@ -26,6 +26,8 @@
     "prepare-sudt": "yarn workspace @godwoken-examples/runner prepare-sudt",
     "prepare-sudt:normal": "yarn workspace @godwoken-examples/runner prepare-sudt:normal",
     "gen-config": "yarn workspace @godwoken-examples/runner generateConfig",
-    "clean": "rm -rf packages/runner/db && rm -rf packages/runner/temp-db"
+    "clean": "rm -rf packages/runner/db && rm -rf packages/runner/temp-db",
+    "dev:client": "cd packages/client && yarn start",
+    "dev": "(cd packages/client && yarn start) & yarn start:normal"
   }
 }
