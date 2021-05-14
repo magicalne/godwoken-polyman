@@ -7,7 +7,6 @@ import FreshButton from '../fresh_button';
 import NetworkCheckIcon from '@material-ui/icons/NetworkCheck';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
-import AccountBalanceWalletOutlinedIcon from '@material-ui/icons/AccountBalanceWalletOutlined';
 import Web3Api from '../../../api/web3';
 import utils from '../../../utils/index';
 
@@ -245,7 +244,7 @@ export default function Wallet (props: WalletProps) {
             </span>
           </div>
           <div>
-            <div style={styles.balance}> <AccountBalanceWalletOutlinedIcon /> <span>{balance} CKB ( {toEthBalance(balance)}  pETH )</span></div>
+            <div style={styles.balance}> <span>{balance} CKB ( {toEthBalance(balance)}  pETH )</span></div>
           </div>
         </div>
     )
