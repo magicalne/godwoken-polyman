@@ -542,8 +542,8 @@ export class Uint64 {
   validate(compatible?: boolean): void;
   indexAt(i: number): number;
   raw(): ArrayBuffer;
-  toBigEndianBigUint64(): bigint;
-  toLittleEndianBigUint64(): bigint;
+  toBigEndianUint64(): BigInt;
+  toLittleEndianUint64(): BigInt;
   static size(): Number;
 }
 
@@ -797,3 +797,4 @@ export class WitnessArgs {
   getInputType(): BytesOpt;
   getOutputType(): BytesOpt;
 }
+
