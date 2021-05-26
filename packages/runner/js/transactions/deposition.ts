@@ -1,51 +1,51 @@
 import { Reader } from "ckb-js-toolkit";
-import { SerializeDepositionLockArgs } from "@godwoken-examples/godwoken/schemas/godwoken";
+import { SerializeDepositLockArgs } from "@godwoken-examples/godwoken/schemas/godwoken";
 import { DeploymentConfig } from "../base";
 import { deploymentConfig } from "../utils/deployment_config";
 import { Script, HexString, Hash, PackedSince, utils } from "@ckb-lumos/base";
-import { NormalizeDepositionLockArgs } from "@godwoken-examples/godwoken/normalizer";
+import { NormalizeDepositLockArgs } from "@godwoken-examples/godwoken/normalizer";
 import godwokenConfig from "../../configs/godwoken_config.json";
 import { deposit } from "@ckb-lumos/common-scripts/lib/dao";
 
-export interface DepositionLockArgs {
+export interface DepositLockArgs {
   owner_lock_hash: Hash;
   layer2_lock: Script;
   cancel_timeout: PackedSince;
 }
 
-export function serializeArgs(args: DepositionLockArgs): HexString {
+export function serializeArgs(args: DepositLockArgs): HexString {
   const rollup_type_hash: Hash = getRollupTypeHash();
   console.log(`rollup_type_hash: ${rollup_type_hash}`);
-  console.log(`DepositionLockArgs: ${JSON.stringify(args, null, 2)}`);
-  const serializedDepositionLockArgs: ArrayBuffer = SerializeDepositionLockArgs(
-    NormalizeDepositionLockArgs(args)
+  console.log(`DepositLockArgs: ${JSON.stringify(args, null, 2)}`);
+  const serializedDepositLockArgs: ArrayBuffer = SerializeDepositLockArgs(
+    NormalizeDepositLockArgs(args)
   );
 
-  const depositionLockArgsStr: HexString = new Reader(
-    serializedDepositionLockArgs
+  const depositLockArgsStr: HexString = new Reader(
+    serializedDepositLockArgs
   ).serializeJson();
 
-  return rollup_type_hash + depositionLockArgsStr.slice(2);
+  return rollup_type_hash + depositLockArgsStr.slice(2);
 }
 
-export function generateDepositionLock(
+export function generateDepositLock(
   config: DeploymentConfig,
   args: HexString
 ): Script {
   return {
-    code_hash: config.deposition_lock.code_hash,
-    hash_type: config.deposition_lock.hash_type,
+    code_hash: config.deposit_lock.code_hash,
+    hash_type: config.deposit_lock.hash_type,
     args: args,
   };
 }
 
-export function getDepositionLockArgs(
+export function getDepositLockArgs(
   ownerLockHash: Hash,
   layer2_lock_args: HexString,
   cancelTimeout: PackedSince = "0xc00000000002a300"
-): DepositionLockArgs {
+): DepositLockArgs {
   const rollup_type_hash = getRollupTypeHash();
-  const depositionLockArgs: DepositionLockArgs = {
+  const depositLockArgs: DepositLockArgs = {
     owner_lock_hash: ownerLockHash,
     layer2_lock: {
       code_hash: deploymentConfig.eth_account_lock.code_hash,
@@ -54,7 +54,7 @@ export function getDepositionLockArgs(
     },
     cancel_timeout: cancelTimeout, // relative timestamp, 2 days
   };
-  return depositionLockArgs;
+  return depositLockArgs;
 }
 
 export function getRollupTypeHash(): HexString {

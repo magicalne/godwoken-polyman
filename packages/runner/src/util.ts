@@ -8,11 +8,11 @@ import {
   Script,
 } from "@ckb-lumos/base";
 import {
-  generateDepositionLock,
-  DepositionLockArgs,
-  getDepositionLockArgs,
+  generateDepositLock,
+  DepositLockArgs,
+  getDepositLockArgs,
   serializeArgs,
-} from "../js/transactions/deposition";
+} from "../js/transactions/deposit";
 import Config from "../configs/config.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import { normalizers } from "ckb-js-toolkit";
@@ -25,7 +25,7 @@ import { generateAddress } from "@ckb-lumos/helpers";
 import TOML from '@iarna/toml';
 import fs from 'fs';
 import path from 'path';
-import { getRollupTypeHash } from "../js/transactions/deposition";
+import { getRollupTypeHash } from "../js/transactions/deposit";
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));

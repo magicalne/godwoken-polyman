@@ -44,13 +44,13 @@ import {
   TransactionSkeletonType,
 } from "@ckb-lumos/helpers";
 import {
-  generateDepositionLock,
-  DepositionLockArgs,
-  getDepositionLockArgs,
+  generateDepositLock,
+  DepositLockArgs,
+  getDepositLockArgs,
   serializeArgs,
   getRollupTypeHash,
   getL2SudtScriptHash,
-} from "../js/transactions/deposition";
+} from "../js/transactions/deposit";
 import { common, sudt } from "@ckb-lumos/common-scripts";
 import { RPC, Reader, normalizers as ckb_normalizers } from "ckb-js-toolkit";
 import { deploymentConfig } from "../js/utils/deployment_config";
@@ -166,17 +166,17 @@ export class Api {
     const ownerLock: Script = parseAddress(fromAddress);
     const ownerLockHash: Hash = utils.computeScriptHash(ownerLock);
     
-    const depositionLockArgs: DepositionLockArgs = getDepositionLockArgs(
+    const depositLockArgs: DepositLockArgs = getDepositLockArgs(
       ownerLockHash,
       layer2LockArgs
     );
     console.log(
       `Layer 2 lock script hash: ${utils.computeScriptHash(
-        depositionLockArgs.layer2_lock
+        depositLockArgs.layer2_lock
       )}`
     );
-    const serializedArgs: HexString = serializeArgs(depositionLockArgs);
-    const depositionLock: Script = generateDepositionLock(
+    const serializedArgs: HexString = serializeArgs(depositLockArgs);
+    const depositLock: Script = generateDepositLock(
       deploymentConfig,
       serializedArgs
     );
@@ -184,7 +184,7 @@ export class Api {
     const outputCell: Cell = {
       cell_output: {
         capacity: "0x" + BigInt(amount).toString(16),
-        lock: depositionLock,
+        lock: depositLock,
       },
       data: "0x",
     };
@@ -234,23 +234,23 @@ export class Api {
     const ownerLock: Script = parseAddress(fromAddress);
     const ownerLockHash: Hash = utils.computeScriptHash(ownerLock);
     
-    const depositionLockArgs: DepositionLockArgs = getDepositionLockArgs(
+    const depositLockArgs: DepositLockArgs = getDepositLockArgs(
       ownerLockHash,
       layer2LockArgs
     );
     const l2_lock_script_hash = utils.computeScriptHash(
-      depositionLockArgs.layer2_lock
+      depositLockArgs.layer2_lock
     );
     console.log(
       `Layer 2 lock script hash: ${l2_lock_script_hash}`
     );
-    const serializedArgs: HexString = serializeArgs(depositionLockArgs);
-    const depositionLock: Script = generateDepositionLock(
+    const serializedArgs: HexString = serializeArgs(depositLockArgs);
+    const depositLock: Script = generateDepositLock(
       deploymentConfig,
       serializedArgs
     );
   
-    const toAddress: string = generateAddress(depositionLock);
+    const toAddress: string = generateAddress(depositLock);
   
     txSkeleton = await sudt.transfer(
       txSkeleton,

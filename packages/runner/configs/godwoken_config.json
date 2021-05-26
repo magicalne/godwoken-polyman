@@ -26,7 +26,7 @@
     "rollup_config": {
       "l1_sudt_script_type_hash": "0xc1d16846e515a60e28d19197b87097631f40fbc8a33c0408ee65202803795939",
       "custodian_script_type_hash": "0xb3e68333f9fc5430f7cc57062072d81cd331a97116f64e3d1e33d820b53f0a51",
-      "deposition_script_type_hash": "0x0902c13b8904fb4865c8601fa618eafeaa88583a61090d02bab258123aaeeccd",
+      "deposit_script_type_hash": "0x0902c13b8904fb4865c8601fa618eafeaa88583a61090d02bab258123aaeeccd",
       "withdrawal_script_type_hash": "0x8c1b844148738c343ca073aa29ea3fab520af427eb0f36d715a57e73698b5293",
       "challenge_script_type_hash": "0x6505b58b420bd2f0bdda47aa7bd44e4713e59a267b70f99bb75a7fc3b4fe1169",
       "stake_script_type_hash": "0xe70a7c0e8f5e18bbd6b6e5785df7e0dd5c41cc9d3c328ccb6f24bfddc96f970d",

@@ -122,7 +122,7 @@ You can see `<rollup_type_hash>` when godwoken started.
 $ node packages/tools/lib/godwoken-cli.js getAccountIdByScriptHash <script_hash>
 ```
 
-You can get the script hash when deposition finished.
+You can get the script hash when deposit finished.
 
 ## Update creator account config
 

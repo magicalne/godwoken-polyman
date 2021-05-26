@@ -2,7 +2,7 @@ import { CellDep, Script } from "@ckb-lumos/base";
 
 export interface DeploymentConfig {
   custodian_lock: Script;
-  deposition_lock: Script;
+  deposit_lock: Script;
   withdrawal_lock: Script;
   challenge_lock: Script;
   stake_lock: Script;
@@ -15,7 +15,7 @@ export interface DeploymentConfig {
   poa_state: Script;
 
   custodian_lock_dep: CellDep;
-  deposition_lock_dep: CellDep;
+  deposit_lock_dep: CellDep;
   withdrawal_lock_dep: CellDep;
   challenge_lock_dep: CellDep;
   stake_lock_dep: CellDep;
