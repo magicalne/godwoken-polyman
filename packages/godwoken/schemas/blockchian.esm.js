@@ -85,6 +85,45 @@
     return buffer;
   }
 
+  class Uint16 {
+    constructor(reader, { validate = true } = {}) {
+      this.view = new DataView(assertArrayBuffer(reader));
+      if (validate) {
+        this.validate();
+      }
+    }
+
+    validate(compatible = false) {
+      assertDataLength(this.view.byteLength, 2);
+    }
+
+    indexAt(i) {
+      return this.view.getUint8(i);
+    }
+
+    raw() {
+      return this.view.buffer;
+    }
+
+    toBigEndianUint16() {
+      return this.view.getUint16(0, false);
+    }
+
+    toLittleEndianUint16() {
+      return this.view.getUint16(0, true);
+    }
+
+    static size() {
+      return 2;
+    }
+  }
+
+  function SerializeUint16(value) {
+    const buffer = assertArrayBuffer(value);
+    assertDataLength(buffer.byteLength, 2);
+    return buffer;
+  }
+
   class Uint32 {
     constructor(reader, { validate = true } = {}) {
       this.view = new DataView(assertArrayBuffer(reader));
@@ -771,6 +810,7 @@
 
   function SerializeOutPoint(value) {
     const array = new Uint8Array(0 + Byte32.size() + Uint32.size());
+    new DataView(array.buffer);
     array.set(new Uint8Array(SerializeByte32(value.tx_hash)), 0);
     array.set(new Uint8Array(SerializeUint32(value.index)), 0 + Byte32.size());
     return array.buffer;
@@ -804,6 +844,7 @@
 
   function SerializeCellInput(value) {
     const array = new Uint8Array(0 + Uint64.size() + OutPoint.size());
+    new DataView(array.buffer);
     array.set(new Uint8Array(SerializeUint64(value.since)), 0);
     array.set(new Uint8Array(SerializeOutPoint(value.previous_output)), 0 + Uint64.size());
     return array.buffer;
@@ -1063,6 +1104,7 @@
 
   function SerializeRawHeader(value) {
     const array = new Uint8Array(0 + Uint32.size() + Uint32.size() + Uint64.size() + Uint64.size() + Uint64.size() + Byte32.size() + Byte32.size() + Byte32.size() + Byte32.size() + Byte32.size());
+    new DataView(array.buffer);
     array.set(new Uint8Array(SerializeUint32(value.version)), 0);
     array.set(new Uint8Array(SerializeUint32(value.compact_target)), 0 + Uint32.size());
     array.set(new Uint8Array(SerializeUint64(value.timestamp)), 0 + Uint32.size() + Uint32.size());
@@ -1104,6 +1146,7 @@
 
   function SerializeHeader(value) {
     const array = new Uint8Array(0 + RawHeader.size() + Uint128.size());
+    new DataView(array.buffer);
     array.set(new Uint8Array(SerializeRawHeader(value.raw)), 0);
     array.set(new Uint8Array(SerializeUint128(value.nonce)), 0 + RawHeader.size());
     return array.buffer;
@@ -1325,6 +1368,7 @@
   exports.SerializeTransaction = SerializeTransaction;
   exports.SerializeTransactionVec = SerializeTransactionVec;
   exports.SerializeUint128 = SerializeUint128;
+  exports.SerializeUint16 = SerializeUint16;
   exports.SerializeUint256 = SerializeUint256;
   exports.SerializeUint32 = SerializeUint32;
   exports.SerializeUint64 = SerializeUint64;
@@ -1334,6 +1378,7 @@
   exports.Transaction = Transaction;
   exports.TransactionVec = TransactionVec;
   exports.Uint128 = Uint128;
+  exports.Uint16 = Uint16;
   exports.Uint256 = Uint256;
   exports.Uint32 = Uint32;
   exports.Uint64 = Uint64;

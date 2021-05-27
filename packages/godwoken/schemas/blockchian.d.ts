@@ -13,6 +13,17 @@ export interface UnionType {
   value: any;
 }
 
+export function SerializeUint16(value: CanCastToArrayBuffer): ArrayBuffer;
+export class Uint16 {
+  constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
+  validate(compatible?: boolean): void;
+  indexAt(i: number): number;
+  raw(): ArrayBuffer;
+  toBigEndianUint16(): number;
+  toLittleEndianUint16(): number;
+  static size(): Number;
+}
+
 export function SerializeUint32(value: CanCastToArrayBuffer): ArrayBuffer;
 export class Uint32 {
   constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);

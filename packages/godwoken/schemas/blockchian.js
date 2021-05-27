@@ -79,6 +79,45 @@ function serializeTable(buffers) {
   return buffer;
 }
 
+export class Uint16 {
+  constructor(reader, { validate = true } = {}) {
+    this.view = new DataView(assertArrayBuffer(reader));
+    if (validate) {
+      this.validate();
+    }
+  }
+
+  validate(compatible = false) {
+    assertDataLength(this.view.byteLength, 2);
+  }
+
+  indexAt(i) {
+    return this.view.getUint8(i);
+  }
+
+  raw() {
+    return this.view.buffer;
+  }
+
+  toBigEndianUint16() {
+    return this.view.getUint16(0, false);
+  }
+
+  toLittleEndianUint16() {
+    return this.view.getUint16(0, true);
+  }
+
+  static size() {
+    return 2;
+  }
+}
+
+export function SerializeUint16(value) {
+  const buffer = assertArrayBuffer(value);
+  assertDataLength(buffer.byteLength, 2);
+  return buffer;
+}
+
 export class Uint32 {
   constructor(reader, { validate = true } = {}) {
     this.view = new DataView(assertArrayBuffer(reader));

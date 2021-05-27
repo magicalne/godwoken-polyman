@@ -5,7 +5,7 @@ import cors from "cors";
 import timeout from "connect-timeout";
 import serverConfig from "../configs/server.json";
 import gpConfig from "../configs/config.json";
-import { getRollupTypeHash } from '../js/transactions/deposition';
+import { getRollupTypeHash } from '../js/transactions/deposit';
 // import { generateGodwokenConfig } from './util';
 import godwoken_config from "../configs/godwoken_config.json";
 import { deploymentConfig } from "../js/utils/deployment_config";

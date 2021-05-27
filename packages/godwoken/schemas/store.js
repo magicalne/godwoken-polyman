@@ -406,41 +406,45 @@ export class SMTBranchNode {
     }
   }
 
+  validate(compatible = false) {
+    const offsets = verifyAndExtractOffsets(this.view, 0, true);
+    if (offsets[1] - offsets[0] !== 1) {
+      throw new Error(`Invalid offset for fork_height: ${offsets[0]} - ${offsets[1]}`)
+    }
+    new Byte32(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
+    new Bytes(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
+  }
+
   getForkHeight() {
-    return this.view.getUint8(0);
+    const start = 4;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new DataView(this.view.buffer.slice(offset, offset_end)).getUint8(0);
   }
 
   getKey() {
-    return new Byte32(this.view.buffer.slice(0 + 1, 0 + 1 + Byte32.size()), { validate: false });
+    const start = 8;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Byte32(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
   getNode() {
-    return new Byte32(this.view.buffer.slice(0 + 1 + Byte32.size(), 0 + 1 + Byte32.size() + Byte32.size()), { validate: false });
-  }
-
-  getSibling() {
-    return new Byte32(this.view.buffer.slice(0 + 1 + Byte32.size() + Byte32.size(), 0 + 1 + Byte32.size() + Byte32.size() + Byte32.size()), { validate: false });
-  }
-
-  validate(compatible = false) {
-    assertDataLength(this.view.byteLength, SMTBranchNode.size());
-    this.getKey().validate(compatible);
-    this.getNode().validate(compatible);
-    this.getSibling().validate(compatible);
-  }
-  static size() {
-    return 0 + 1 + Byte32.size() + Byte32.size() + Byte32.size();
+    const start = 12;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.byteLength;
+    return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 }
 
 export function SerializeSMTBranchNode(value) {
-  const array = new Uint8Array(0 + 1 + Byte32.size() + Byte32.size() + Byte32.size());
-  const view = new DataView(array.buffer);
-  view.setUint8(0, value.fork_height);
-  array.set(new Uint8Array(SerializeByte32(value.key)), 0 + 1);
-  array.set(new Uint8Array(SerializeByte32(value.node)), 0 + 1 + Byte32.size());
-  array.set(new Uint8Array(SerializeByte32(value.sibling)), 0 + 1 + Byte32.size() + Byte32.size());
-  return array.buffer;
+  const buffers = [];
+  const forkHeightView = new DataView(new ArrayBuffer(1));
+  forkHeightView.setUint8(0, value.fork_height);
+  buffers.push(forkHeightView.buffer)
+  buffers.push(SerializeByte32(value.key));
+  buffers.push(SerializeBytes(value.node));
+  return serializeTable(buffers);
 }
 
 export class SMTLeafNode {
@@ -475,6 +479,45 @@ export function SerializeSMTLeafNode(value) {
   array.set(new Uint8Array(SerializeByte32(value.key)), 0);
   array.set(new Uint8Array(SerializeByte32(value.value)), 0 + Byte32.size());
   return array.buffer;
+}
+
+export class Uint16 {
+  constructor(reader, { validate = true } = {}) {
+    this.view = new DataView(assertArrayBuffer(reader));
+    if (validate) {
+      this.validate();
+    }
+  }
+
+  validate(compatible = false) {
+    assertDataLength(this.view.byteLength, 2);
+  }
+
+  indexAt(i) {
+    return this.view.getUint8(i);
+  }
+
+  raw() {
+    return this.view.buffer;
+  }
+
+  toBigEndianUint16() {
+    return this.view.getUint16(0, false);
+  }
+
+  toLittleEndianUint16() {
+    return this.view.getUint16(0, true);
+  }
+
+  static size() {
+    return 2;
+  }
+}
+
+export function SerializeUint16(value) {
+  const buffer = assertArrayBuffer(value);
+  assertDataLength(buffer.byteLength, 2);
+  return buffer;
 }
 
 export class Uint32 {
@@ -1921,11 +1964,12 @@ export class RollupConfig {
     new Uint64(this.view.buffer.slice(offsets[8], offsets[9]), { validate: false }).validate();
     new Uint64(this.view.buffer.slice(offsets[9], offsets[10]), { validate: false }).validate();
     new Uint64(this.view.buffer.slice(offsets[10], offsets[11]), { validate: false }).validate();
-    if (offsets[12] - offsets[11] !== 1) {
-      throw new Error(`Invalid offset for reward_burn_rate: ${offsets[11]} - ${offsets[12]}`)
+    new Uint32(this.view.buffer.slice(offsets[11], offsets[12]), { validate: false }).validate();
+    if (offsets[13] - offsets[12] !== 1) {
+      throw new Error(`Invalid offset for reward_burn_rate: ${offsets[12]} - ${offsets[13]}`)
     }
-    new Byte32Vec(this.view.buffer.slice(offsets[12], offsets[13]), { validate: false }).validate();
     new Byte32Vec(this.view.buffer.slice(offsets[13], offsets[14]), { validate: false }).validate();
+    new Byte32Vec(this.view.buffer.slice(offsets[14], offsets[15]), { validate: false }).validate();
   }
 
   getL1SudtScriptTypeHash() {
@@ -1942,7 +1986,7 @@ export class RollupConfig {
     return new Byte32(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getDepositionScriptTypeHash() {
+  getDepositScriptTypeHash() {
     const start = 12;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
@@ -2005,22 +2049,29 @@ export class RollupConfig {
     return new Uint64(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getRewardBurnRate() {
+  getCompatibleChainId() {
     const start = 48;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Uint32(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getRewardBurnRate() {
+    const start = 52;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
     return new DataView(this.view.buffer.slice(offset, offset_end)).getUint8(0);
   }
 
   getAllowedEoaTypeHashes() {
-    const start = 52;
+    const start = 56;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
     return new Byte32Vec(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
   getAllowedContractTypeHashes() {
-    const start = 56;
+    const start = 60;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.byteLength;
     return new Byte32Vec(this.view.buffer.slice(offset, offset_end), { validate: false });
@@ -2031,7 +2082,7 @@ export function SerializeRollupConfig(value) {
   const buffers = [];
   buffers.push(SerializeByte32(value.l1_sudt_script_type_hash));
   buffers.push(SerializeByte32(value.custodian_script_type_hash));
-  buffers.push(SerializeByte32(value.deposition_script_type_hash));
+  buffers.push(SerializeByte32(value.deposit_script_type_hash));
   buffers.push(SerializeByte32(value.withdrawal_script_type_hash));
   buffers.push(SerializeByte32(value.challenge_script_type_hash));
   buffers.push(SerializeByte32(value.stake_script_type_hash));
@@ -2040,6 +2091,7 @@ export function SerializeRollupConfig(value) {
   buffers.push(SerializeUint64(value.required_staking_capacity));
   buffers.push(SerializeUint64(value.challenge_maturity_blocks));
   buffers.push(SerializeUint64(value.finality_blocks));
+  buffers.push(SerializeUint32(value.compatible_chain_id));
   const rewardBurnRateView = new DataView(new ArrayBuffer(1));
   rewardBurnRateView.setUint8(0, value.reward_burn_rate);
   buffers.push(rewardBurnRateView.buffer)
@@ -2189,7 +2241,6 @@ export class SubmitTransactions {
     new Byte32(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
     new Uint32(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
     new Byte32(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
-    new Byte32Vec(this.view.buffer.slice(offsets[3], offsets[4]), { validate: false }).validate();
   }
 
   getTxWitnessRoot() {
@@ -2206,18 +2257,11 @@ export class SubmitTransactions {
     return new Uint32(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getCompactedPrevRootHash() {
+  getPrevStateCheckpoint() {
     const start = 12;
     const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.getUint32(start + 4, true);
-    return new Byte32(this.view.buffer.slice(offset, offset_end), { validate: false });
-  }
-
-  getCompactedPostRootList() {
-    const start = 16;
-    const offset = this.view.getUint32(start, true);
     const offset_end = this.view.byteLength;
-    return new Byte32Vec(this.view.buffer.slice(offset, offset_end), { validate: false });
+    return new Byte32(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 }
 
@@ -2225,8 +2269,7 @@ export function SerializeSubmitTransactions(value) {
   const buffers = [];
   buffers.push(SerializeByte32(value.tx_witness_root));
   buffers.push(SerializeUint32(value.tx_count));
-  buffers.push(SerializeByte32(value.compacted_prev_root_hash));
-  buffers.push(SerializeByte32Vec(value.compacted_post_root_list));
+  buffers.push(SerializeByte32(value.prev_state_checkpoint));
   return serializeTable(buffers);
 }
 
@@ -2281,8 +2324,9 @@ export class RawL2Block {
     new Uint64(this.view.buffer.slice(offsets[4], offsets[5]), { validate: false }).validate();
     new AccountMerkleState(this.view.buffer.slice(offsets[5], offsets[6]), { validate: false }).validate();
     new AccountMerkleState(this.view.buffer.slice(offsets[6], offsets[7]), { validate: false }).validate();
-    new SubmitTransactions(this.view.buffer.slice(offsets[7], offsets[8]), { validate: false }).validate();
+    new Byte32Vec(this.view.buffer.slice(offsets[7], offsets[8]), { validate: false }).validate();
     new SubmitWithdrawals(this.view.buffer.slice(offsets[8], offsets[9]), { validate: false }).validate();
+    new SubmitTransactions(this.view.buffer.slice(offsets[9], offsets[10]), { validate: false }).validate();
   }
 
   getNumber() {
@@ -2334,18 +2378,25 @@ export class RawL2Block {
     return new AccountMerkleState(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getSubmitTransactions() {
+  getStateCheckpointList() {
     const start = 32;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
-    return new SubmitTransactions(this.view.buffer.slice(offset, offset_end), { validate: false });
+    return new Byte32Vec(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
   getSubmitWithdrawals() {
     const start = 36;
     const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.byteLength;
+    const offset_end = this.view.getUint32(start + 4, true);
     return new SubmitWithdrawals(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getSubmitTransactions() {
+    const start = 40;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.byteLength;
+    return new SubmitTransactions(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 }
 
@@ -2358,8 +2409,9 @@ export function SerializeRawL2Block(value) {
   buffers.push(SerializeUint64(value.timestamp));
   buffers.push(SerializeAccountMerkleState(value.prev_account));
   buffers.push(SerializeAccountMerkleState(value.post_account));
-  buffers.push(SerializeSubmitTransactions(value.submit_transactions));
+  buffers.push(SerializeByte32Vec(value.state_checkpoint_list));
   buffers.push(SerializeSubmitWithdrawals(value.submit_withdrawals));
+  buffers.push(SerializeSubmitTransactions(value.submit_transactions));
   return serializeTable(buffers);
 }
 
@@ -2473,7 +2525,7 @@ export function SerializeL2Block(value) {
   return serializeTable(buffers);
 }
 
-export class DepositionRequest {
+export class DepositRequest {
   constructor(reader, { validate = true } = {}) {
     this.view = new DataView(assertArrayBuffer(reader));
     if (validate) {
@@ -2518,7 +2570,7 @@ export class DepositionRequest {
   }
 }
 
-export function SerializeDepositionRequest(value) {
+export function SerializeDepositRequest(value) {
   const buffers = [];
   buffers.push(SerializeUint64(value.capacity));
   buffers.push(SerializeUint128(value.amount));
@@ -2527,7 +2579,7 @@ export function SerializeDepositionRequest(value) {
   return serializeTable(buffers);
 }
 
-export class DepositionRequestVec {
+export class DepositRequestVec {
   constructor(reader, { validate = true } = {}) {
     this.view = new DataView(assertArrayBuffer(reader));
     if (validate) {
@@ -2538,7 +2590,7 @@ export class DepositionRequestVec {
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
     for (let i = 0; i < len(offsets) - 1; i++) {
-      new DepositionRequest(this.view.buffer.slice(offsets[i], offsets[i + 1]), { validate: false }).validate();
+      new DepositRequest(this.view.buffer.slice(offsets[i], offsets[i + 1]), { validate: false }).validate();
     }
   }
 
@@ -2557,12 +2609,12 @@ export class DepositionRequestVec {
     if (i + 1 < this.length()) {
       offset_end = this.view.getUint32(start + 4, true);
     }
-    return new DepositionRequest(this.view.buffer.slice(offset, offset_end), { validate: false });
+    return new DepositRequest(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 }
 
-export function SerializeDepositionRequestVec(value) {
-  return serializeTable(value.map(item => SerializeDepositionRequest(item)));
+export function SerializeDepositRequestVec(value) {
+  return serializeTable(value.map(item => SerializeDepositRequest(item)));
 }
 
 export class RawWithdrawalRequest {
@@ -2828,7 +2880,7 @@ export function SerializeBlockInfo(value) {
   return array.buffer;
 }
 
-export class DepositionLockArgs {
+export class DepositLockArgs {
   constructor(reader, { validate = true } = {}) {
     this.view = new DataView(assertArrayBuffer(reader));
     if (validate) {
@@ -2865,7 +2917,7 @@ export class DepositionLockArgs {
   }
 }
 
-export function SerializeDepositionLockArgs(value) {
+export function SerializeDepositLockArgs(value) {
   const buffers = [];
   buffers.push(SerializeByte32(value.owner_lock_hash));
   buffers.push(SerializeScript(value.layer2_lock));
@@ -2883,26 +2935,26 @@ export class CustodianLockArgs {
 
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
-    new DepositionLockArgs(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
+    new DepositLockArgs(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
     new Byte32(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
     new Uint64(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
   }
 
-  getDepositionLockArgs() {
+  getDepositLockArgs() {
     const start = 4;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
-    return new DepositionLockArgs(this.view.buffer.slice(offset, offset_end), { validate: false });
+    return new DepositLockArgs(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getDepositionBlockHash() {
+  getDepositBlockHash() {
     const start = 8;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
     return new Byte32(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getDepositionBlockNumber() {
+  getDepositBlockNumber() {
     const start = 12;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.byteLength;
@@ -2912,9 +2964,9 @@ export class CustodianLockArgs {
 
 export function SerializeCustodianLockArgs(value) {
   const buffers = [];
-  buffers.push(SerializeDepositionLockArgs(value.deposition_lock_args));
-  buffers.push(SerializeByte32(value.deposition_block_hash));
-  buffers.push(SerializeUint64(value.deposition_block_number));
+  buffers.push(SerializeDepositLockArgs(value.deposit_lock_args));
+  buffers.push(SerializeByte32(value.deposit_block_hash));
+  buffers.push(SerializeUint64(value.deposit_block_number));
   return serializeTable(buffers);
 }
 
@@ -2926,13 +2978,13 @@ export class UnlockCustodianViaRevertWitness {
     }
   }
 
-  getDepositionLockHash() {
+  getDepositLockHash() {
     return new Byte32(this.view.buffer.slice(0, 0 + Byte32.size()), { validate: false });
   }
 
   validate(compatible = false) {
     assertDataLength(this.view.byteLength, UnlockCustodianViaRevertWitness.size());
-    this.getDepositionLockHash().validate(compatible);
+    this.getDepositLockHash().validate(compatible);
   }
   static size() {
     return 0 + Byte32.size();
@@ -2942,7 +2994,7 @@ export class UnlockCustodianViaRevertWitness {
 export function SerializeUnlockCustodianViaRevertWitness(value) {
   const array = new Uint8Array(0 + Byte32.size());
   const view = new DataView(array.buffer);
-  array.set(new Uint8Array(SerializeByte32(value.deposition_lock_hash)), 0);
+  array.set(new Uint8Array(SerializeByte32(value.deposit_lock_hash)), 0);
   return array.buffer;
 }
 
@@ -3669,6 +3721,69 @@ export function SerializeBlockHashEntryVec(value) {
   return array.buffer;
 }
 
+export class VerifyTransactionContext {
+  constructor(reader, { validate = true } = {}) {
+    this.view = new DataView(assertArrayBuffer(reader));
+    if (validate) {
+      this.validate();
+    }
+  }
+
+  validate(compatible = false) {
+    const offsets = verifyAndExtractOffsets(this.view, 0, true);
+    new Uint32(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
+    new KVPairVec(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
+    new ScriptVec(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
+    new Byte32(this.view.buffer.slice(offsets[3], offsets[4]), { validate: false }).validate();
+    new BlockHashEntryVec(this.view.buffer.slice(offsets[4], offsets[5]), { validate: false }).validate();
+  }
+
+  getAccountCount() {
+    const start = 4;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Uint32(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getKvState() {
+    const start = 8;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new KVPairVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getScripts() {
+    const start = 12;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new ScriptVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getReturnDataHash() {
+    const start = 16;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Byte32(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getBlockHashes() {
+    const start = 20;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.byteLength;
+    return new BlockHashEntryVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+}
+
+export function SerializeVerifyTransactionContext(value) {
+  const buffers = [];
+  buffers.push(SerializeUint32(value.account_count));
+  buffers.push(SerializeKVPairVec(value.kv_state));
+  buffers.push(SerializeScriptVec(value.scripts));
+  buffers.push(SerializeByte32(value.return_data_hash));
+  buffers.push(SerializeBlockHashEntryVec(value.block_hashes));
+  return serializeTable(buffers);
+}
+
 export class VerifyTransactionWitness {
   constructor(reader, { validate = true } = {}) {
     this.view = new DataView(assertArrayBuffer(reader));
@@ -3679,30 +3794,26 @@ export class VerifyTransactionWitness {
 
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
-    new RawL2Block(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
-    new L2Transaction(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
+    new L2Transaction(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
+    new RawL2Block(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
     new Bytes(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
-    new KVPairVec(this.view.buffer.slice(offsets[3], offsets[4]), { validate: false }).validate();
+    new Bytes(this.view.buffer.slice(offsets[3], offsets[4]), { validate: false }).validate();
     new Bytes(this.view.buffer.slice(offsets[4], offsets[5]), { validate: false }).validate();
-    new ScriptVec(this.view.buffer.slice(offsets[5], offsets[6]), { validate: false }).validate();
-    new Byte32(this.view.buffer.slice(offsets[6], offsets[7]), { validate: false }).validate();
-    new Uint32(this.view.buffer.slice(offsets[7], offsets[8]), { validate: false }).validate();
-    new BlockHashEntryVec(this.view.buffer.slice(offsets[8], offsets[9]), { validate: false }).validate();
-    new Bytes(this.view.buffer.slice(offsets[9], offsets[10]), { validate: false }).validate();
-  }
-
-  getRawL2Block() {
-    const start = 4;
-    const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.getUint32(start + 4, true);
-    return new RawL2Block(this.view.buffer.slice(offset, offset_end), { validate: false });
+    new VerifyTransactionContext(this.view.buffer.slice(offsets[5], offsets[6]), { validate: false }).validate();
   }
 
   getL2Tx() {
-    const start = 8;
+    const start = 4;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
     return new L2Transaction(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getRawL2Block() {
+    const start = 8;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new RawL2Block(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
   getTxProof() {
@@ -3712,68 +3823,153 @@ export class VerifyTransactionWitness {
     return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getKvState() {
+  getKvStateProof() {
     const start = 16;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
-    return new KVPairVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+    return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getKvStateProof() {
+  getBlockHashesProof() {
     const start = 20;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
     return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getScripts() {
+  getContext() {
     const start = 24;
     const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.getUint32(start + 4, true);
-    return new ScriptVec(this.view.buffer.slice(offset, offset_end), { validate: false });
-  }
-
-  getReturnDataHash() {
-    const start = 28;
-    const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.getUint32(start + 4, true);
-    return new Byte32(this.view.buffer.slice(offset, offset_end), { validate: false });
-  }
-
-  getAccountCount() {
-    const start = 32;
-    const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.getUint32(start + 4, true);
-    return new Uint32(this.view.buffer.slice(offset, offset_end), { validate: false });
-  }
-
-  getBlockHashes() {
-    const start = 36;
-    const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.getUint32(start + 4, true);
-    return new BlockHashEntryVec(this.view.buffer.slice(offset, offset_end), { validate: false });
-  }
-
-  getBlockHashesProof() {
-    const start = 40;
-    const offset = this.view.getUint32(start, true);
     const offset_end = this.view.byteLength;
-    return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
+    return new VerifyTransactionContext(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 }
 
 export function SerializeVerifyTransactionWitness(value) {
   const buffers = [];
-  buffers.push(SerializeRawL2Block(value.raw_l2block));
   buffers.push(SerializeL2Transaction(value.l2tx));
+  buffers.push(SerializeRawL2Block(value.raw_l2block));
   buffers.push(SerializeBytes(value.tx_proof));
-  buffers.push(SerializeKVPairVec(value.kv_state));
   buffers.push(SerializeBytes(value.kv_state_proof));
-  buffers.push(SerializeScriptVec(value.scripts));
-  buffers.push(SerializeByte32(value.return_data_hash));
-  buffers.push(SerializeUint32(value.account_count));
-  buffers.push(SerializeBlockHashEntryVec(value.block_hashes));
   buffers.push(SerializeBytes(value.block_hashes_proof));
+  buffers.push(SerializeVerifyTransactionContext(value.context));
+  return serializeTable(buffers);
+}
+
+export class VerifySignatureContext {
+  constructor(reader, { validate = true } = {}) {
+    this.view = new DataView(assertArrayBuffer(reader));
+    if (validate) {
+      this.validate();
+    }
+  }
+
+  validate(compatible = false) {
+    const offsets = verifyAndExtractOffsets(this.view, 0, true);
+    new Uint32(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
+    new KVPairVec(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
+    new ScriptVec(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
+  }
+
+  getAccountCount() {
+    const start = 4;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Uint32(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getKvState() {
+    const start = 8;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new KVPairVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getScripts() {
+    const start = 12;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.byteLength;
+    return new ScriptVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+}
+
+export function SerializeVerifySignatureContext(value) {
+  const buffers = [];
+  buffers.push(SerializeUint32(value.account_count));
+  buffers.push(SerializeKVPairVec(value.kv_state));
+  buffers.push(SerializeScriptVec(value.scripts));
+  return serializeTable(buffers);
+}
+
+export class VerifyTransactionSignatureWitness {
+  constructor(reader, { validate = true } = {}) {
+    this.view = new DataView(assertArrayBuffer(reader));
+    if (validate) {
+      this.validate();
+    }
+  }
+
+  validate(compatible = false) {
+    const offsets = verifyAndExtractOffsets(this.view, 0, true);
+    new L2Transaction(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
+    new RawL2Block(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
+    new Bytes(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
+    new Bytes(this.view.buffer.slice(offsets[3], offsets[4]), { validate: false }).validate();
+    new Bytes(this.view.buffer.slice(offsets[4], offsets[5]), { validate: false }).validate();
+    new VerifySignatureContext(this.view.buffer.slice(offsets[5], offsets[6]), { validate: false }).validate();
+  }
+
+  getL2Tx() {
+    const start = 4;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new L2Transaction(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getRawL2Block() {
+    const start = 8;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new RawL2Block(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getTxProof() {
+    const start = 12;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getKvStateProof() {
+    const start = 16;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getBlockHashesProof() {
+    const start = 20;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getContext() {
+    const start = 24;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.byteLength;
+    return new VerifySignatureContext(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+}
+
+export function SerializeVerifyTransactionSignatureWitness(value) {
+  const buffers = [];
+  buffers.push(SerializeL2Transaction(value.l2tx));
+  buffers.push(SerializeRawL2Block(value.raw_l2block));
+  buffers.push(SerializeBytes(value.tx_proof));
+  buffers.push(SerializeBytes(value.kv_state_proof));
+  buffers.push(SerializeBytes(value.block_hashes_proof));
+  buffers.push(SerializeVerifySignatureContext(value.context));
   return serializeTable(buffers);
 }
 
@@ -3788,9 +3984,10 @@ export class VerifyWithdrawalWitness {
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
     new RawL2Block(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
-    new Script(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
+    new Bytes(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
     new WithdrawalRequest(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
     new Bytes(this.view.buffer.slice(offsets[3], offsets[4]), { validate: false }).validate();
+    new VerifySignatureContext(this.view.buffer.slice(offsets[4], offsets[5]), { validate: false }).validate();
   }
 
   getRawL2Block() {
@@ -3800,11 +3997,11 @@ export class VerifyWithdrawalWitness {
     return new RawL2Block(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
-  getAccountScript() {
+  getKvStateProof() {
     const start = 8;
     const offset = this.view.getUint32(start, true);
     const offset_end = this.view.getUint32(start + 4, true);
-    return new Script(this.view.buffer.slice(offset, offset_end), { validate: false });
+    return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 
   getWithdrawalRequest() {
@@ -3817,17 +4014,25 @@ export class VerifyWithdrawalWitness {
   getWithdrawalProof() {
     const start = 16;
     const offset = this.view.getUint32(start, true);
-    const offset_end = this.view.byteLength;
+    const offset_end = this.view.getUint32(start + 4, true);
     return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getContext() {
+    const start = 20;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.byteLength;
+    return new VerifySignatureContext(this.view.buffer.slice(offset, offset_end), { validate: false });
   }
 }
 
 export function SerializeVerifyWithdrawalWitness(value) {
   const buffers = [];
   buffers.push(SerializeRawL2Block(value.raw_l2block));
-  buffers.push(SerializeScript(value.account_script));
+  buffers.push(SerializeBytes(value.kv_state_proof));
   buffers.push(SerializeWithdrawalRequest(value.withdrawal_request));
   buffers.push(SerializeBytes(value.withdrawal_proof));
+  buffers.push(SerializeVerifySignatureContext(value.context));
   return serializeTable(buffers);
 }
 

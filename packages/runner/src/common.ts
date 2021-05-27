@@ -8,7 +8,7 @@ import { core as base_core, Script, utils } from "@ckb-lumos/base";
 import { scriptToAddress } from "@ckb-lumos/helpers";
 import { getConfig, initializeConfig } from "@ckb-lumos/config-manager";
 import { deploymentConfig } from "../js/utils/deployment_config";
-import { getRollupTypeHash } from "../js/transactions/deposition"
+import { getRollupTypeHash } from "../js/transactions/deposit"
 import Config from "../configs/config.json";
 import {
   Godwoken,
