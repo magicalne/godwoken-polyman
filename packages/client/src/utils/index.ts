@@ -56,7 +56,24 @@ const get_env_mode = () => {
 
 const asyncSleep = (ms = 0) => {
     return new Promise((r) => setTimeout(r, ms));
- }
+}
+
+const readDataFromFile = (codefile: Blob) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event: any) => {
+            const data = event.target.result;
+            resolve({status:'ok', data: data});
+        };
+        reader.onerror = (err) => {
+            resolve({status:'failed', error: err});
+        };
+        reader.onabort = () => {
+          resolve({status:'failed', error: 'user abort.'});
+        }
+        reader.readAsBinaryString(codefile);
+    });
+}
 
 export default {
     convertTimestamp: convertTimestamp,
@@ -68,4 +85,5 @@ export default {
     arrayBufferToBuffer: arrayBufferToBuffer,
     get_env_mode: get_env_mode,
     asyncSleep: asyncSleep,
+    readDataFromFile: readDataFromFile
 }
