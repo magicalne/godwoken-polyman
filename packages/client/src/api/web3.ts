@@ -53,7 +53,7 @@ export default class Web3Api{
           await util.asyncSleep(loopInterval * 1000);
   
           if (tx_receipt !== null) {
-            break;
+            return;
           }
         }
         throw new Error(`cannot fetch tx_receipt with tx ${tx_hash} in ${timeout} seconds`);;

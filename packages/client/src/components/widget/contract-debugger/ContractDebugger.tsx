@@ -74,6 +74,8 @@ export default function ContractDebbuger () {
     const [abi, setAbi] = useState<AbiItem[]>(SIMPLE_STORAGE_ABI);
     const [contractAddr, setContractAddr] = useState<string>();
 
+    const [callLogs, setCallLogs] = useState<string[]>([]);
+    
     useEffect(()=> {
         
     }, []);
@@ -98,6 +100,7 @@ export default function ContractDebbuger () {
     }
 
     const method_list = (abi: AbiItem[]) => {
+        
         return abi.filter( (item) => item.type === 'function' ).map( (item: AbiItem, item_index: number) => 
         {
             var input_params: string[] = [];
@@ -136,10 +139,13 @@ export default function ContractDebbuger () {
                 });
                 const decode_res_arr = Web3EthAbi.decodeParameters(item.outputs?.map(o=>o.type), result);
                 console.log(decode_res_arr);
-                decode_res_arr.map((data: string, i: number) => {
-                    output_values[i] = data;
-                });
+                for(let i = 0; i < decode_res_arr.__length__; i++){
+                    output_values[i] = decode_res_arr[i+'']; 
+                }
                 console.log(output_values);
+                 
+                // update return value in the global log state
+                await setCallLogs(oldArray => [...oldArray, `call ${item.name}, receive return value: ${JSON.stringify(output_values)}`]);
             }
         
             const assemble_send_payable_tx = async (item: AbiItem, input_params: string[]) => {
@@ -183,16 +189,6 @@ export default function ContractDebbuger () {
                 } )} 
                 </p>
 
-                <p> {item.outputs?.map( (output, i) => {
-                    output_values.push(''); 
-                    return <li key={"outputs_"+i}>
-                      <p style={styles.return_value}> 
-                          return value: {output_values[i]}
-                      </p>
-                    </li>
-                } )} 
-                </p>
-
                 <button style={styles.submit_btn} onClick={()=>{assemble_tx(item, input_params)}}> { item.stateMutability === 'view' ? "call" : "sned tx" } </button>
             </li> </div>)
         })
@@ -211,6 +207,15 @@ export default function ContractDebbuger () {
                 </p>
                 <p style={styles.contract_addr_input_container}>
                    <input type="text" placeholder="contract address" style={styles.contract_addr_input} onChange={handleContractAddrChange} />
+                </p>
+            </div>
+
+            <div>
+                <h3>logs:</h3>
+                <p> 
+                    {
+                       callLogs.map((log,i)=><li key={i}>{log}</li>)
+                    }
                 </p>
             </div>
             
