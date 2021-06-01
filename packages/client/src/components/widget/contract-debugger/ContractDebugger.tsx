@@ -90,20 +90,20 @@ export default function ContractDebbuger () {
     const assemble_call_view_tx = async (item: AbiItem, input_params: string[]) => {
         const data = Web3EthAbi.encodeFunctionCall(item, input_params);
         const eth_tx = {
-          nonce: '0x0', // ignored by MetaMask
-          gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+         // nonce: '0x', // ignored by MetaMask
+          gasPrice: '0x00000000000', // customizable by user during MetaMask confirmation.
           gas: '0x2710', // customizable by user during MetaMask confirmation.
           to: contractAddr || '0x', // Required except during contract publications.
           from: window.ethereum.selectedAddress, // must match user's active address.
-          value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+         // value: '0x', // Only required to send ether to the recipient from the initiating external account.
           data: data, // Optional, but used for defining smart contract creation and interaction.
         };
         console.log(eth_tx);
-        const txHash = await window.ethereum.request({
-          method: 'eth_sendTransaction',
+        const result = await window.ethereum.request({
+          method: 'eth_call',
           params: [eth_tx],
         });
-        await getEthTxReceipt(txHash);
+        //const decode_res = Web3EthAbi.decodeParams()
     }
 
     const assemble_send_payable_tx = async (item: AbiItem, input_params: string[]) => {

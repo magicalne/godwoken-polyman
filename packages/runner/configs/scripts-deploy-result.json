@@ -53,47 +53,47 @@
     "script_type_hash": "0x22034c8ad0710a83ba28bd41cd1cb1a0786e0fd984cbd20d81ba3219d52a1932",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xf0404b894845782664c0bd15f63f87e4eb33cc134f26eeafab8f51164350fa73",
+        "tx_hash": "0xb3de3dea316f8c04da9e04f81ee08ab871746046292b90288602b07ba88b67b7",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "meta_contract_validator": {
-    "script_type_hash": "0xdcca15153ee053d995db6693b93212187da5c9f1ad7ee16935126646daf47f5d",
+    "script_type_hash": "0x663f41ad78551ef302d621729abde17db14aaed4b12a763574e7415542cca144",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0x368773bfbf75803aa72b9947b5175f8e7284cda59e933ac154870e3107e83eb9",
+        "tx_hash": "0x1dd962a621b50d24d30d1e4c51f43ff9f5ac9fa9e2e92c2dbfb04a043a7f3620",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "l2_sudt_validator": {
-    "script_type_hash": "0x88cc50d05e58e216390f03439288e5f6a04adec9cbcfcfb59d7cf32e0c09a27d",
+    "script_type_hash": "0xa436a876dc09c010708549454b4a20f2a61c06317515b62f9822a679441f9824",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0x5d696dee35fa6817b529e7c35d2d2f252dcdee3e0f724737e284e38f79df735d",
+        "tx_hash": "0xc4b0cd5132edc9f712161adbc38455fbb4a3e7f5ddfb78963c7eb5f22418bc37",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "eth_account_lock": {
-    "script_type_hash": "0xdf6a74cbcdb125297c107aa79b5f21f2add4f46be30e3b67f0c2b62716b131a3",
+    "script_type_hash": "0xbb490fd251be3ea95d695326c2fb4416bd29f87331afa5cbc3f989a75e53de92",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0x15c2cac1b7b84d60af65fa3ee572333c9dc5e5667c6a9a1aa85beb8027ff11c0",
+        "tx_hash": "0x9fad3dafde56079f00f7729aaed4ba96090539417599f4f06689b3b6823abd4d",
         "index": "0x0"
       },
       "dep_type": "code"
     }
   },
   "tron_account_lock": {
-    "script_type_hash": "0x2d7c7d05553767bd1a850a51a82c660bb9314b9109cb2db772f560addd3873ec",
+    "script_type_hash": "0x0e41aa9756f51970f76aca1f696f8f3d91f8b7e05f70ac3fef64736373645265",
     "cell_dep": {
       "out_point": {
-        "tx_hash": "0xcc84e7fcf897cee13ff12ac7fa706e29f196645fce56c0ae2b780323772d62ee",
+        "tx_hash": "0xc7290610fad20e5ae5bfa8bec7423ff12704028035788062ed4d4b7909001eaa",
         "index": "0x0"
       },
       "dep_type": "code"
