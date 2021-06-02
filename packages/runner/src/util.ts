@@ -54,6 +54,10 @@ export async function waitForBlockSync(
   }
 }
 
+export function caculateChainId(creator_id: number, compatible_chain_id: number){
+  return ( parseInt(toBigUInt64LE(compatible_chain_id)) >> 32 ) + creator_id;
+}
+
 export function caculateLayer2LockScriptHash(layer2LockArgs: string) {
   const rollup_type_hash = getRollupTypeHash();
   const script = {

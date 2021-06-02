@@ -60,3 +60,4 @@ export default class Web3Api{
     }
 
 }
+ 
