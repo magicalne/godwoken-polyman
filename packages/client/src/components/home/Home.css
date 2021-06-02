@@ -84,3 +84,7 @@ pre {
   display: block;
   word-wrap: break-word;
 }
+
+li {
+  list-style-type: none;
+}

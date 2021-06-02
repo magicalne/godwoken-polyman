@@ -11,6 +11,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { MetaMaskIcon } from '../widget/metamask/icon';
 import MetamaskWallet from '../widget/metamask/Wallet';
+import ContractDebugger from '../widget/contract-debugger/ContractDebugger';
 import './Home.css';
 
 declare global {
@@ -415,13 +416,16 @@ decimal places: 8 (same with CKB)
             </Grid>
           </Grid>
 
-          <hr></hr>
+          <hr />
 
-
-
-          <div style={styles.placeholder_for_experimental}>
-            <hr style={{width: '100%'}}></hr>
-          </div>
+          <h4> Contract Debugger (experimental) </h4>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <ContractDebugger />
+            </Grid>
+          </Grid>
+          
+          <hr />
 
           <h4> Sudt Section (experimental) </h4>
 

@@ -42,19 +42,21 @@ export default class Web3Api{
         return response.data.result;
     }
 
-    async waitForTransactionReceipt(tx_hash: string){
-        while (true) {
-          await util.asyncSleep(1000);
+    async waitForTransactionReceipt(tx_hash: string, timeout: number = 300, loopInterval = 3){
+      for (let index = 0; index < timeout; index += loopInterval) {
+          
           const tx_receipt = await this.getTransactionReceipt(
             tx_hash
           );
-          console.log(`tx_receipt: ${tx_receipt}`);
-      
-          if (tx_receipt) {
-            break;
+
+          console.log(`keep fetching tx_receipt with ${tx_hash}, waited for ${index} seconds`);
+          await util.asyncSleep(loopInterval * 1000);
+  
+          if (tx_receipt !== null) {
+            return;
           }
         }
-        return;
+        throw new Error(`cannot fetch tx_receipt with tx ${tx_hash} in ${timeout} seconds`);;
     }
 
 }

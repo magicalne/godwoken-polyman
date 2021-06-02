@@ -88,7 +88,7 @@ export default function Wallet (props: WalletProps) {
         listenForAccountChanged();
         listenForNetworkChanged();
 
-        // connectMetamask();
+        connectMetamask();
     }
 
     const getProvider = () => {
