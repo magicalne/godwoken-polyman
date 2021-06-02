@@ -1,160 +1,32 @@
-# Godwoken Examples
+Godwoken Polyman
+=======
 
-This demo shows of how to use [Godwoken](https://github.com/nervosnetwork/godwoken).
+this project is original fork from `godwoken-example`. the name still remains as godwoken-example, but indeed it turn into a new project called `godwoken-polyman`, we might move the project to a brand new place in the future.
 
-The demo provides the following functionalities:
+How to run
+------
 
-* Deposit from a MetaMask powered address into Godwoken.
-* Deploy an Ethereum Smart Contract to Polyjuice running on Godwoken, we use SimpleStorage.
-* Submit a polyjuice transaction to set the value in SimpleStorage smart contract.
-* Execute (but do not submit) a transaction to fetch the current stored value in SimpleStorage smart contract.
-* Query the balance of a Godwoken account.
-* Make transfers between Godwoken accounts.
-* Withdraw from Godwoken back to a layer 1 CKB address.
+build deps and UI
 
-
-## Install dependencies
-
-```bash
-yarn run bootstrap
+```sh
+yarn && yarn prepare-ui
 ```
 
-## Update Demo Configs
+set Config file
 
-Firstly copy config files.
-
-```bash
-cp <your godwoken `runner_config.json`> packages/demo/src/configs/runner_config.json
-cp packages/demo/src/configs/config.json.sample packages/demo/src/configs/config.json
-# then update `config.json` with your own config.
+```sh
+cp <your godwoken `config.toml` file> packages/runner/configs/config.toml
+cp <your godwoken `scripts-deploy-result.json` file> packages/runner/configs/scripts-deploy-result.json
+yarn gen-config
 ```
 
-## Deposit By CLI
+start the service:
 
-Deposit CLI both support `testnet` and `dev chain`.
-
-### Build typescripts
-
-```bash
-yarn workspace @godwoken-examples/godwoken tsc 
-yarn workspace @godwoken-examples/demo clean-cli && yarn workspace @godwoken-examples/demo build-cli
+```sh
+yarn start # inside docker-compose environment
+yarn start:normal # outside docker, your local environment
 ```
 
-### Deposit
+the service will wait until godwoken rpc server is up and running, after that, it will auto deploy a polyjuice chain with creator_id like 0x3.
 
-Run `deposit.js --help` to see how to use this command.
-
-```bash
-LUMOS_CONFIG_FILE=<your lumos config json file> node ./packages/demo/build-cli/cli/deposit.js --help
-```
-
-Or Deposit SUDT
-
-```bash
-LUMOS_CONFIG_FILE=<your lumos config json file> node ./packages/demo/build-cli/cli/deposit_sudt.js --help
-```
-
-## Deposit By Demo Page
-
-Deposit and Deposit SUDT module only support `testnet`, other parts support both `testnet` and `dev chain`
-
-### Build typescripts
-
-```bash
-yarn workspace @godwoken-examples/godwoken tsc
-yarn workspace @godwoken-examples/demo clean && yarn workspace @godwoken-examples/demo build
-```
-
-### Start Server
-
-```bash
-yarn workspace @godwoken-examples/demo start
-```
-
-### Open in browser
-
-Open `http://localhost:9000/html/index.html`
-
-
-# Godwoken utils
-
-### Unlock Withdrawal
-
-Run `godwoken-cli.js --help` to see how to use this command.
-
-```bash
-yarn workspace @godwoken-examples/godwoken tsc 
-yarn workspace @godwoken-examples/tools tsc 
-
-LUMOS_CONFIG_FILE=<your lumos config json file> node ./packages/tools/lib/godwoken-cli.js unlockWithdraw --help
-```
-
-
-# Polyjuice
-
-## Create Creator account
-
-### Build typescripts
-
-```bash
-yarn workspace @godwoken-examples/godwoken tsc 
-yarn workspace @godwoken-examples/polyjuice tsc 
-yarn workspace @godwoken-examples/tools tsc 
-```
-
-### Create creator account for polyjuice
-
-Create account id for create polyjuice contract account (the `creator_account_id` config)
-
-```bash
-$ node packages/tools/lib/polyjuice-cli.js createCreatorAccount <from_id> <sudt_id> <rollup_type_hash> <privkey>
-```
-
-You can see `<rollup_type_hash>` when godwoken started.
-
-`<sudt_id>` given `1` is for CKB Token.
-
-`<privkey>` is a `0x` prefixed hex string.
-
-`<from_id>` is your user account, you can get the account id by:
-
-```bash
-$ node packages/tools/lib/godwoken-cli.js getAccountIdByScriptHash <script_hash>
-```
-
-You can get the script hash when deposition finished.
-
-## Update creator account config
-
-`polyjuice-cli.js createCreatorAccount` will return an `creator_account_id` and write this to `packages/demo/src/configs/config.json` `creator_account_ids`.
-
-And recompile demo
-
-```bash
-yarn workspace @godwoken-examples/demo clean && yarn workspace @godwoken-examples/demo build
-```
-
-## Deploy an Ethereum contract
-
-Also supported by Demo Page.
-
-```bash
-$ node packages/tools/lib/polyjuice-cli.js deploy <creator_account_id> <init_code> <rollup_type_hash> <privkey>
-```
-
-This will output the account id.
-
-The `<init_code>` sample, please see [SimpleStorage.bin](packages/tools/sample-contracts/SimpleStorage.bin) .
-
-## Call an ethereum contract
-
-Also supported by Demo Page.
-
-```bash
-$ node packages/tools/lib/polyjuice-cli.js call <to_id> <input_data> <rollup_type_hash> <privkey>
-```
-
-`<to_id>` is the account created in deploy step.
-
-The `<input_data>` is generated by ethabi , please see [SimpleStorage.calls.md](./packages/tools/sample-contracts/SimpleStorage.calls.md) .
-
+then you can access `http://localhost:6100` to deploy your ETH smart contract.
