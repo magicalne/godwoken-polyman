@@ -17,7 +17,7 @@
   "scripts": {
     "build-pw-core": "cd ./node_modules/@lay2/pw-core && yarn run build && rm -rf src && cd -",
     "bootstrap": "yarn install && yarn run build-pw-core",
-    "init_placeholder_config": "source scripts/tool.sh && copy_configs_if_not_exist",
+    "init_placeholder_config": ". scripts/tool.sh && copy_configs_if_not_exist",
     "start": "yarn workspace @godwoken-examples/runner start",
     "start:normal": "yarn workspace @godwoken-examples/runner start:normal",
     "build:client": "yarn workspace @godwoken-examples/client build",
