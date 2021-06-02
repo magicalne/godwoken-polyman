@@ -62,6 +62,24 @@ const styles = {...commonStyle, ...{
         border: '1px solid gray',
         margin: '10px auto',
         padding: '10px 0',
+    },
+    log_container: {
+        maxWidth: '700px',
+        border: '1px solid gray',
+        margin: '10px auto',
+        padding: '10px 0',
+        textAlign: 'left' as const,
+    },
+    log_container_title: {
+        fontSize: '16px',
+        color: commonStyle.main_color.color,
+        textAlign: 'center' as const,
+    },
+    log_main_area: {
+        fontSize: '14px',
+        textAlign: 'left' as const,
+        padding: '10px',
+        margin: '5px',
     }
 }
 }
@@ -115,11 +133,19 @@ export default function ContractDebbuger () {
                     throw new Error("expect a function");
         
                 if (abi_item.stateMutability === 'view') {
-                    await assemble_call_view_tx(abi_item, input_params);
+                    try {
+                        await assemble_call_view_tx(abi_item, input_params);   
+                    } catch (error) {
+                        notify(JSON.stringify(error, null, 2));   
+                    }
                 }
         
                 if (abi_item.stateMutability !== 'view') {
-                    await assemble_send_payable_tx(abi_item, input_params);
+                    try {
+                        await assemble_send_payable_tx(abi_item, input_params); 
+                    } catch (error) {
+                        notify(JSON.stringify(error, null, 2));   
+                    }
                 }
             }
         
@@ -144,8 +170,10 @@ export default function ContractDebbuger () {
                 }
                 console.log(output_values);
                  
+                // notify user the result
+                notify(JSON.stringify(output_values, null, 2), 'success');
                 // update return value in the global log state
-                await setCallLogs(oldArray => [...oldArray, `call ${item.name}, receive return value: ${JSON.stringify(output_values)}`]);
+                await setCallLogs(oldArray => [...oldArray, `call "${item.name}", receive return value: ${JSON.stringify(output_values)}`]);
             }
         
             const assemble_send_payable_tx = async (item: AbiItem, input_params: string[]) => {
@@ -164,7 +192,15 @@ export default function ContractDebbuger () {
                   method: 'eth_sendTransaction',
                   params: [eth_tx],
                 });
+                
+                notify('wait for tx landing on chain, open your console page to check more.', 'success');
+
                 await getEthTxReceipt(txHash);
+
+                // notify user the result
+                notify('tx commited.', 'success');
+                // update return value in the global log state
+                await setCallLogs(oldArray => [...oldArray, `call "${item.name}", tx ${txHash} commited.`]);
             }
         
             const getEthTxReceipt = async (txHash: string) => {
@@ -189,7 +225,7 @@ export default function ContractDebbuger () {
                 } )} 
                 </p>
 
-                <button style={styles.submit_btn} onClick={()=>{assemble_tx(item, input_params)}}> { item.stateMutability === 'view' ? "call" : "sned tx" } </button>
+                <button style={styles.submit_btn} onClick={()=>{assemble_tx(item, input_params)}}> { item.stateMutability === 'view' ? "call" : "send tx" } </button>
             </li> </div>)
         })
     }
@@ -210,13 +246,13 @@ export default function ContractDebbuger () {
                 </p>
             </div>
 
-            <div>
-                <h3>logs:</h3>
-                <p> 
+            <div style={styles.log_container}>
+                <div style={styles.log_container_title}> Logs </div>
+                <div style={styles.log_main_area}>
                     {
-                       callLogs.map((log,i)=><li key={i}>{log}</li>)
+                       callLogs.map((log,i)=><li key={i}>{i}: {log}</li>)
                     }
-                </p>
+                </div>
             </div>
             
            { method_list(abi) } 
