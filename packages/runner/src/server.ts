@@ -77,7 +77,7 @@ const setUpRouters = (
 
     app.get("/get_chain_id", async ( req, res ) => {
         const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
-        const chain_id = caculateChainId(createCreatorId, serverConfig.components.godwoken.compatible_chain_id) 
+        const chain_id = caculateChainId(parseInt(createCreatorId+''), serverConfig.components.godwoken.compatible_chain_id) 
         res.send({status: 'ok', data: chain_id });
     });
 

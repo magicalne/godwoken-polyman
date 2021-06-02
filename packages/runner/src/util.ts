@@ -55,7 +55,9 @@ export async function waitForBlockSync(
 }
 
 export function caculateChainId(creator_id: number, compatible_chain_id: number){
-  return ( parseInt(toBigUInt64LE(compatible_chain_id)) >> 32 ) + creator_id;
+  console.log(creator_id);
+  const chain_id_num = ( compatible_chain_id * Math.pow(2, 32) ) + creator_id;
+  return '0x' + BigInt(chain_id_num).toString(16);
 }
 
 export function caculateLayer2LockScriptHash(layer2LockArgs: string) {
@@ -121,6 +123,13 @@ export function toBigUInt64LE(num:number | bigint) {
   const bnum = BigInt(num);
   const buf = Buffer.alloc(8);
   buf.writeBigUInt64LE(bnum);
+  return `0x${buf.toString("hex")}`;
+}
+
+export function toBigUInt64BE(num:number | bigint) {
+  const bnum = BigInt(num);
+  const buf = Buffer.alloc(8);
+  buf.writeBigUInt64BE(bnum);
   return `0x${buf.toString("hex")}`;
 }
 

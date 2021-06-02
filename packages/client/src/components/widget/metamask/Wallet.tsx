@@ -110,7 +110,9 @@ export default function Wallet (props: WalletProps) {
           const current_chain_id = await window.ethereum.request({ method: 'eth_chainId' });
           console.log(`current chain id: ${current_chain_id}`);
           const api = new Api(); 
-          const chain_id = await api.getChainId();
+          const res = await api.getChainId();
+          console.log(res);
+          const chain_id = res.data;
           if(current_chain_id !== chain_id){
             console.error(`current chain id not equals ${current_chain_id} !== polyjuice chain id ${chain_id}`);
             await setChainIdStatus(false);
