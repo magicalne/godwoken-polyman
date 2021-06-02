@@ -103,9 +103,21 @@ export default function ContractDebbuger () {
         const res: any = await utils.readDataFromFile(codefile);
         console.log(res);
         if(res.status !== 'ok'){
-          return notify(`can not read contract abi from file.`);
+          notify(`can not read contract abi from file.`);
+          throw new Error("can not read contract abi from file.");
         };
-        return JSON.parse(res.data);
+
+        const data = JSON.parse(res.data);
+        if ( Array.isArray(data) ){
+            // todo: validate abi
+            return data;
+        }else if( typeof data === 'object' && data.abi ){
+            // todo: validate abi
+            return data.abi;
+        }else{
+            notify(`not a valid abi file!`);
+            throw new Error("not a valid abi file!");
+        }
     }
 
     const handleAbiFileChange = async (event: any) => {
