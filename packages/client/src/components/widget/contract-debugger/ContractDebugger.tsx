@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { AbiInput, AbiItem } from 'web3-utils';
+import { toWei, AbiInput, AbiItem } from 'web3-utils';
 import Web3Api from '../../../api/web3'
 import { AbiCoder } from 'web3-eth-abi';
 import {notify} from '../notify';
@@ -135,9 +135,15 @@ export default function ContractDebbuger () {
         {
             var input_params: string[] = [];
             var output_values: string[] = [];
+            var payable_value_in_wei: string = '0';
 
             const hanleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
                 input_params[parseInt(event.target.name)] = event.target.value;
+            }
+
+            const hanlePayableValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+                console.log(event.target.value);
+                payable_value_in_wei = toWei(event.target.value);
             }
 
             const assemble_tx = async (abi_item: AbiItem, input_params: string[]) => {
@@ -190,13 +196,15 @@ export default function ContractDebbuger () {
         
             const assemble_send_payable_tx = async (item: AbiItem, input_params: string[]) => {
                 const data = Web3EthAbi.encodeFunctionCall(item, input_params);
+                console.log(payable_value_in_wei);
+                const value = item.payable ? '0x' + BigInt(payable_value_in_wei).toString(16) : '0x00';
                 const eth_tx = {
                   nonce: '0x0', // ignored by MetaMask
                   gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
                   gas: '0x2710', // customizable by user during MetaMask confirmation.
                   to: contractAddr || '0x', // Required except during contract publications.
                   from: window.ethereum.selectedAddress, // must match user's active address.
-                  value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+                  value: value, // Only required to send ether to the recipient from the initiating external account.
                   data: data, // Optional, but used for defining smart contract creation and interaction.
                 };
                 console.log(eth_tx); 
@@ -227,6 +235,11 @@ export default function ContractDebbuger () {
             <div style={styles.method_item}>
                 <span style={styles.method_name}> {item_index + 1}. {item.name} </span>
                 <li key={item_index} style={styles.method_box}>
+                { item.payable  && (
+                    <p>
+                       <input style={styles.param_input} onChange={hanlePayableValueChange} name={"value_"+item_index} type="text" placeholder="value: ETH" />  
+                    </p>
+                )}
                 <p> {item.inputs?.map( (input, i) => {
                     input_params.push('');
                     return <li key={"intputs_"+i}>

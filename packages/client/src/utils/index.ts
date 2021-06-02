@@ -75,6 +75,24 @@ const readDataFromFile = (codefile: Blob) => {
     });
 }
 
+const eth2wei = function (num_str: string) {
+    const numbers = parseFloat(num_str) * 1000000;
+    return String(numbers) + "000000000000";
+}
+
+const wei2eth = function (numbers: string) {
+    return parseInt(BigInt(numbers).toString()) / 1000000000000000000;
+}
+
+const eth2gwei = function (num_str: string) {
+    const numbers = parseFloat(num_str) * 1000000;
+    return numbers.toString() + "000";
+}
+
+const gwei2eth = function (numbers: string) {
+    return parseInt(BigInt(numbers).toString()) / 1000000000;
+}
+
 export default {
     convertTimestamp: convertTimestamp,
     hex2dec: hex2dec,
