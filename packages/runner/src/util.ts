@@ -13,7 +13,6 @@ import {
   getDepositLockArgs,
   serializeArgs,
 } from "../js/transactions/deposit";
-import Config from "../configs/config.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import { normalizers } from "ckb-js-toolkit";
 import base from "@ckb-lumos/base";

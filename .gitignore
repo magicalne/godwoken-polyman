@@ -105,11 +105,7 @@ dist
 
 /docs/
 
-packages/demo/build-cli
-packages/demo/indexer-data
-packages/demo/src/cli/config.json
-packages/demo/src/configs/runner_config.json
-packages/demo/src/configs/config.json
+
 indexer-data/
 
 packages/runner/db/
@@ -119,3 +115,7 @@ packages/runner/configs/lumos-config.json
 
 .DS_Store
 core
+
+packages/runner/configs/config.toml
+packages/runner/configs/godwoken_config.json
+packages/runner/configs/scripts-deploy-result.json

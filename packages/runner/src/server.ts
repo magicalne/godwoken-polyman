@@ -4,7 +4,6 @@ import express from 'express';
 import cors from "cors";
 import timeout from "connect-timeout";
 import serverConfig from "../configs/server.json";
-import gpConfig from "../configs/config.json";
 import { getRollupTypeHash } from '../js/transactions/deposit';
 // import { generateGodwokenConfig } from './util';
 import godwoken_config from "../configs/godwoken_config.json";
@@ -14,8 +13,8 @@ import { UInt32ToLeBytes } from "./util";
 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
-const ckb_rpc = process.env.MODE === "docker-compose" ? gpConfig.ckb.rpc[0] : gpConfig.ckb.rpc[1];
-const godwoken_rpc = process.env.MODE === "docker-compose" ? gpConfig.godwoken.rpc[0] : gpConfig.godwoken.rpc[1] ;
+const ckb_rpc = process.env.MODE === "docker-compose" ? serverConfig.components.ckb.rpc[0] : serverConfig.components.ckb.rpc[1];
+const godwoken_rpc = process.env.MODE === "docker-compose" ? serverConfig.components.godwoken.rpc[0] : serverConfig.components.godwoken.rpc[1] ;
 const sudt_id_str = serverConfig.default_sudt_id_str;
 const default_deposit_amount = serverConfig.default_amount;
 const default_sudt_issue_amount = serverConfig.default_issue_sudt_amount;
@@ -214,7 +213,7 @@ const setUpRouters = (
             if(!creator_account_id)
                 return res.send({status:'failed', error: `creator_account_id not found.`});
             
-            const contract_file = path.resolve(__dirname, "../configs/erc20proxy.bin");
+            const contract_file = path.resolve(__dirname, "../configs/bin/erc20proxy.bin");
             const contract_code = '0x' + await fs.readFileSync(contract_file).toString('utf-8');
             const eth_address = req.body.data.eth_address + '';
             await api.syncToTip();
