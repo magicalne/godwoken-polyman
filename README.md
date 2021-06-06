@@ -1,7 +1,7 @@
 Godwoken Polyman
 =======
 
-this project is original fork from `godwoken-example`. the name still remains as godwoken-example, but indeed it turn into a new project called `godwoken-polyman`, we might move the project to a brand new place in the future.
+this project is original fork from `godwoken-example`. the new project called `godwoken-polyman`, is designed to be running inside [godwoken-kicker](https://github.com/RetricSu/godwoken-kicker.git), where it leverge the polyman to auto deploy a godwoken/polyjuice chain and setup everything needed for developer to deploy their old ETH smart contract on godwoken in the quickest way.
 
 How to run
 ------
