@@ -3,10 +3,10 @@ import path from 'path';
 import express from 'express';
 import cors from "cors";
 import timeout from "connect-timeout";
-import serverConfig from "../configs/server.json";
+import serverConfig from "../configs/polyman-config.json";
 import { getRollupTypeHash } from '../js/transactions/deposit';
 // import { generateGodwokenConfig } from './util';
-import godwoken_config from "../configs/godwoken_config.json";
+import godwoken_config from "../configs/godwoken-config.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import fs from 'fs';
 import { UInt32ToLeBytes, caculateChainId } from "./util";
@@ -367,7 +367,7 @@ export async function start() {
 
     // generate config file from config.toml
     // await generateGodwokenConfig('../configs/config.toml', 
-    //                              '../configs/godwoken_config.json');
+    //                              '../configs/godwoken-config.json');
 
     var rollup_type_hash = getRollupTypeHash();
 

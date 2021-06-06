@@ -110,7 +110,7 @@ export async function generateGodwokenConfig(_input_file: string, _output_file: 
   const toml_file_obj = TOML.parse(toml_file_str);
   const json_path = path.resolve(__dirname, _output_file);
   await fs.writeFileSync(json_path, JSON.stringify(toml_file_obj, null, 2));
-  console.log(`create godwoken_config.json file in ${json_path}. done.`);
+  console.log(`create godwoken-config.json file in ${json_path}. done.`);
 }
 
 export function UInt32ToLeBytes(num: number): HexString {

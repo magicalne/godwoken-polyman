@@ -1,6 +1,6 @@
 import path from "path";
 import { Api } from "./api";
-import serverConfig from "../configs/server.json";
+import serverConfig from "../configs/polyman-config.json";
 import { asyncSleep } from "./util";
 
 const _indexer_path = path.resolve(__dirname, "../temp-db/ckb-indexer-data");

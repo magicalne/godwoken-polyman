@@ -1,4 +1,4 @@
-import Config from '../configs/server.json';
+import Config from '../configs/polyman-config.json';
 import express from 'express';
 import path from 'path';
 

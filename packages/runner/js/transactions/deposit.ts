@@ -4,7 +4,7 @@ import { DeploymentConfig } from "../base";
 import { deploymentConfig } from "../utils/deployment_config";
 import { Script, HexString, Hash, PackedSince, utils } from "@ckb-lumos/base";
 import { NormalizeDepositLockArgs } from "@godwoken-polyman/godwoken/normalizer";
-import godwokenConfig from "../../configs/godwoken_config.json";
+import godwokenConfig from "../../configs/godwoken-config.json";
 import { deposit } from "@ckb-lumos/common-scripts/lib/dao";
 
 export interface DepositLockArgs {

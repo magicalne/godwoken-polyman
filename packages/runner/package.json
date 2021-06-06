@@ -14,8 +14,8 @@
     "start:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/index",
     "prepare-money:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/prepare_money.ts",
     "prepare-sudt:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/prepare_sudt_contract.ts",
-    "generateConfig": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev --ignore-watch configs/godwoken_config.json ./src/generateConfig.ts",
-    "generateConfig:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev --ignore-watch configs/godwoken_config.json ./src/generateConfig.ts",
+    "generateConfig": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev --ignore-watch configs/godwoken-config.json ./src/generateConfig.ts",
+    "generateConfig:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev --ignore-watch configs/godwoken-config.json ./src/generateConfig.ts",
     "fmt": "prettier --write \"src/*.ts\" \"src/*.js\" \"js/**/*.ts\" \"js/**/*.js\" package.json",
     "test_gen_config": "ts-node-dev ./test/gen_config.ts"
   },

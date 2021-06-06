@@ -117,5 +117,5 @@ packages/runner/configs/lumos-config.json
 core
 
 packages/runner/configs/config.toml
-packages/runner/configs/godwoken_config.json
+packages/runner/configs/godwoken-config.json
 packages/runner/configs/scripts-deploy-result.json

@@ -1,6 +1,6 @@
 import path from "path";
 import { Api } from "./api";
-import serverConfig from "../configs/server.json";
+import serverConfig from "../configs/polyman-config.json";
 import { asyncSleep } from "./util";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 
