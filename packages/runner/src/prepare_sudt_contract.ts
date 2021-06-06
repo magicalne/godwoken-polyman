@@ -1,14 +1,13 @@
 import path from "path";
 import { Api } from "./api";
 import serverConfig from "../configs/server.json";
-import gpConfig from "../configs/config.json";
 import { asyncSleep } from "./util";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 
 const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-sudt");
 
-const ckb_rpc = process.env.MODE === "docker-compose" ? gpConfig.ckb.rpc[0] : gpConfig.ckb.rpc[1];
-const godwoken_rpc = process.env.MODE === "docker-compose" ? gpConfig.godwoken.rpc[0] : gpConfig.ckb.rpc[1] ;
+const ckb_rpc = process.env.MODE === "docker-compose" ? serverConfig.components.ckb.rpc[0] : serverConfig.components.ckb.rpc[1];
+const godwoken_rpc = process.env.MODE === "docker-compose" ? serverConfig.components.godwoken.rpc[0] : serverConfig.components.ckb.rpc[1] ;
 const user_private_key = serverConfig.user_private_key;
 
 console.log("start..");

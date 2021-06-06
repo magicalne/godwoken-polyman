@@ -157,6 +157,15 @@ class Api{
         return res.data;
     }
 
+    async getChainId(){
+        let res = await axios.get(`${this.base_url}/get_chain_id`, { 
+            params:{
+                
+            }
+        });
+        return res.data;
+    }
+
 }
 
 export default Api;

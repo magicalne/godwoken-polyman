@@ -27,7 +27,6 @@ const NormalizeSUDTTransfer = normalizer.NormalizeSUDTTransfer;
 //const UnoinType = normalizer.UnoinType;
 import { Polyjuice } from "@godwoken-examples/polyjuice";
 
-import gpConfig from "../configs/config.json";
 import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
 import { Indexer, CellCollector } from "@ckb-lumos/indexer";
@@ -1349,7 +1348,7 @@ export class Api {
   }
   
   async getSudtContractCodeHex(){
-    const contract_file = path.join(__dirname, '../configs/simple_udt');
+    const contract_file = path.join(__dirname, '../configs/bin/simple_udt');
     console.log(contract_file);
     const complied_code = await fs.readFileSync(contract_file);
     return '0x' + complied_code.toString('hex');

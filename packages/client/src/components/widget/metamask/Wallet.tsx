@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { MetaMaskIcon } from './icon'
 import MetaMaskOnboarding from '@metamask/onboarding';
 import { notify } from '../notify';
-import { chain_id } from '../../../config/constant.json';
 import FreshButton from '../fresh_button';
 import NetworkCheckIcon from '@material-ui/icons/NetworkCheck';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import Web3Api from '../../../api/web3';
+import Api from '../../../api/index';
 import utils from '../../../utils/index';
 
 const styles = {
@@ -109,6 +109,10 @@ export default function Wallet (props: WalletProps) {
         try {
           const current_chain_id = await window.ethereum.request({ method: 'eth_chainId' });
           console.log(`current chain id: ${current_chain_id}`);
+          const api = new Api(); 
+          const res = await api.getChainId();
+          console.log(res);
+          const chain_id = res.data;
           if(current_chain_id !== chain_id){
             console.error(`current chain id not equals ${current_chain_id} !== polyjuice chain id ${chain_id}`);
             await setChainIdStatus(false);
