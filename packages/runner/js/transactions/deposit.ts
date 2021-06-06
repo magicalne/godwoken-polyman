@@ -1,9 +1,9 @@
 import { Reader } from "ckb-js-toolkit";
-import { SerializeDepositLockArgs } from "@godwoken-examples/godwoken/schemas/godwoken";
+import { SerializeDepositLockArgs } from "@godwoken-polyman/godwoken/schemas/godwoken";
 import { DeploymentConfig } from "../base";
 import { deploymentConfig } from "../utils/deployment_config";
 import { Script, HexString, Hash, PackedSince, utils } from "@ckb-lumos/base";
-import { NormalizeDepositLockArgs } from "@godwoken-examples/godwoken/normalizer";
+import { NormalizeDepositLockArgs } from "@godwoken-polyman/godwoken/normalizer";
 import godwokenConfig from "../../configs/godwoken_config.json";
 import { deposit } from "@ckb-lumos/common-scripts/lib/dao";
 

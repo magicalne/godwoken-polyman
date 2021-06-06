@@ -19,13 +19,13 @@ import {
   u32ToHex,
   RunResult,
   normalizer,
-} from "@godwoken-examples/godwoken";
+} from "@godwoken-polyman/godwoken";
 const NormalizeSUDTQuery = normalizer.NormalizeSUDTQuery;
 const NormalizeSUDTTransfer = normalizer.NormalizeSUDTTransfer;
 //const SUDTQuery = normalizer.SUDTQuery;
 //const SUDTTransfer = normalizer.SUDTTransfer;
 //const UnoinType = normalizer.UnoinType;
-import { Polyjuice } from "@godwoken-examples/polyjuice";
+import { Polyjuice } from "@godwoken-polyman/polyjuice";
 
 import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
@@ -68,7 +68,7 @@ import {
   deepCompare,
   DeepDiffMapper,
 } from "./util";
-import { TxReceipt } from "@godwoken-examples/godwoken/schemas/store";
+import { TxReceipt } from "@godwoken-polyman/godwoken/schemas/store";
 
 export class Api {
   public validator_code_hash: string;

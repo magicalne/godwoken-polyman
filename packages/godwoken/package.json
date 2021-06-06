@@ -1,9 +1,9 @@
 {
-  "name": "@godwoken-examples/godwoken",
+  "name": "@godwoken-polyman/godwoken",
   "version": "0.0.1",
   "description": "Godwoken utils",
   "main": "index.js",
-  "repository": "https://github.com/nervosnetwork/godwoken-examples",
+  "repository": "https://github.com/retricsu/godwoken-polyman",
   "author": "Linfeng Qian <thewawar@gmail.com>",
   "license": "MIT",
   "private": true,
