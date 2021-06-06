@@ -61,6 +61,6 @@ then you can access `http://localhost:6100` to deploy your ETH smart contract.
 Run outside docker-compose
 ---
 
-for each command, you can run `:normal` after, it will using the localhost url for godwoken and ckb components. 
+for each command, you can run `:normal` after, it will using the localhost url for godwoken and ckb components.
 
 Anthor simple way to do this is to just change the rpc url to your own one under `components` section in `/packages/runner/configs/polyman-config.json`
