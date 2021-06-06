@@ -1,5 +1,5 @@
 {
-  "name": "@godwoken-examples/client",
+  "name": "@godwoken-polyman/client",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

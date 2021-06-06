@@ -20,7 +20,7 @@ import {
   UInt32LEToNumber,
   u32ToHex,
   toBuffer,
-} from "@godwoken-examples/godwoken";
+} from "@godwoken-polyman/godwoken";
 import * as secp256k1 from "secp256k1";
 const keccak256 = require("keccak256");
 

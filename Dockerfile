@@ -1,6 +1,6 @@
 FROM nervos/godwoken-prebuilds:v0.2.0-rc2
 
-WORKDIR "/godwoken-examples"
+WORKDIR "/godwoken-polyman"
 
 RUN apt-get update \
  && apt-get dist-upgrade -y \

@@ -1,4 +1,4 @@
-import { RawL2Transaction } from '@godwoken-examples/godwoken';
+import { RawL2Transaction } from '@godwoken-polyman/godwoken';
 import axios from 'axios';
 import config from '../config/constant.json';
 import { OpType } from '../types/polyjuice';

@@ -1,4 +1,4 @@
-import { Godwoken } from "@godwoken-examples/godwoken";
+import { Godwoken } from "@godwoken-polyman/godwoken";
 
 export class LocalNonce {
   static nonce: number = 0;

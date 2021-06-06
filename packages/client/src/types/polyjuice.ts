@@ -1,6 +1,6 @@
 import {
     RawL2Transaction,
-  } from "@godwoken-examples/godwoken";
+  } from "@godwoken-polyman/godwoken";
 
 export type OpType = 'create_creator' | 'deposit' | 'deploy'
 

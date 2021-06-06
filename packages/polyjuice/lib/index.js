@@ -1,7 +1,7 @@
 
 const { normalizers } = require("ckb-js-toolkit");
 const base = require("@ckb-lumos/base");
-const { u32ToHex, UInt32LEToNumber, numberToUInt32LE, GodwokenUtils } = require("@godwoken-examples/godwoken");
+const { u32ToHex, UInt32LEToNumber, numberToUInt32LE, GodwokenUtils } = require("@godwoken-polyman/godwoken");
 
 // {gas_limit: u64, gas_price: u128, value: u128}
 function encodeArgs(to_id, gas_limit, gas_price, value, data) {
