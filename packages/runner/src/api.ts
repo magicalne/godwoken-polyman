@@ -1353,5 +1353,11 @@ export class Api {
     const complied_code = await fs.readFileSync(contract_file);
     return '0x' + complied_code.toString('hex');
   }
+
+  getLumosConfigFile(){
+    return getConfig();
+  }
+
+
   
 }

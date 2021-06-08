@@ -107,8 +107,8 @@ app.get('/prepare_sudt_scripts', async function (req, res) {
 });
 
 app.get('/gen_config', async function (req, res) {
-  let stdout1 = await execSync('cp /code/godwoken/deploy/scripts-deploy-result.json ../configs/scripts-deploy-result.json');
-  let stdout2 = await execSync('cp /code/godwoken/config.toml ../configs/config.toml');
+  let stdout1 = await execSync('cp /code/godwoken/deploy/scripts-deploy-result.json ./configs/scripts-deploy-result.json');
+  let stdout2 = await execSync('cp /code/godwoken/config.toml ./configs/config.toml');
 
   console.log(stdout1, stdout2);
 
@@ -120,6 +120,32 @@ app.get('/gen_config', async function (req, res) {
     res.send({status: 'failed', error: error});
   }
 });
+
+app.get('/get_lumos_config', function(req, res){
+  try {
+    const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-get-lumos-config");
+    const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
+    const config = api.getLumosConfigFile();
+    res.send({status: 'ok', data: config }); 
+  } catch (error) {
+    res.send({status: 'failed', error: error}); 
+  }
+});
+
+app.get('/get_lumos_script_info', function(req, res){
+  try {
+    const script_name: string = req.query.script_name + '';
+    const key = req.query.key + '';
+
+    const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-get-lumos-config");
+    const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
+    const config = api.getLumosConfigFile();
+    res.send({status: 'ok', data: config.SCRIPTS[script_name][key] }); 
+  } catch (error) {
+    res.send({status: 'failed', error: error}); 
+  }
+});
+
 
 export function start () {
    app.listen(PolymanConfig.prepare_service_port, () => {
