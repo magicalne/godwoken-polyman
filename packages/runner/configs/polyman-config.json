@@ -5,6 +5,7 @@
         "http://localhost:6100",
         "http://127.0.0.1:6100"
     ],
+    "prepare_service_port": "6102",
     "user_private_key": "0x6cd5e7be2f6504aa5ae7c0c04178d8f47b7cfc63b71d95d9e6282f5b090431bf",
     "user_ckb_devnet_addr": "ckt1qyqf22qfzaer95xm5d2m5km0f6k288x9warqnhsf4m",
     "user_account_init_amount": "1200000000000",
