@@ -119,3 +119,5 @@ core
 packages/runner/configs/config.toml
 packages/runner/configs/godwoken-config.json
 packages/runner/configs/scripts-deploy-result.json
+
+packages/runner/godwoken-deploy

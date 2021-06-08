@@ -5,6 +5,7 @@ import timeout from "connect-timeout";
 import { asyncSleep, generateGodwokenConfig } from './util';
 import path from "path";
 import { Api } from "./api";
+import { execSync } from "child_process";
 
 const ckb_rpc = process.env.MODE === "docker-compose" ? PolymanConfig.components.ckb.rpc[0] : PolymanConfig.components.ckb.rpc[1];
 const godwoken_rpc = process.env.MODE === "docker-compose" ? PolymanConfig.components.godwoken.rpc[0] : PolymanConfig.components.ckb.rpc[1] ;
@@ -25,6 +26,9 @@ app.use(timeout('600s')); // keep alive for a long time
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 app.use(express.json({limit: '1mb'}));
 
+app.get('/ping', async function (req, res) {
+    res.send({status:'ok', data:'pong'});
+})
 
 app.get('/prepare_money', async function (req, res) {
     console.log("start prepare money..");
@@ -64,7 +68,7 @@ app.get('/prepare_money', async function (req, res) {
     await run_prepare_money(20);
 });
 
-app.get('/prepare_sudt_scripts', function (req, res) {
+app.get('/prepare_sudt_scripts', async function (req, res) {
   console.log("start prepare money..");
   const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-prepare-sudt-scripts");
   const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
@@ -99,10 +103,15 @@ app.get('/prepare_sudt_scripts', function (req, res) {
   };
 
   // retry 20 times max.
-  run_prepare_sudt_scripts(20);
+  await run_prepare_sudt_scripts(20);
 });
 
 app.get('/gen_config', async function (req, res) {
+  let stdout1 = await execSync('cp /code/godwoken/deploy/scripts-deploy-result.json ../configs/scripts-deploy-result.json');
+  let stdout2 = await execSync('cp /code/godwoken/config.toml ../configs/config.toml');
+
+  console.log(stdout1, stdout2);
+
   console.log("start gen config..");
   try {
     await generateGodwokenConfig('../configs/config.toml', '../configs/godwoken-config.json');
