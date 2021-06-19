@@ -12,10 +12,14 @@ import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { MetaMaskIcon } from '../widget/metamask/icon';
 import MetamaskWallet from '../widget/metamask/Wallet';
 import ContractDebugger from '../widget/contract-debugger/ContractDebugger';
+import config from '../../config/constant.json';
+import Web3 from 'web3';
+import useScript from '../widget/useHooks/useScript';
+//import PolyjuiceHttpProvider from "../../lib/polyjuice_provider.min.js";
 import './Home.css';
 
 declare global {
-  interface Window { ethereum: any; }
+  interface Window { ethereum: any; PolyjuiceHttpProvider: any; }
 }
 
 const styles = {...common_styles, ...{
@@ -69,6 +73,9 @@ export interface EthAccountLockConfig {
 }
 
 function Home() {
+  // useScript('../../lib/polyjuice_provider.min.js');
+  const PolyjuiceHttpProvider = window.PolyjuiceHttpProvider;
+
   const inputFile = useRef<HTMLInputElement>(null);
   const [selectedAddress, setSelectedAddress] = useState<string>();
   
@@ -92,10 +99,31 @@ function Home() {
       getSudtToken();
       getSudtTotalAmount();
     };
+    getRollupTypeHash();
+    getEthAccountLockConfig();
   }, [selectedAddress]);
 
 
   var updateBalance = () => {};
+
+  const init_web3_provider = () => {
+    const godwoken_rpc_url = config.web3_server_url;
+    const provider_config = {
+      godwoken: {
+        rollup_type_hash: rollupTypeHash,
+        eth_account_lock: {
+          code_hash: ethAccountLockConfig?.code_hash,
+          hash_type: ethAccountLockConfig?.hash_type,
+        },
+      },
+    };
+    const provider = new PolyjuiceHttpProvider(
+      godwoken_rpc_url,
+      provider_config
+    );
+    var web3 = new Web3(provider);
+    return web3;
+  }
 
   const getSudtBalance = async () => {
     if(!selectedAddress)return;
@@ -233,30 +261,31 @@ function Home() {
     if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
 
     const godwokenWeb3 = new Web3Api();
+    const web3 = init_web3_provider(); 
     try {
-      const transactionParameters = {
-        nonce: '0x0', // ignored by MetaMask
-        gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
-        gas: '0x2710', // customizable by user during MetaMask confirmation.
-        to: '0x', // Required except during contract publications.
+      const transactionObject = {
+        nonce: 0, // ignored by MetaMask
+        gasPrice: '0x0000', // customizable by user during MetaMask confirmation.
+        gas: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+        to: '0x'+'0'.repeat(40), // Required except during contract publications.
         from: window.ethereum.selectedAddress, // must match user's active address.
         value: '0x00', // Only required to send ether to the recipient from the initiating external account.
         data: contractCode, // Optional, but used for defining smart contract creation and interaction.
-        chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+        chainId: 3, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
       };
-      const txHash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [transactionParameters],
-      });
-      console.log(`txHash: ${txHash}`);
-      
-      await godwokenWeb3.waitForTransactionReceipt(txHash);
-
-      const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
-      console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
+      console.log(transactionObject);
+      const txReceipt = await web3.eth.sendTransaction(transactionObject);
+      // console.log(`txHash: ${txHash}`);
+      // 
+      // await godwokenWeb3.waitForTransactionReceipt(txHash);
+// 
+      // const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
+      // console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 
       const contractAddr = txReceipt.contractAddress; 
       console.log(`contract address: ${contractAddr}`);
+      if (!contractAddr)
+        return notify(`could not find your contract address in txReceipt: ${txReceipt}`);
 
       notify(`your contract address: ${contractAddr}`, 'success');
       setDeployedContracts(oldArray => [...oldArray, contractAddr]);
@@ -298,9 +327,9 @@ function Home() {
       try {
         const transactionParameters = {
           nonce: '0x0', // ignored by MetaMask
-          gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
-          gas: '0x2710', // customizable by user during MetaMask confirmation.
-          to: '0x', // Required except during contract publications.
+          gasPrice: '0x0000', // customizable by user during MetaMask confirmation.
+          gas: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+          to: '0x'+'0'.repeat(40), // Required except during contract publications.
           from: window.ethereum.selectedAddress, // must match user's active address.
           value: '0x00', // Only required to send ether to the recipient from the initiating external account.
           data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
@@ -421,7 +450,11 @@ decimal places: 8 (same with CKB)
           <h4> Contract Debugger (experimental) </h4>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <ContractDebugger />
+              <ContractDebugger godwoken_config={ {
+                rollup_type_hash: rollupTypeHash,
+                eth_account_lock_code_hash: ethAccountLockConfig?.code_hash,
+                eth_account_lock_hash_type: ethAccountLockConfig?.hash_type,
+              } } />
             </Grid>
           </Grid>
           
