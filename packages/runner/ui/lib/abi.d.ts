@@ -23,6 +23,6 @@ export declare class Abi {
     decode_method(data: string): DecodedMethod;
     get_intereted_abi_item_by_encoded_data(data: string): AbiItem;
     refactor_data_with_short_address(data: string, calculate_short_address: (addr: string) => Promise<string>): Promise<any>;
-    refactor_return_value_with_short_address(return_value: string, abi_item: AbiItem, calculate_short_address: (addr: string) => Promise<string>): Promise<object>;
+    refactor_return_value_with_short_address(return_value: string, abi_item: AbiItem, calculate_short_address: (addr: string) => Promise<string>): Promise<any>;
     read_abi_from_json_file(): void;
 }

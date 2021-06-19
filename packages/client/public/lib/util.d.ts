@@ -58,6 +58,7 @@ export declare class Godwoker {
     gw_executeRawL2Transaction(raw_tx: RawL2Transaction): Promise<string>;
     gw_submitL2Transaction(raw_tx: RawL2Transaction, signature: HexString): Promise<string>;
     gw_getTransactionReceipt(tx_hash: Hash): Promise<string>;
+    eth_getTransactionReceipt(tx_hash: Hash): Promise<string>;
     waitForTransactionReceipt(tx_hash: Hash): Promise<void>;
     asyncSleep(ms?: number): Promise<unknown>;
     allTypeEthAddressToAccountId(_address: HexString): Promise<HexNumber>;

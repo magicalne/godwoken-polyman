@@ -280,7 +280,7 @@ function Home() {
       // await godwokenWeb3.waitForTransactionReceipt(txHash);
 // 
       // const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
-      // console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
+      console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 
       const contractAddr = txReceipt.contractAddress; 
       console.log(`contract address: ${contractAddr}`);

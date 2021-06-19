@@ -253,16 +253,12 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
                 //   params: [eth_tx],
                 // });
                 const web3 = init_web3_provider();
-                const txHash = await web3.eth.sendTransaction(eth_tx);
-                
-                notify('wait for tx landing on chain, open your console page to check more.', 'success');
-                
-                await getEthTxReceipt('0x00');
-
+                const txReceipt = await web3.eth.sendTransaction(eth_tx);
+                console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
                 // notify user the result
-                notify('tx commited.', 'success');
+                notify('tx commited. open your console page to check txReceipt.', 'success');
                 // update return value in the global log state
-                await setCallLogs(oldArray => [...oldArray, `call "${item.name}", tx ${txHash} commited.`]);
+                await setCallLogs(oldArray => [...oldArray, `call "${item.name}", tx ${txReceipt.transactionHash} commited.`]);
             }
         
             const getEthTxReceipt = async (txHash: string) => {
