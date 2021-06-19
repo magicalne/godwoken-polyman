@@ -116,7 +116,7 @@ export default function Wallet (props: WalletProps) {
           if(current_chain_id !== chain_id){
             console.error(`current chain id not equals ${current_chain_id} !== polyjuice chain id ${chain_id}`);
             await setChainIdStatus(false);
-            notify('wrong network!');
+//            notify('wrong network!');
             return false
           }
           await setChainIdStatus(true);
@@ -239,7 +239,7 @@ export default function Wallet (props: WalletProps) {
               text={ displayShortEthAddress(selectedAddress ? selectedAddress : 'Connect Wallet') } 
               onClick={ selectedAddress ? function(){} : connectMetamask } />
           </div>
-          <div style={styles.status}>
+{/*       <div style={styles.status}>
             <span style={styles.status_item}>
               { chainIdStatus ? RightChainTips : WrongChainTips }
             </span>
@@ -247,6 +247,7 @@ export default function Wallet (props: WalletProps) {
               { networkStatus ?  ConnectedNetworkTips : DisconnectedNetworkTips }
             </span>
           </div>
+*/}
           <div>
             <div style={styles.balance}> <span>{balance} CKB ( {toEthBalance(balance)}  pETH )</span></div>
           </div>
