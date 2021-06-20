@@ -275,11 +275,6 @@ function Home() {
       };
       console.log(transactionObject);
       const txReceipt = await web3.eth.sendTransaction(transactionObject);
-      // console.log(`txHash: ${txHash}`);
-      // 
-      // await godwokenWeb3.waitForTransactionReceipt(txHash);
-// 
-      // const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
       console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 
       const contractAddr = txReceipt.contractAddress; 
@@ -325,29 +320,25 @@ function Home() {
       console.log(JSON.stringify(contract_code_with_constructor, null, 2));
 
       try {
-        const transactionParameters = {
-          nonce: '0x0', // ignored by MetaMask
+        const transactionObject = {
+          nonce: 0, // ignored by MetaMask
           gasPrice: '0x0000', // customizable by user during MetaMask confirmation.
           gas: '0x9184e72a000', // customizable by user during MetaMask confirmation.
           to: '0x'+'0'.repeat(40), // Required except during contract publications.
           from: window.ethereum.selectedAddress, // must match user's active address.
           value: '0x00', // Only required to send ether to the recipient from the initiating external account.
           data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
-          chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+          chainId: 3, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
         };
-        const txHash = await window.ethereum.request({
-          method: 'eth_sendTransaction',
-          params: [transactionParameters],
-        });
-        console.log(`txHash: ${txHash}`);
 
-        await godwokenWeb3.waitForTransactionReceipt(txHash);
-
-        const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
+        const web3 = init_web3_provider(); 
+        const txReceipt = await web3.eth.sendTransaction(transactionObject);
         console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 
         const contractAddr = txReceipt.contractAddress; 
         console.log(`contract address: ${contractAddr}`);
+        if (!contractAddr)
+          return notify(`could not find your contract address in txReceipt: ${txReceipt}`);
 
         notify(`your contract address: ${contractAddr}`, 'success');
         setDeployedContracts(oldArray => [...oldArray, contractAddr]);
@@ -460,7 +451,7 @@ decimal places: 8 (same with CKB)
           
           <hr />
 
-          <h4> Sudt Section (experimental) </h4>
+          <h4> Sudt Demo Section (experimental) </h4>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -473,8 +464,15 @@ decimal places: 8 (same with CKB)
          <Grid container spacing={5}>
             <Grid item xs={12}>
               <div style={styles.descrip_sudt}>
+                <p>below is a simple demo to show how erc20-proxy contract works in godwoken-polyjuice.</p>
+                <p>the purpose of erc20-proxy contract is to mount sudt(<a href="https://talk.nervos.org/t/rfc-simple-udt-draft-spec/4333">simple user defined token</a>) in CKB with some sort of ERC20 token in ETH. so you can use ERC20 contract to transfer sudt token in CKB.</p>
+                <p>Note:</p>
                 <p>you should issue sudt token first if sudt token total amount is 0.</p>
                 <p>depositting sudt by defaut will give you 400 sudt each time. and the capacity of ckb required is also 400 ckb, so the balance of your layer2 ckb will also increase. </p>
+                <hr />
+                <p>How to deploy?</p>
+                <p>when you click the third button to deploy erc20-proxy contract, the kicker just retrun an predefined erc20-proxy contract bytecode and assemble an deployed tx for you. after you sign this tx with metamask(using personal sign method), the proxy will be deployed. </p>
+                <p>then you can take the contract address and the abi file (you can download from <a href="https://github.com/nervosnetwork/godwoken-polyjuice/blob/main/solidity/erc20/SudtERC20Proxy.abi">here</a>), and interact with the contract through the simple Contract Debugger on kicker.</p>
               </div>
             </Grid>
           </Grid> 
