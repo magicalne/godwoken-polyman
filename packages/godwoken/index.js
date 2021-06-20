@@ -95,7 +95,10 @@ class Godwoken {
   async getBalance(sudt_id, account_id) {
     // TODO: maybe swap params later?
     console.log('0x'+account_id.toString(16), '0x'+sudt_id.toString(16));
-    const hex = await this.rpc.get_balance('0x'+account_id.toString(16), '0x'+sudt_id.toString(16));
+    // todo: match all type short address
+    const script_hash = await this.getScriptHash(account_id);
+    const short_address = script_hash.slice(0, 42);
+    const hex = await this.rpc.get_balance(short_address, '0x'+sudt_id.toString(16));
     return BigInt(hex);
   }
   async getStorageAt(account_id, key) {
@@ -120,6 +123,9 @@ class Godwoken {
   async getTransactionReceipt(tx_hash) {
     return await this.rpc.get_transaction_receipt(tx_hash);
   } 
+  async getScriptHashByShortAddress(short_address){
+    return await this.rpc.get_script_hash_by_short_address(short_address);
+  }
 }
 
 class GodwokenUtils {
