@@ -8,6 +8,8 @@ import commonStyle from '../common_style';
 import utils from '../../../utils/index';
 import config from '../../../config/constant.json';
 import Web3 from 'web3';
+import PolyjuiceHttpProvider from "../../../lib/polyjuice_provider.min.js";
+import { GodwokerOption } from "../../../lib/util";
 
 const Web3EthAbi = require('web3-eth-abi');
 
@@ -104,7 +106,6 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
 
     const { rollup_type_hash, eth_account_lock_code_hash, eth_account_lock_hash_type } = props.godwoken_config;
     
-    const PolyjuiceHttpProvider = window.PolyjuiceHttpProvider;
     const web3Api = new Web3Api();
     const [abi, setAbi] = useState<AbiItem[]>(SIMPLE_STORAGE_ABI);
     const [contractAddr, setContractAddr] = useState<string>();
@@ -117,12 +118,12 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
 
     const init_web3_provider = () => {
         const godwoken_rpc_url = config.web3_server_url;
-        const provider_config = {
+        const provider_config: GodwokerOption = {
           godwoken: {
-            rollup_type_hash: rollup_type_hash,
+            rollup_type_hash: rollup_type_hash || '',
             eth_account_lock: {
-              code_hash: eth_account_lock_code_hash,
-              hash_type: eth_account_lock_hash_type,
+              code_hash: eth_account_lock_code_hash || '',
+              hash_type: eth_account_lock_hash_type === "type" ? "type" : "data",
             },
           },
         };

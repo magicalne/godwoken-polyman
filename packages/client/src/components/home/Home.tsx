@@ -14,12 +14,11 @@ import MetamaskWallet from '../widget/metamask/Wallet';
 import ContractDebugger from '../widget/contract-debugger/ContractDebugger';
 import config from '../../config/constant.json';
 import Web3 from 'web3';
-import useScript from '../widget/useHooks/useScript';
-//import PolyjuiceHttpProvider from "../../lib/polyjuice_provider.min.js";
+import PolyjuiceHttpProvider from "../../lib/polyjuice_provider.min.js";
 import './Home.css';
 
 declare global {
-  interface Window { ethereum: any; PolyjuiceHttpProvider: any; }
+  interface Window { ethereum: any; }
 }
 
 const styles = {...common_styles, ...{
@@ -69,12 +68,12 @@ const styles = {...common_styles, ...{
 
 export interface EthAccountLockConfig {
   code_hash: string;
-  hash_type: 'hash' | 'type';
+  hash_type: 'data' | 'type';
 }
 
 function Home() {
   // useScript('../../lib/polyjuice_provider.min.js');
-  const PolyjuiceHttpProvider = window.PolyjuiceHttpProvider;
+  //const PolyjuiceHttpProvider = window.PolyjuiceHttpProvider;
 
   const inputFile = useRef<HTMLInputElement>(null);
   const [selectedAddress, setSelectedAddress] = useState<string>();
@@ -110,10 +109,10 @@ function Home() {
     const godwoken_rpc_url = config.web3_server_url;
     const provider_config = {
       godwoken: {
-        rollup_type_hash: rollupTypeHash,
+        rollup_type_hash: rollupTypeHash || '',
         eth_account_lock: {
-          code_hash: ethAccountLockConfig?.code_hash,
-          hash_type: ethAccountLockConfig?.hash_type,
+          code_hash: ethAccountLockConfig?.code_hash || '',
+          hash_type: ethAccountLockConfig?.hash_type || 'type',
         },
       },
     };
