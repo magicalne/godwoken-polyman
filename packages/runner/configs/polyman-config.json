@@ -3,7 +3,9 @@
     "server_port": "6101",
     "cros_server_list": [
         "http://localhost:6100",
-        "http://127.0.0.1:6100"
+        "http://127.0.0.1:6100",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
     ],
     "prepare_service_port": "6102",
     "user_private_key": "0x6cd5e7be2f6504aa5ae7c0c04178d8f47b7cfc63b71d95d9e6282f5b090431bf",
