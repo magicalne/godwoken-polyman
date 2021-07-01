@@ -8,13 +8,13 @@ import commonStyle from '../common_style';
 import utils from '../../../utils/index';
 import config from '../../../config/constant.json';
 import Web3 from 'web3';
-import PolyjuiceHttpProvider from "../../../lib/polyjuice_provider.min.js";
-import { GodwokerOption } from "../../../lib/util";
+import PolyjuiceHttpProvider from "@retric/test-provider";
+import { GodwokerOption } from "@retric/test-provider/lib/util";
 
 const Web3EthAbi = require('web3-eth-abi');
 
 declare global {
-    interface Window { ethereum: any; PolyjuiceHttpProvider: any; }
+    interface Window { ethereum: any; }
 }
 
 const styles = {...commonStyle, ...{

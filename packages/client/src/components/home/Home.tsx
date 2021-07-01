@@ -14,7 +14,7 @@ import MetamaskWallet from '../widget/metamask/Wallet';
 import ContractDebugger from '../widget/contract-debugger/ContractDebugger';
 import config from '../../config/constant.json';
 import Web3 from 'web3';
-import PolyjuiceHttpProvider from "../../lib/polyjuice_provider.min.js";
+import PolyjuiceHttpProvider from "@retric/test-provider";
 import './Home.css';
 
 declare global {
