@@ -72,9 +72,6 @@ export interface EthAccountLockConfig {
 }
 
 function Home() {
-  // useScript('../../lib/polyjuice_provider.min.js');
-  //const PolyjuiceHttpProvider = window.PolyjuiceHttpProvider;
-
   const inputFile = useRef<HTMLInputElement>(null);
   const [selectedAddress, setSelectedAddress] = useState<string>();
   
@@ -256,10 +253,9 @@ function Home() {
   } 
 
   const _deployContract = async (contractCode: string) => {
-    if(!contractCode)return notify(`upload contract binary file first!`);
+    if(!contractCode)return notify(`upload contract binary file or contract artifacts first!`);
     if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
 
-    const godwokenWeb3 = new Web3Api();
     const web3 = init_web3_provider(); 
     try {
       const transactionObject = {
@@ -291,17 +287,24 @@ function Home() {
 
   const deployContract = async (e: any) => {
     const codefile = e.target.files[0]; 
-    setIsLoading(true);
-    const res: any = await readContractCode(codefile);
-    if(res.status !== 'ok'){
-      setIsLoading(false);
-      return notify(`can not read contract code from file.`);
-    };
+    var contractBytecode: string;
 
-    const code_hex = res.data;
-    console.log('reading contract code hex:');
-    console.log(code_hex);
-    await _deployContract(code_hex);
+    try{
+      contractBytecode = await readContractFileAsArtifacts(e);
+    }catch(error){
+      // read as binary without '0x'.
+      const res: any = await readContractFileAsBinary(codefile);
+      if(res.status !== 'ok'){
+        return notify(`can not read contract code from file.`);
+      };
+      contractBytecode = res.data;
+      console.log('reading contract code hex:');
+      console.log(contractBytecode);
+    }
+
+    // start uploading contract
+    setIsLoading(true);
+    await _deployContract(contractBytecode);
     setIsLoading(false);
   }
 
@@ -350,7 +353,7 @@ function Home() {
     } 
   }
 
-  const readContractCode = (codefile: Blob) => {
+  const readContractFileAsBinary = (codefile: Blob) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (event: any) => {
@@ -366,6 +369,25 @@ function Home() {
         reader.readAsBinaryString(codefile);
     });  
   }
+
+  const readContractFileAsArtifacts = async (event: any) => {
+    const codefile = event.target.files[0]; 
+    const res: any = await utils.readDataFromFile(codefile);
+    console.log(res);
+    if(res.status !== 'ok'){
+      notify(`can not read contract abi from file.`);
+      throw new Error("can not read contract abi from file.");
+    };
+    const data = JSON.parse(res.data);
+    if( typeof data === 'object' && data.bytecode ){
+        // todo: validate bytecode
+        return data.bytecode;
+    }else{
+        notify(`not a valid artifacts file!`);
+        throw new Error("not a valid artifacts file!");
+    }
+  }
+
 
   const displayShortEthAddress = (eth_address: string) => {
     const length = eth_address.length;

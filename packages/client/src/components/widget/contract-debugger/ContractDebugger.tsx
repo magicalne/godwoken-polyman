@@ -1,8 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { toWei, AbiInput, AbiItem } from 'web3-utils';
+import { toWei, AbiItem } from 'web3-utils';
 import Web3Api from '../../../api/web3'
-import { AbiCoder } from 'web3-eth-abi';
 import {notify} from '../notify';
 import commonStyle from '../common_style';
 import utils from '../../../utils/index';
