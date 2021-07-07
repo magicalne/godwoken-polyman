@@ -103,7 +103,7 @@ function Home() {
   var updateBalance = () => {};
 
   const init_web3_provider = () => {
-    const godwoken_rpc_url = config.web3_server_url;
+    const godwoken_web3_rpc_url = config.web3_server_url;
     const provider_config = {
       godwoken: {
         rollup_type_hash: rollupTypeHash || '',
@@ -114,7 +114,7 @@ function Home() {
       },
     };
     const provider = new PolyjuiceHttpProvider(
-      godwoken_rpc_url,
+      godwoken_web3_rpc_url,
       provider_config
     );
     var web3 = new Web3(provider);
