@@ -44,8 +44,7 @@
         "0x663f41ad78551ef302d621729abde17db14aaed4b12a763574e7415542cca144",
         "0xa436a876dc09c010708549454b4a20f2a61c06317515b62f9822a679441f9824",
         "0x7ce179cfba9595c6d5d44b740daa8c4c62be41af95b6c7237427901cf37cf033"
-      ],
-      "compatible_chain_id": "0x1"
+      ]
     },
     "secp_data_dep": {
       "dep_type": "code",

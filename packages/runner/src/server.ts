@@ -9,7 +9,7 @@ import { getRollupTypeHash } from '../js/transactions/deposit';
 import godwoken_config from "../configs/godwoken-config.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import fs from 'fs';
-import { UInt32ToLeBytes, caculateChainId } from "./util";
+import { UInt32ToLeBytes } from "./util";
 
 const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
 
@@ -66,10 +66,6 @@ const setUpRouters = (
         res.send({status: 'ok', data: deploymentConfig.eth_account_lock });
     });
 
-    app.get("/get_compatible_chain_id", ( req, res ) => {
-        res.send({status: 'ok', data: serverConfig.components.godwoken.compatible_chain_id });
-    });
-
     app.get("/get_creator_id", async ( req, res ) => {
         const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
         res.send({status: 'ok', data: createCreatorId });
@@ -77,7 +73,6 @@ const setUpRouters = (
 
     app.get("/get_chain_id", async ( req, res ) => {
         const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
-        // const chain_id = caculateChainId(parseInt(createCreatorId+''), serverConfig.components.godwoken.compatible_chain_id) 
         res.send({status: 'ok', data: createCreatorId });
     });
 
