@@ -56,6 +56,7 @@ import { deploymentConfig } from "../js/utils/deployment_config";
 import path from "path";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 import fs from "fs";
+import { URL } from "url";
 
 import {
   asyncSleep,
@@ -138,7 +139,24 @@ export class Api {
       indexerPath = path.resolve(this.indexer_path);
     }
 
-    this.indexer = new Indexer(this.ckb_rpc_url, indexerPath);
+    // enable HTTP/HTTPS persistent connection to CKB RPC
+    const http = require("http");
+    const keepAliveAgent = new http.Agent({ keepAlive: true });
+    const https = require('https');
+    const httpsAliveAgent = new https.Agent({ keepAlive: true });
+    const aliveAgent = function(_parsedURL) {
+      if (_parsedURL.protocol == 'http:') {
+        return keepAliveAgent;
+      } else {
+        return httpsAliveAgent;
+      }
+    }
+    this.indexer = new Indexer(this.ckb_rpc_url, indexerPath, {
+      rpcOptions:{
+        agent: aliveAgent(new URL(this.ckb_rpc_url))
+      }
+    });
+
     this.indexer.startForever();
     this.transactionManager = new TransactionManager(this.indexer)
     this.transactionManager.start();
