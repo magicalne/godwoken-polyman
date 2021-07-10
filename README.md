@@ -78,6 +78,16 @@ If you want to start this [API](packages/runner/src/server.ts) server interactin
 
 You can use [Nervos Aggron Faucet](https://faucet.nervos.org/) to make sure that there are enough testnet CKBytes in your account.
 
+Note: The `account-cli` tool uses a builtin CKB Indexer, which needs to fully synchronize with a Testnet CKB Indexer before it can create transactions. This may take a long time, but there are 2 ways to speed it up:
+1. Copy the testnet indexer data from `testnet-polyjuice-api:latest` docker image
+```
+docker run --rm \
+  -v`pwd`/db/ckb-indexer-testnet:/ckb-indexer-testnet \
+  ghcr.io/flouse/testnet-polyjuice-api:latest bash -c \
+  "cp /godwoken-polyman/packages/runner/db/ckb-indexer-testnet/* packages/runner/db/ckb-indexer-testnet/"
+```
+2. Download testnet indexer snapshot data from [Amazon S3](https://github.com/RetricSu/gw-gitcoin-instruction/blob/8c02c1584d527fca24f983dc33d19b6bb765b1f8/src/component-tutorials/12.using.snapshot.data.with.account.cli.md)
+
 And then, start the API service with `testnet` mode without [UI](packages/runner/src/ui.ts).
 
 ```
