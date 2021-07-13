@@ -54,12 +54,6 @@ export async function waitForBlockSync(
   }
 }
 
-export function caculateChainId(creator_id: number, compatible_chain_id: number){
-  console.log(creator_id);
-  const chain_id_num = ( compatible_chain_id * Math.pow(2, 32) ) + creator_id;
-  return '0x' + BigInt(chain_id_num).toString(16);
-}
-
 export function caculateLayer2LockScriptHash(layer2LockArgs: string) {
   const rollup_type_hash = getRollupTypeHash();
   const script = {

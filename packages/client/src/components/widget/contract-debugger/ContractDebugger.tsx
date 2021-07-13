@@ -116,7 +116,7 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
     }, []);
 
     const init_web3_provider = () => {
-        const godwoken_rpc_url = config.web3_server_url;
+        const godwoken_web3_rpc_url = config.web3_server_url;
         const provider_config: GodwokerOption = {
           godwoken: {
             rollup_type_hash: rollup_type_hash || '',
@@ -127,7 +127,7 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
           },
         };
         const provider = new PolyjuiceHttpProvider(
-          godwoken_rpc_url,
+          godwoken_web3_rpc_url,
           provider_config,
           abi
         );
