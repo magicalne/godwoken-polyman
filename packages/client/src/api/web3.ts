@@ -12,7 +12,6 @@ export default class Web3Api{
         this.url = config.web3_server_url;
     };
 
-
     async getBalance(eth_address: string){
         let response = await axios.post(this.url, {
             jsonrpc: '2.0',
@@ -58,6 +57,4 @@ export default class Web3Api{
         }
         throw new Error(`cannot fetch tx_receipt with tx ${tx_hash} in ${timeout} seconds`);;
     }
-
 }
- 

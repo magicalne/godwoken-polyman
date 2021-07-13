@@ -3,7 +3,7 @@ import { start as startUI } from "./ui";
 
 const start = async () => {
     await startApiServer();
-    startUI();
+    process.env.MODE === "testnet" || startUI();
 }
 
 start();

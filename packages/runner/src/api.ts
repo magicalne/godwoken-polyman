@@ -56,6 +56,7 @@ import { deploymentConfig } from "../js/utils/deployment_config";
 import path from "path";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 import fs from "fs";
+import { URL } from "url";
 
 import {
   asyncSleep,
@@ -74,6 +75,7 @@ export class Api {
   public validator_code_hash: string;
   public ckb_rpc_url: string;
   private ckb_rpc: RPC;
+  public godwokenWeb3Rpc: RPC;
   public godwoken_rpc_url: string;
   public godwoken: Godwoken;
   private indexer: Indexer | null;
@@ -84,7 +86,8 @@ export class Api {
   constructor(
     _ckb_rpc_url: string,
     _godwoken_rpc: string,
-    _indexer_path: string
+    _indexer_path: string,
+    _godwoken_web3_rpc_url?: string
   ) {
     this.indexer_path = _indexer_path;
     this.ckb_rpc_url = _ckb_rpc_url;
@@ -95,12 +98,32 @@ export class Api {
     this.indexer = null;
     this.transactionManager = null;
     this.ckb_rpc = new RPC(this.ckb_rpc_url);
+    this.godwokenWeb3Rpc = new RPC(_godwoken_web3_rpc_url ||
+      (process.env.MODE === "docker-compose" ? "http://web3:8024" : "http://127.0.0.1:8024"));
     this.godwoken = new Godwoken(this.godwoken_rpc_url);
 
     this.polyjuice = null;
   }
 
+  public get isTestnet() : Boolean {
+    return this.ckb_rpc_url.includes("testnet.ckb.dev");
+  }
+
+  /**
+   * getAccountIdByScriptHash using Godwoken Web3 RPC
+   */
+  public async getAccountIdByScriptHash(scriptHash: Hash): Promise<number> {
+    const accountID = await this.godwokenWeb3Rpc
+      .gw_get_account_id_by_script_hash(scriptHash).catch(console.error);
+    console.debug("gw_get_account_id_by_script_hash =>", accountID);
+    return accountID;
+  }
+
   async syncLayer1(reinit:boolean=false) {
+    if (!process.env.LUMOS_CONFIG_NAME && !process.env.LUMOS_CONFIG_FILE) {
+      process.env.LUMOS_CONFIG_NAME = "AGGRON4";
+      console.log("use default LUMOS_CONFIG_NAME:", process.env.LUMOS_CONFIG_NAME);
+    }
     if (process.env.LUMOS_CONFIG_FILE) {
       process.env.LUMOS_CONFIG_FILE = path.resolve(
         process.env.LUMOS_CONFIG_FILE
@@ -116,7 +139,24 @@ export class Api {
       indexerPath = path.resolve(this.indexer_path);
     }
 
-    this.indexer = new Indexer(this.ckb_rpc_url, indexerPath);
+    // enable HTTP/HTTPS persistent connection to CKB RPC
+    const http = require("http");
+    const keepAliveAgent = new http.Agent({ keepAlive: true });
+    const https = require('https');
+    const httpsAliveAgent = new https.Agent({ keepAlive: true });
+    const aliveAgent = function(_parsedURL) {
+      if (_parsedURL.protocol == 'http:') {
+        return keepAliveAgent;
+      } else {
+        return httpsAliveAgent;
+      }
+    }
+    this.indexer = new Indexer(this.ckb_rpc_url, indexerPath, {
+      rpcOptions:{
+        agent: aliveAgent(new URL(this.ckb_rpc_url))
+      }
+    });
+
     this.indexer.startForever();
     this.transactionManager = new TransactionManager(this.indexer)
     this.transactionManager.start();
@@ -128,12 +168,18 @@ export class Api {
 
   async syncToTip(){
     if(!this.indexer)throw new Error("indexer not found. do syncLayer1 first!");
+
+    this.indexer.tip().then(tip => {
+      console.log("indexer.tip:", tip ? BigInt(tip.block_number) : 0n);
+    }).catch(console.error);
     
-    await this.indexer.tip();
-    console.log('syncd to tip.');
+    await this.indexer.waitForSync();
+    console.log('synced to tip.');
   }
 
   async waitForGodwokenStart(){
+    if (this.isTestnet) return;
+
     while (true) {
       await asyncSleep(5000);
       try {
@@ -146,7 +192,6 @@ export class Api {
         console.log(`wait for godwoken to start..`);
       }
     }
-    return;
   }
 
   async sendTx(
@@ -329,7 +374,6 @@ export class Api {
     }
   }
   
-
   async deposit(
     _privateKey: string,
     _ethAddress: string | undefined, 
@@ -387,7 +431,7 @@ export class Api {
     // wait for confirm
     await this.waitForAccountIdOnChain(script_hash);
 
-    const account_id = await this.godwoken.getAccountIdByScriptHash(
+    const account_id = await this.getAccountIdByScriptHash(
       script_hash
     );
     return account_id.toString();
@@ -438,7 +482,7 @@ export class Api {
     const l2_script_hash = serializeScript(l2_script);
     await this.waitForAccountIdOnChain(l2_script_hash);
 
-    const new_account_id = await this.godwoken.getAccountIdByScriptHash(l2_script_hash);
+    const new_account_id = await this.getAccountIdByScriptHash(l2_script_hash);
     return new_account_id.toString();
   }
 
@@ -458,7 +502,7 @@ export class Api {
     const script_hash = eth_address
       ? caculateLayer2LockScriptHash(eth_address)
       : accountScriptHash(privkey);
-    const from_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    const from_id = await this.getAccountIdByScriptHash(script_hash);
     if (!from_id) {
       console.log("Can not find account id by script_hash:", script_hash);
       throw new Error(`Can not find account id by script_hash: ${script_hash}`);
@@ -503,7 +547,7 @@ export class Api {
     // wait for confirm
     await this.waitForAccountIdOnChain(contract_script_hash);
 
-    const new_account_id = await this.godwoken.getAccountIdByScriptHash(
+    const new_account_id = await this.getAccountIdByScriptHash(
       contract_script_hash
     );
     const account_address = await this.polyjuice.accountIdToAddress(
@@ -555,7 +599,7 @@ export class Api {
       await this.waitForAccountIdOnChain(script_hash);
       await this.waitForAccountIdOnChain(l2_sudt_script_hash);
 
-      const account_id = await this.godwoken.getAccountIdByScriptHash(
+      const account_id = await this.getAccountIdByScriptHash(
         script_hash
       );
       
@@ -687,7 +731,7 @@ export class Api {
   }
 
   async getAccountId(script_hash: string) {
-    const id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    const id = await this.getAccountIdByScriptHash(script_hash);
     return id;
   }
 
@@ -696,7 +740,7 @@ export class Api {
   }
 
   async getAccountIdByEthAddr(eth_address: string){
-    const id = await this.godwoken.getAccountIdByScriptHash(caculateLayer2LockScriptHash(eth_address));
+    const id = await this.getAccountIdByScriptHash(caculateLayer2LockScriptHash(eth_address));
     return id;
   }
 
@@ -734,7 +778,7 @@ export class Api {
   async waitForAccountIdOnChain(script_hash: string) {
     while (true) {
       await asyncSleep(1000);
-      const new_account_id = await this.godwoken.getAccountIdByScriptHash(
+      const new_account_id = await this.getAccountIdByScriptHash(
         script_hash
       );
       console.log(`account_id: ${new_account_id}`);
@@ -784,7 +828,7 @@ export class Api {
       );
 
     const script_hash = accountScriptHash(privkey);
-    const from_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    const from_id = await this.getAccountIdByScriptHash(script_hash);
     if (!from_id) {
       console.log("Can not find account id by script_hash:", script_hash);
       throw new Error(`Can not find account id by script_hash: ${script_hash}`);
@@ -896,7 +940,7 @@ export class Api {
     eth_address: string,
   ) {
     const script_hash = caculateLayer2LockScriptHash(eth_address);
-    const fromId = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    const fromId = await this.getAccountIdByScriptHash(script_hash);
     if (!fromId) {
       console.log("Can not find account id by script_hash:", script_hash);
       throw new Error(`Can not find account id by script_hash: ${script_hash}`);
@@ -1023,7 +1067,7 @@ export class Api {
       creator_account_id,
     });
     const script_hash = caculateLayer2LockScriptHash(eth_address);
-    const _from_id = await this.godwoken.getAccountIdByScriptHash(script_hash);
+    const _from_id = await this.getAccountIdByScriptHash(script_hash);
     const from_id = parseInt(_from_id + '');
     if (!from_id) {
       console.log("Can not find account id by script_hash:", script_hash);
@@ -1080,8 +1124,8 @@ export class Api {
       args: script_args,
     };
     const l2_script_hash = serializeScript(l2_script);
-    const id = await this.godwoken.getAccountIdByScriptHash(l2_script_hash);
-    return id;
+
+    return this.getAccountIdByScriptHash(l2_script_hash);
   }
 
   async giveUserLayer1AccountSomeMoney(miner_address: string, miner_privatekey: string, user_address: string, amount: bigint){
@@ -1358,7 +1402,4 @@ export class Api {
   getLumosConfigFile(){
     return getConfig();
   }
-
-
-  
 }

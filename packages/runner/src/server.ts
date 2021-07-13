@@ -9,12 +9,25 @@ import { getRollupTypeHash } from '../js/transactions/deposit';
 import godwoken_config from "../configs/godwoken-config.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import fs from 'fs';
-import { UInt32ToLeBytes, caculateChainId } from "./util";
+import { UInt32ToLeBytes } from "./util";
 
-const indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
+let indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
+let cfgIdx = 2;
+switch (process.env.MODE) {
+  case "docker-compose":
+    cfgIdx = 1;
+    break;
+  case "testnet":
+    cfgIdx = 0;
+    indexer_path = path.resolve(__dirname, "../db/ckb-indexer-testnet");
+    break;
+  default:
+    cfgIdx = 2;
+}
+const ckb_rpc = serverConfig.components.ckb.rpc[cfgIdx];
+const godwoken_rpc = serverConfig.components.godwoken.rpc[cfgIdx];
+const godwoken_web3_rpc_url = serverConfig.components.godwoken.web3_rpc[cfgIdx];
 
-const ckb_rpc = process.env.MODE === "docker-compose" ? serverConfig.components.ckb.rpc[0] : serverConfig.components.ckb.rpc[1];
-const godwoken_rpc = process.env.MODE === "docker-compose" ? serverConfig.components.godwoken.rpc[0] : serverConfig.components.godwoken.rpc[1] ;
 const sudt_id_str = serverConfig.default_sudt_id_str;
 const default_deposit_amount = serverConfig.default_amount;
 const default_sudt_issue_amount = serverConfig.default_issue_sudt_amount;
@@ -26,7 +39,7 @@ const miner_private_key = serverConfig.miner_private_key;
 const miner_ckb_address = serverConfig.miner_ckb_devnet_addr;
 const change_amount = '10000000000'; // 100 ckb change for pay fee.
 
-const api = new Api(ckb_rpc, godwoken_rpc, indexer_path);
+const api = new Api(ckb_rpc, godwoken_rpc, indexer_path, godwoken_web3_rpc_url);
 api.syncLayer1();
 
 export const app = express();
@@ -66,10 +79,6 @@ const setUpRouters = (
         res.send({status: 'ok', data: deploymentConfig.eth_account_lock });
     });
 
-    app.get("/get_compatible_chain_id", ( req, res ) => {
-        res.send({status: 'ok', data: serverConfig.components.godwoken.compatible_chain_id });
-    });
-
     app.get("/get_creator_id", async ( req, res ) => {
         const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
         res.send({status: 'ok', data: createCreatorId });
@@ -77,7 +86,6 @@ const setUpRouters = (
 
     app.get("/get_chain_id", async ( req, res ) => {
         const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
-        // const chain_id = caculateChainId(parseInt(createCreatorId+''), serverConfig.components.godwoken.compatible_chain_id) 
         res.send({status: 'ok', data: createCreatorId });
     });
 
@@ -234,7 +242,7 @@ const setUpRouters = (
             await api.syncToTip();
             // get sudt id
             const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
-            const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
+            const sudt_id = await api.getAccountIdByScriptHash(sudt_script_hash);
             console.log(`sudt_id: ${sudt_id}`);
             if(!sudt_id)
                 return res.send({status:'failed', error: `sudt account not exits. deposit sudt first.`});
@@ -321,7 +329,7 @@ const setUpRouters = (
             if(!account_id)
                 return res.send({status:'failed', error: `account not exits. deposit first.`}); 
             const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
-            const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
+            const sudt_id = await api.getAccountIdByScriptHash(sudt_script_hash);
             console.log(`sudt_id: ${sudt_id}`);
 
             if(!sudt_id)
@@ -338,7 +346,7 @@ const setUpRouters = (
     app.get( "/get_sudt_token", async ( req, res ) => {
         try {
              // const sudt_script_hash = api.getL2SudtScriptHash(user_private_key); 
-             // const sudt_id = await api.godwoken.getAccountIdByScriptHash(sudt_script_hash);
+             // const sudt_id = await api.getAccountIdByScriptHash(sudt_script_hash);
              // console.log(`sudt_id: ${sudt_id}`); 
              // if(!sudt_id)
              //     return res.send({status:'failed', error: "sudt_id not exits. issue sudt token first!"});    
@@ -385,10 +393,10 @@ export async function start() {
               rollup_type_hash,
               user_private_key
             );
-            console.log(`create creator account.`);
+            console.log(`create creator account =>`, creator_account_id);
             console.log(`init polyjuice chain.`);
-        }else{
-            console.log(`polyjuice chain already exits. skip.`);
+        } else {
+            console.log(`polyjuice chain already exits, skip createCreatorAccount.`);
         }
     } catch (e) {
         throw new Error(e);
