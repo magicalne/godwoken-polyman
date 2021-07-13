@@ -168,9 +168,13 @@ export class Api {
 
   async syncToTip(){
     if(!this.indexer)throw new Error("indexer not found. do syncLayer1 first!");
+
+    this.indexer.tip().then(tip => {
+      console.log("indexer.tip:", tip ? BigInt(tip.block_number) : 0n);
+    }).catch(console.error);
     
-    await this.indexer.tip();
-    console.log('syncd to tip.');
+    await this.indexer.waitForSync();
+    console.log('synced to tip.');
   }
 
   async waitForGodwokenStart(){
