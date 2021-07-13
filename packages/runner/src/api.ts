@@ -423,6 +423,7 @@ export class Api {
     console.log("message", message);
     console.log("signature", signature);
     const l2tx: L2Transaction = { raw: raw_l2tx, signature };
+    console.log(l2tx);
     const run_result = await this.godwoken.submitL2Transaction(l2tx);
     console.log("RunResult", run_result);
     //const new_account_id = UInt32LEToNumber(run_result.return_data);

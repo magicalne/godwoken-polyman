@@ -12,6 +12,9 @@ import { gruvboxDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { MetaMaskIcon } from '../widget/metamask/icon';
 import MetamaskWallet from '../widget/metamask/Wallet';
 import ContractDebugger from '../widget/contract-debugger/ContractDebugger';
+import config from '../../config/constant.json';
+import Web3 from 'web3';
+import PolyjuiceHttpProvider from "@retric/test-provider";
 import './Home.css';
 
 declare global {
@@ -65,7 +68,7 @@ const styles = {...common_styles, ...{
 
 export interface EthAccountLockConfig {
   code_hash: string;
-  hash_type: 'hash' | 'type';
+  hash_type: 'data' | 'type';
 }
 
 function Home() {
@@ -92,10 +95,31 @@ function Home() {
       getSudtToken();
       getSudtTotalAmount();
     };
+    getRollupTypeHash();
+    getEthAccountLockConfig();
   }, [selectedAddress]);
 
 
   var updateBalance = () => {};
+
+  const init_web3_provider = () => {
+    const godwoken_rpc_url = config.web3_server_url;
+    const provider_config = {
+      godwoken: {
+        rollup_type_hash: rollupTypeHash || '',
+        eth_account_lock: {
+          code_hash: ethAccountLockConfig?.code_hash || '',
+          hash_type: ethAccountLockConfig?.hash_type || 'type',
+        },
+      },
+    };
+    const provider = new PolyjuiceHttpProvider(
+      godwoken_rpc_url,
+      provider_config
+    );
+    var web3 = new Web3(provider);
+    return web3;
+  }
 
   const getSudtBalance = async () => {
     if(!selectedAddress)return;
@@ -229,34 +253,29 @@ function Home() {
   } 
 
   const _deployContract = async (contractCode: string) => {
-    if(!contractCode)return notify(`upload contract binary file first!`);
+    if(!contractCode)return notify(`upload contract binary file or contract artifacts first!`);
     if(!selectedAddress)return notify(`window.ethereum.selectedAddress not found.`);
 
-    const godwokenWeb3 = new Web3Api();
+    const web3 = init_web3_provider(); 
     try {
-      const transactionParameters = {
-        nonce: '0x0', // ignored by MetaMask
-        gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
-        gas: '0x2710', // customizable by user during MetaMask confirmation.
-        to: '0x', // Required except during contract publications.
+      const transactionObject = {
+        nonce: 0, // ignored by MetaMask
+        gasPrice: '0x0000', // customizable by user during MetaMask confirmation.
+        gas: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+        to: '0x'+'0'.repeat(40), // Required except during contract publications.
         from: window.ethereum.selectedAddress, // must match user's active address.
         value: '0x00', // Only required to send ether to the recipient from the initiating external account.
         data: contractCode, // Optional, but used for defining smart contract creation and interaction.
-        chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+        chainId: 3, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
       };
-      const txHash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [transactionParameters],
-      });
-      console.log(`txHash: ${txHash}`);
-      
-      await godwokenWeb3.waitForTransactionReceipt(txHash);
-
-      const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
+      console.log(transactionObject);
+      const txReceipt = await web3.eth.sendTransaction(transactionObject);
       console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 
       const contractAddr = txReceipt.contractAddress; 
       console.log(`contract address: ${contractAddr}`);
+      if (!contractAddr)
+        return notify(`could not find your contract address in txReceipt: ${txReceipt}`);
 
       notify(`your contract address: ${contractAddr}`, 'success');
       setDeployedContracts(oldArray => [...oldArray, contractAddr]);
@@ -268,17 +287,24 @@ function Home() {
 
   const deployContract = async (e: any) => {
     const codefile = e.target.files[0]; 
-    setIsLoading(true);
-    const res: any = await readContractCode(codefile);
-    if(res.status !== 'ok'){
-      setIsLoading(false);
-      return notify(`can not read contract code from file.`);
-    };
+    var contractBytecode: string;
 
-    const code_hex = res.data;
-    console.log('reading contract code hex:');
-    console.log(code_hex);
-    await _deployContract(code_hex);
+    try{
+      contractBytecode = await readContractFileAsArtifacts(e);
+    }catch(error){
+      // read as binary without '0x'.
+      const res: any = await readContractFileAsBinary(codefile);
+      if(res.status !== 'ok'){
+        return notify(`can not read contract code from file.`);
+      };
+      contractBytecode = res.data;
+      console.log('reading contract code hex:');
+      console.log(contractBytecode);
+    }
+
+    // start uploading contract
+    setIsLoading(true);
+    await _deployContract(contractBytecode);
     setIsLoading(false);
   }
 
@@ -296,29 +322,25 @@ function Home() {
       console.log(JSON.stringify(contract_code_with_constructor, null, 2));
 
       try {
-        const transactionParameters = {
-          nonce: '0x0', // ignored by MetaMask
-          gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
-          gas: '0x2710', // customizable by user during MetaMask confirmation.
-          to: '0x', // Required except during contract publications.
+        const transactionObject = {
+          nonce: 0, // ignored by MetaMask
+          gasPrice: '0x0000', // customizable by user during MetaMask confirmation.
+          gas: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+          to: '0x'+'0'.repeat(40), // Required except during contract publications.
           from: window.ethereum.selectedAddress, // must match user's active address.
           value: '0x00', // Only required to send ether to the recipient from the initiating external account.
           data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
-          chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+          chainId: 3, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
         };
-        const txHash = await window.ethereum.request({
-          method: 'eth_sendTransaction',
-          params: [transactionParameters],
-        });
-        console.log(`txHash: ${txHash}`);
 
-        await godwokenWeb3.waitForTransactionReceipt(txHash);
-
-        const txReceipt = await godwokenWeb3.getTransactionReceipt(txHash); 
+        const web3 = init_web3_provider(); 
+        const txReceipt = await web3.eth.sendTransaction(transactionObject);
         console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
 
         const contractAddr = txReceipt.contractAddress; 
         console.log(`contract address: ${contractAddr}`);
+        if (!contractAddr)
+          return notify(`could not find your contract address in txReceipt: ${txReceipt}`);
 
         notify(`your contract address: ${contractAddr}`, 'success');
         setDeployedContracts(oldArray => [...oldArray, contractAddr]);
@@ -331,7 +353,7 @@ function Home() {
     } 
   }
 
-  const readContractCode = (codefile: Blob) => {
+  const readContractFileAsBinary = (codefile: Blob) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (event: any) => {
@@ -347,6 +369,25 @@ function Home() {
         reader.readAsBinaryString(codefile);
     });  
   }
+
+  const readContractFileAsArtifacts = async (event: any) => {
+    const codefile = event.target.files[0]; 
+    const res: any = await utils.readDataFromFile(codefile);
+    console.log(res);
+    if(res.status !== 'ok'){
+      notify(`can not read contract abi from file.`);
+      throw new Error("can not read contract abi from file.");
+    };
+    const data = JSON.parse(res.data);
+    if( typeof data === 'object' && data.bytecode ){
+        // todo: validate bytecode
+        return data.bytecode;
+    }else{
+        notify(`not a valid artifacts file!`);
+        throw new Error("not a valid artifacts file!");
+    }
+  }
+
 
   const displayShortEthAddress = (eth_address: string) => {
     const length = eth_address.length;
@@ -421,13 +462,17 @@ decimal places: 8 (same with CKB)
           <h4> Contract Debugger (experimental) </h4>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <ContractDebugger />
+              <ContractDebugger godwoken_config={ {
+                rollup_type_hash: rollupTypeHash,
+                eth_account_lock_code_hash: ethAccountLockConfig?.code_hash,
+                eth_account_lock_hash_type: ethAccountLockConfig?.hash_type,
+              } } />
             </Grid>
           </Grid>
           
           <hr />
 
-          <h4> Sudt Section (experimental) </h4>
+          <h4> Sudt Demo Section (experimental) </h4>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -440,8 +485,15 @@ decimal places: 8 (same with CKB)
          <Grid container spacing={5}>
             <Grid item xs={12}>
               <div style={styles.descrip_sudt}>
+                <p>below is a simple demo to show how erc20-proxy contract works in godwoken-polyjuice.</p>
+                <p>the purpose of erc20-proxy contract is to mount sudt(<a href="https://talk.nervos.org/t/rfc-simple-udt-draft-spec/4333">simple user defined token</a>) in CKB with some sort of ERC20 token in ETH. so you can use ERC20 contract to transfer sudt token in CKB.</p>
+                <p>Note:</p>
                 <p>you should issue sudt token first if sudt token total amount is 0.</p>
                 <p>depositting sudt by defaut will give you 400 sudt each time. and the capacity of ckb required is also 400 ckb, so the balance of your layer2 ckb will also increase. </p>
+                <hr />
+                <p>How to deploy?</p>
+                <p>when you click the third button to deploy erc20-proxy contract, the kicker just retrun an predefined erc20-proxy contract bytecode and assemble an deployed tx for you. after you sign this tx with metamask(using personal sign method), the proxy will be deployed. </p>
+                <p>then you can take the contract address and the abi file (you can download from <a href="https://github.com/nervosnetwork/godwoken-polyjuice/blob/main/solidity/erc20/SudtERC20Proxy.abi">here</a>), and interact with the contract through the simple Contract Debugger on kicker.</p>
               </div>
             </Grid>
           </Grid> 

@@ -1,13 +1,20 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { toWei, AbiInput, AbiItem } from 'web3-utils';
+import { toWei, AbiItem } from 'web3-utils';
 import Web3Api from '../../../api/web3'
-import { AbiCoder } from 'web3-eth-abi';
 import {notify} from '../notify';
 import commonStyle from '../common_style';
 import utils from '../../../utils/index';
+import config from '../../../config/constant.json';
+import Web3 from 'web3';
+import PolyjuiceHttpProvider from "@retric/test-provider";
+import { GodwokerOption } from "@retric/test-provider/lib/util";
 
 const Web3EthAbi = require('web3-eth-abi');
+
+declare global {
+    interface Window { ethereum: any; }
+}
 
 const styles = {...commonStyle, ...{
     container: {
@@ -86,8 +93,18 @@ const styles = {...commonStyle, ...{
 
 const SIMPLE_STORAGE_ABI: AbiItem[] = []
 
+export type ContractDebbugerProps = {
+    godwoken_config: {
+        rollup_type_hash: string | undefined,
+        eth_account_lock_code_hash: string | undefined,
+        eth_account_lock_hash_type: string | undefined,
+    }
+}
 
-export default function ContractDebbuger () {
+export default function ContractDebbuger (props: ContractDebbugerProps) {
+
+    const { rollup_type_hash, eth_account_lock_code_hash, eth_account_lock_hash_type } = props.godwoken_config;
+    
     const web3Api = new Web3Api();
     const [abi, setAbi] = useState<AbiItem[]>(SIMPLE_STORAGE_ABI);
     const [contractAddr, setContractAddr] = useState<string>();
@@ -97,6 +114,26 @@ export default function ContractDebbuger () {
     useEffect(()=> {
         
     }, []);
+
+    const init_web3_provider = () => {
+        const godwoken_rpc_url = config.web3_server_url;
+        const provider_config: GodwokerOption = {
+          godwoken: {
+            rollup_type_hash: rollup_type_hash || '',
+            eth_account_lock: {
+              code_hash: eth_account_lock_code_hash || '',
+              hash_type: eth_account_lock_hash_type === "type" ? "type" : "data",
+            },
+          },
+        };
+        const provider = new PolyjuiceHttpProvider(
+          godwoken_rpc_url,
+          provider_config,
+          abi
+        );
+        var web3 = new Web3(provider);
+        return web3;
+    }
 
     const readContractAbiFile = async (event: any) => {
         const codefile = event.target.files[0]; 
@@ -154,6 +191,7 @@ export default function ContractDebbuger () {
                     try {
                         await assemble_call_view_tx(abi_item, input_params);   
                     } catch (error) {
+                        console.log(error);
                         notify(JSON.stringify(error, null, 2));   
                     }
                 }
@@ -170,17 +208,20 @@ export default function ContractDebbuger () {
             const assemble_call_view_tx = async (item: AbiItem, input_params: string[]) => {
                 const data = Web3EthAbi.encodeFunctionCall(item, input_params);
                 const eth_tx = {
-                  gasPrice: '0x00000000000', 
-                  gas: '0x2710', 
-                  to: contractAddr || '0x', 
+                  gasPrice: '0x0000', 
+                  gas: '0x9184e72a000', 
+                  to: contractAddr || '0x'+'0'.repeat(40), 
                   from: window.ethereum.selectedAddress, 
                   data: data, 
                 };
                 console.log(eth_tx);
-                const result = await window.ethereum.request({
-                  method: 'eth_call',
-                  params: [eth_tx],
-                });
+                // const result = await window.ethereum.request({
+                //   method: 'eth_call',
+                //   params: [eth_tx],
+                // });
+                const web3 = init_web3_provider();
+                const result = await web3.eth.call(eth_tx);
+                console.log(`web3.eth.call result: ${JSON.stringify(result, null, 2)}`);
                 const decode_res_arr = Web3EthAbi.decodeParameters(item.outputs?.map(o=>o.type), result);
                 console.log(decode_res_arr);
                 for(let i = 0; i < decode_res_arr.__length__; i++){
@@ -199,28 +240,25 @@ export default function ContractDebbuger () {
                 console.log(payable_value_in_wei);
                 const value = item.payable ? '0x' + BigInt(payable_value_in_wei).toString(16) : '0x00';
                 const eth_tx = {
-                  nonce: '0x0', // ignored by MetaMask
-                  gasPrice: '0x9184e72a000', // customizable by user during MetaMask confirmation.
-                  gas: '0x2710', // customizable by user during MetaMask confirmation.
-                  to: contractAddr || '0x', // Required except during contract publications.
+                  gasPrice: '0x0000', // customizable by user during MetaMask confirmation.
+                  gas: '0x9184e72a000', // customizable by user during MetaMask confirmation.
+                  to: contractAddr || '0x'+'0'.repeat(40), // Required except during contract publications.
                   from: window.ethereum.selectedAddress, // must match user's active address.
                   value: value, // Only required to send ether to the recipient from the initiating external account.
                   data: data, // Optional, but used for defining smart contract creation and interaction.
                 };
                 console.log(eth_tx); 
-                const txHash = await window.ethereum.request({
-                  method: 'eth_sendTransaction',
-                  params: [eth_tx],
-                });
-                
-                notify('wait for tx landing on chain, open your console page to check more.', 'success');
-
-                await getEthTxReceipt(txHash);
-
+                // const txHash = await window.ethereum.request({
+                //   method: 'eth_sendTransaction',
+                //   params: [eth_tx],
+                // });
+                const web3 = init_web3_provider();
+                const txReceipt = await web3.eth.sendTransaction(eth_tx);
+                console.log(`txReceipt: ${JSON.stringify(txReceipt, null, 2)}`);
                 // notify user the result
-                notify('tx commited.', 'success');
+                notify('tx commited. open your console page to check txReceipt.', 'success');
                 // update return value in the global log state
-                await setCallLogs(oldArray => [...oldArray, `call "${item.name}", tx ${txHash} commited.`]);
+                await setCallLogs(oldArray => [...oldArray, `call "${item.name}", tx ${txReceipt.transactionHash} commited.`]);
             }
         
             const getEthTxReceipt = async (txHash: string) => {
