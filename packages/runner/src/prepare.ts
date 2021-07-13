@@ -7,8 +7,20 @@ import path from "path";
 import { Api } from "./api";
 import { execSync } from "child_process";
 
-const ckb_rpc = process.env.MODE === "docker-compose" ? PolymanConfig.components.ckb.rpc[0] : PolymanConfig.components.ckb.rpc[1];
-const godwoken_rpc = process.env.MODE === "docker-compose" ? PolymanConfig.components.godwoken.rpc[0] : PolymanConfig.components.ckb.rpc[1] ;
+let cfgIdx = 2;
+switch (process.env.MODE) {
+  case "docker-compose":
+    cfgIdx = 1;
+    break;
+  case "testnet":
+    cfgIdx = 0;
+    break;
+  default:
+    cfgIdx = 2;
+}
+
+const ckb_rpc = PolymanConfig.components.ckb.rpc[cfgIdx];
+const godwoken_rpc = PolymanConfig.components.godwoken.rpc[cfgIdx];
 const miner_private_key = PolymanConfig.miner_private_key;
 const miner_ckb_devnet_addr = PolymanConfig.miner_ckb_devnet_addr;
 const user_ckb_devnet_addr = PolymanConfig.user_ckb_devnet_addr;

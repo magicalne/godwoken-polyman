@@ -115,7 +115,7 @@ export class Api {
   public async getAccountIdByScriptHash(scriptHash: Hash): Promise<number> {
     const accountID = await this.godwokenWeb3Rpc
       .gw_get_account_id_by_script_hash(scriptHash).catch(console.error);
-    console.debug("gw_get_account_id_by_script_hash =>", accountID);
+    //console.debug("gw_get_account_id_by_script_hash =>", accountID);
     return accountID;
   }
 

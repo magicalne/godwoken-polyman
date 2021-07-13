@@ -5,8 +5,20 @@ import { asyncSleep } from "./util";
 
 const _indexer_path = path.resolve(__dirname, "../temp-db/ckb-indexer-data");
 
-const ckb_rpc = process.env.MODE === "docker-compose" ? serverConfig.components.ckb.rpc[0] : serverConfig.components.ckb.rpc[1];
-const godwoken_rpc = process.env.MODE === "docker-compose" ? serverConfig.components.godwoken.rpc[0] : serverConfig.components.ckb.rpc[1] ;
+let cfgIdx = 2;
+switch (process.env.MODE) {
+  case "docker-compose":
+    cfgIdx = 1;
+    break;
+  case "testnet":
+    cfgIdx = 0;
+    break;
+  default:
+    cfgIdx = 2;
+}
+
+const ckb_rpc = serverConfig.components.ckb.rpc[cfgIdx];
+const godwoken_rpc = serverConfig.components.ckb.rpc[cfgIdx] ;
 const miner_private_key = serverConfig.miner_private_key;
 const miner_ckb_devnet_addr = serverConfig.miner_ckb_devnet_addr;
 const user_ckb_devnet_addr = serverConfig.user_ckb_devnet_addr;
