@@ -7,8 +7,7 @@ import commonStyle from '../common_style';
 import utils from '../../../utils/index';
 import config from '../../../config/constant.json';
 import Web3 from 'web3';
-import PolyjuiceHttpProvider from "@retric/test-provider";
-import { GodwokerOption } from "@retric/test-provider/lib/util";
+import { PolyjuiceHttpProvider, PolyjuiceConfig} from "@polyjuice-provider/web3";
 
 const Web3EthAbi = require('web3-eth-abi');
 
@@ -117,19 +116,15 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
 
     const init_web3_provider = () => {
         const godwoken_web3_rpc_url = config.web3_server_url;
-        const provider_config: GodwokerOption = {
-          godwoken: {
-            rollup_type_hash: rollup_type_hash || '',
-            eth_account_lock: {
-              code_hash: eth_account_lock_code_hash || '',
-              hash_type: eth_account_lock_hash_type === "type" ? "type" : "data",
-            },
-          },
+        const provider_config: PolyjuiceConfig = {
+          rollupTypeHash: rollup_type_hash || '',
+          ethAccountLockCodeHash: eth_account_lock_code_hash || '', 
+          abiItems: abi,
+          web3Url: godwoken_web3_rpc_url 
         };
         const provider = new PolyjuiceHttpProvider(
           godwoken_web3_rpc_url,
           provider_config,
-          abi
         );
         var web3 = new Web3(provider);
         return web3;

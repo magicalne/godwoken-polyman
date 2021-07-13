@@ -14,7 +14,7 @@ import MetamaskWallet from '../widget/metamask/Wallet';
 import ContractDebugger from '../widget/contract-debugger/ContractDebugger';
 import config from '../../config/constant.json';
 import Web3 from 'web3';
-import PolyjuiceHttpProvider from "@retric/test-provider";
+import { PolyjuiceHttpProvider, PolyjuiceConfig } from "@polyjuice-provider/web3";
 import './Home.css';
 
 declare global {
@@ -104,14 +104,10 @@ function Home() {
 
   const init_web3_provider = () => {
     const godwoken_web3_rpc_url = config.web3_server_url;
-    const provider_config = {
-      godwoken: {
-        rollup_type_hash: rollupTypeHash || '',
-        eth_account_lock: {
-          code_hash: ethAccountLockConfig?.code_hash || '',
-          hash_type: ethAccountLockConfig?.hash_type || 'type',
-        },
-      },
+    const provider_config: PolyjuiceConfig = {
+      rollupTypeHash: rollupTypeHash || '',
+      ethAccountLockCodeHash: ethAccountLockConfig?.code_hash || '',
+      web3Url: godwoken_web3_rpc_url
     };
     const provider = new PolyjuiceHttpProvider(
       godwoken_web3_rpc_url,
