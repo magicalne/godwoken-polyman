@@ -17,7 +17,7 @@ export default class Web3Api{
             jsonrpc: '2.0',
             id: + new Date(),
             method: 'eth_getBalance',
-            params: [eth_address],
+            params: [eth_address, "latest"],
         }, {
               headers: {
                 'Content-Type': 'application/json',
