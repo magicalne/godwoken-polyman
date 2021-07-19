@@ -228,8 +228,8 @@ export async function godwokenAddressToEthAddress(
   }
   const accountIdLe = '0x' + godwokenAddress.slice(-8);
   const accountId = LeBytesToUInt32(accountIdLe);
-  const scriptHash = await rpc.get_script_hash(accountId);
-  const script = await rpc.get_script(scriptHash);
+  const scriptHash = await rpc.gw_get_script_hash(accountId);
+  const script = await rpc.gw_get_script(scriptHash);
   const ethAddress = '0x' + script.args.slice(-40);
   return ethAddress;
 }
@@ -256,7 +256,7 @@ async function getAccountInfoByEthAddress(
 
   const toScriptHash = utils.computeScriptHash(toScript);
 
-  const accountId = await rpc.get_account_id_by_script_hash(toScriptHash);
+  const accountId = await rpc.gw_get_account_id_by_script_hash(toScriptHash);
 
   return {
     script: toScript,

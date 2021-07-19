@@ -60,37 +60,37 @@ class Godwoken {
   }
 
   async ping() {
-    return await this.rpc.ping();
+    return await this.rpc.gw_ping();
   }
 
   async getTipBlockHash() {
-    return await this.rpc.get_tip_block_hash();
+    return await this.rpc.gw_get_tip_block_hash();
   }
 
   async getBlockHash(block_number) {
-    return await this.rpc.get_block_hash(block_number);
+    return await this.rpc.gw_get_block_hash(block_number);
     
   }
 
   async getBlock(block_hash) {
-    return await this.rpc.get_block(block_hash);
+    return await this.rpc.gw_get_block(block_hash);
   }
 
   async getBlockByNumber(block_number) {
-    return await this.rpc.get_block_by_number(block_number);
+    return await this.rpc.gw_get_block_by_number(block_number);
   }
 
   async executeL2Transaction(l2tx) {
-    return this._send(l2tx, this.rpc.execute_l2transaction);
+    return this._send(l2tx, this.rpc.gw_execute_l2transaction);
   }
   async submitL2Transaction(l2tx) {
-    return this._send(l2tx, this.rpc.submit_l2transaction);
+    return this._send(l2tx, this.rpc.gw_submit_l2transaction);
   }
   async submitWithdrawalRequest(request) {
     const data = new Reader(
       core.SerializeWithdrawalRequest(NormalizeWithdrawalRequest(request))
     ).serializeJson();
-    return await this.rpc.submit_withdrawal_request(data);
+    return await this.rpc.gw_submit_withdrawal_request(data);
   }
   async getBalance(sudt_id, account_id) {
     // TODO: maybe swap params later?
@@ -98,33 +98,33 @@ class Godwoken {
     // todo: match all type short address
     const script_hash = await this.getScriptHash(account_id);
     const short_address = script_hash.slice(0, 42);
-    const hex = await this.rpc.get_balance(short_address, '0x'+sudt_id.toString(16));
+    const hex = await this.rpc.gw_get_balance(short_address, '0x'+sudt_id.toString(16));
     return BigInt(hex);
   }
   async getStorageAt(account_id, key) {
-    return await this.rpc.get_storage_at(account_id, key);
+    return await this.rpc.gw_get_storage_at(account_id, key);
   }
   async getAccountIdByScriptHash(script_hash) {
-    return await this.rpc.get_account_id_by_script_hash(script_hash);
+    return await this.rpc.gw_get_account_id_by_script_hash(script_hash);
   }
   async getNonce(account_id) {
     console.log(account_id.toString(16))
-    return await this.rpc.get_nonce('0x'+account_id.toString(16));
+    return await this.rpc.gw_get_nonce('0x'+account_id.toString(16));
   }
   async getScript(script_hash) {
-    return await this.rpc.get_script(script_hash);
+    return await this.rpc.gw_get_script(script_hash);
   }
   async getScriptHash(account_id) {
-    return await this.rpc.get_script_hash('0x'+account_id.toString(16));
+    return await this.rpc.gw_get_script_hash('0x'+account_id.toString(16));
   }
   async getData(data_hash) {
-    return await this.rpc.get_data(data_hash);
+    return await this.rpc.gw_get_data(data_hash);
   }
   async getTransactionReceipt(tx_hash) {
-    return await this.rpc.get_transaction_receipt(tx_hash);
+    return await this.rpc.gw_get_transaction_receipt(tx_hash);
   } 
   async getScriptHashByShortAddress(short_address){
-    return await this.rpc.get_script_hash_by_short_address(short_address);
+    return await this.rpc.gw_get_script_hash_by_short_address(short_address);
   }
 }
 
