@@ -119,8 +119,8 @@ app.get('/prepare_sudt_scripts', async function (req, res) {
 });
 
 app.get('/gen_config', async function (req, res) {
-  let stdout1 = await execSync('cp /code/godwoken/deploy/scripts-deploy-result.json ./configs/scripts-deploy-result.json');
-  let stdout2 = await execSync('cp /code/godwoken/config.toml ./configs/config.toml');
+  let stdout1 = await execSync('cp /code/workspace/deploy/scripts-deploy-result.json ./configs/scripts-deploy-result.json');
+  let stdout2 = await execSync('cp /code/workspace/config.toml ./configs/config.toml');
 
   console.log(stdout1, stdout2);
 
