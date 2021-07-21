@@ -44,7 +44,7 @@ app.get('/ping', async function (req, res) {
 
 app.get('/prepare_money', async function (req, res) {
     console.log("start prepare money..");
-    const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-prepare-money");
+    const _indexer_path = path.resolve(__dirname, "../call-polyman-db/ckb-indexer-data-prepare-money");
     const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
     api.syncLayer1();
 
@@ -81,7 +81,7 @@ app.get('/prepare_money', async function (req, res) {
 });
 
 app.get('/prepare_sudt_scripts', async function (req, res) {
-  console.log("start prepare money..");
+  console.log("start prepare sudt_scripts..");
   const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-prepare-sudt-scripts");
   const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
   api.syncLayer1();

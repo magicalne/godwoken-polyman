@@ -624,6 +624,11 @@ export class Api {
     // check if sudt cell exits and is live
     const rpc = new RPC(ckb_rpc_url);
     const result = await rpc.get_transaction(config.SCRIPTS.SUDT.TX_HASH);
+    if(!result){
+      console.log('sudt transaction not found, lumos file must be out of dated.');
+      return false;
+    }
+
     const cell = result.transaction.outputs[parseInt(config.SCRIPTS.SUDT.INDEX, 16)];
     console.log(JSON.stringify(cell, null, 2)); 
     if(!cell){
