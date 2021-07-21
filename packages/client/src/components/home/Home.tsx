@@ -425,7 +425,7 @@ decimal places: 8 (same with CKB)
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <FreshButton text={"Deposit CKB"} onClick={deposit} custom_style={styles.button} />
+              <FreshButton text={"Deposit 400 CKB"} onClick={deposit} custom_style={styles.button} />
             </Grid>
           </Grid>
 
@@ -488,7 +488,7 @@ decimal places: 8 (same with CKB)
                 <p>depositting sudt by defaut will give you 400 sudt each time. and the capacity of ckb required is also 400 ckb, so the balance of your layer2 ckb will also increase. </p>
                 <hr />
                 <p>How to deploy?</p>
-                <p>when you click the third button to deploy erc20-proxy contract, the kicker just retrun an predefined erc20-proxy contract bytecode and assemble an deployed tx for you. after you sign this tx with metamask(using personal sign method), the proxy will be deployed. </p>
+                <p>when you click the third button to deploy erc20-proxy contract, the kicker just return an predefined erc20-proxy contract bytecode and assemble an deployed tx for you. after you sign this tx with metamask(using personal sign method), the proxy will be deployed. </p>
                 <p>then you can take the contract address and the abi file (you can download from <a href="https://github.com/nervosnetwork/godwoken-polyjuice/blob/main/solidity/erc20/SudtERC20Proxy.abi">here</a>), and interact with the contract through the simple Contract Debugger on kicker.</p>
               </div>
             </Grid>
