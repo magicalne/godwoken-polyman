@@ -110,6 +110,7 @@ indexer-data/
 
 packages/runner/db/
 packages/runner/temp-db/
+packages/runner/call-polyman-db
 
 packages/runner/configs/lumos-config.json
 

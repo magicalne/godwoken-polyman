@@ -26,6 +26,7 @@ const miner_ckb_devnet_addr = PolymanConfig.miner_ckb_devnet_addr;
 const user_ckb_devnet_addr = PolymanConfig.user_ckb_devnet_addr;
 const user_account_init_amount = BigInt(PolymanConfig.user_account_init_amount);
 const user_private_key = PolymanConfig.user_private_key;
+const INDEXER_ROOT_DB_PATH = "../call-polyman-db";
 
 export const app = express();
 const corsOptions = {
@@ -44,7 +45,7 @@ app.get('/ping', async function (req, res) {
 
 app.get('/prepare_money', async function (req, res) {
     console.log("start prepare money..");
-    const _indexer_path = path.resolve(__dirname, "../call-polyman-db/ckb-indexer-data-prepare-money");
+    const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-prepare-money`);
     const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
     api.syncLayer1();
 
@@ -82,7 +83,7 @@ app.get('/prepare_money', async function (req, res) {
 
 app.get('/prepare_sudt_scripts', async function (req, res) {
   console.log("start prepare sudt_scripts..");
-  const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-prepare-sudt-scripts");
+  const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-prepare-sudt-scripts`);
   const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
   api.syncLayer1();
 
@@ -135,7 +136,7 @@ app.get('/gen_config', async function (req, res) {
 
 app.get('/get_lumos_config', function(req, res){
   try {
-    const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-get-lumos-config");
+    const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-get-lumos-config`);
     const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
     const config = api.getLumosConfigFile();
     res.send({status: 'ok', data: config }); 
@@ -149,7 +150,7 @@ app.get('/get_lumos_script_info', function(req, res){
     const script_name: string = req.query.script_name + '';
     const key = req.query.key + '';
 
-    const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-get-lumos-config");
+    const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-get-lumos-config`);
     const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
     const config = api.getLumosConfigFile();
     res.send({status: 'ok', data: config.SCRIPTS[script_name][key] }); 
