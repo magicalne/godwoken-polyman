@@ -12,6 +12,37 @@ export default class Web3Api{
         this.url = config.web3_server_url;
     };
 
+    async getPolyjucieContractTypeHash(){
+      let response = await axios.post(this.url, {
+          jsonrpc: '2.0',
+          id: + new Date(),
+          method: 'poly_getContractValidatorTypeHash',
+          params: [],
+      }, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          
+      });
+      return response.data;
+    }
+
+    
+    async getCreatorId(){
+      let response = await axios.post(this.url, {
+          jsonrpc: '2.0',
+          id: + new Date(),
+          method: 'poly_getCreatorId',
+          params: [],
+      }, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          
+      });
+      return response.data;
+    }
+
     async getBalance(eth_address: string){
         let response = await axios.post(this.url, {
             jsonrpc: '2.0',

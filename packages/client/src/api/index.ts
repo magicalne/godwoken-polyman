@@ -14,6 +14,22 @@ class Api{
         this.base_url = utils.get_env_mode() === 'development' ? config.development_server_url : config.production_server_url;
     };
 
+    async getGodwokenScriptDeployResultFile(){
+        let res = await axios.get(`${this.base_url}/get_godwoken_script_deploy_result_file`, { 
+            params:{
+            }
+        });
+        return res.data;
+    }
+
+    async getGodwokenConfigFile(){
+        let res = await axios.get(`${this.base_url}/get_godwoken_config_file`, { 
+            params:{
+            }
+        });
+        return res.data;
+    }
+
     async getRollupTypeHash(){
         let res = await axios.get(`${this.base_url}/get_rollup_type_hash`, { 
             params:{

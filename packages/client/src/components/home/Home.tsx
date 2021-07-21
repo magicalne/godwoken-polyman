@@ -82,6 +82,9 @@ function Home() {
   const [ethAccountLockConfig, setEthAccountLockConfig] = useState<EthAccountLockConfig>();
   const [sudtToken, setSudtToken] = useState<string>();
   const [sudtTotalAmount, setSudtTotalAmount] = useState<string>();
+  const [chainId, setChainId] = useState<string>();
+  const [creatorId, setCreatorId] = useState<string>();
+  const [contractTypeHash, setContractTypeHash] = useState<string>();
 
   const updateWallet = (new_wallet_addr?: string) => {
     if(new_wallet_addr){
@@ -95,8 +98,10 @@ function Home() {
       getSudtToken();
       getSudtTotalAmount();
     };
+    getCreatorId();
     getRollupTypeHash();
     getEthAccountLockConfig();
+    getPolyjuiceContractValidatorTypeHash();
   }, [selectedAddress]);
 
 
@@ -165,6 +170,38 @@ function Home() {
     }  
   }
 
+  const getCreatorId = async () => {
+    const web3Api = new Web3Api();
+    try {
+      const data = await web3Api.getCreatorId();
+      console.log(data);
+      if(data.error)
+        return notify(`failed to get creator id, `, data.error);
+      
+      await setCreatorId(data.result);
+    } catch (error) {
+      console.log(`get creator id error`);
+      console.log(error);
+      notify(JSON.stringify(error));
+    } 
+  }
+
+  const getPolyjuiceContractValidatorTypeHash = async () => {
+    const web3Api = new Web3Api();
+    try {
+      const data = await web3Api.getPolyjucieContractTypeHash();
+      console.log(data);
+      if(data.error)
+        return notify(`failed to get polyjuice contract validator type hash, `, data.error);
+      
+      await setContractTypeHash(data.result);
+    } catch (error) {
+      console.log(`get creator id error`);
+      console.log(error);
+      notify(JSON.stringify(error));
+    } 
+  }
+
   const getRollupTypeHash = async () => {
     const api = new Api();
     try {
@@ -191,6 +228,10 @@ function Home() {
       console.log(error);
       notify(JSON.stringify(error));
     } 
+  }
+
+  const updateChainIdFromWalletPorvider = async (chainId: string) => {
+    setChainId(chainId);
   }
 
   const deposit =  async () => {
@@ -384,7 +425,6 @@ function Home() {
     }
   }
 
-
   const displayShortEthAddress = (eth_address: string) => {
     const length = eth_address.length;
     if(length !== 42){
@@ -401,7 +441,12 @@ function Home() {
     return sudt_token.slice(0, 6) + '...' + sudt_token.slice(sudt_token.length - 4);
   }
 
-  
+  const chainInfo = `
+  Rollup script hash: ${rollupTypeHash}
+  ETH account lock type hash: ${ethAccountLockConfig?.code_hash}
+  Polyjuice contract type hash: ${contractTypeHash} 
+  Polyjuice creator_id(CKB): ${creatorId}
+      `;
 
 const sudt_token_info = `
 symbol: MLMC
@@ -409,7 +454,6 @@ sudt token: ${ displayShortSudtToken(sudtToken) }
 total amount: ${ utils.shannon2CKB(sudtTotalAmount || '') }
 decimal places: 8 (same with CKB)
 `
-
 
   return (
     <div>
@@ -419,7 +463,16 @@ decimal places: 8 (same with CKB)
 
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.header}>
-              <MetamaskWallet onUpdateWalletAddress={updateWallet} triggerUpdateBalanceMethod={updateBalance} />
+              <MetamaskWallet onUpdateWalletAddress={updateWallet}  updateChainId={updateChainIdFromWalletPorvider} triggerUpdateBalanceMethod={updateBalance} />
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} style={styles.contract_container}>
+              Devnet Chain Info: 
+              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
+                {chainInfo}
+              </SyntaxHighlighter>
             </Grid>
           </Grid>
 
