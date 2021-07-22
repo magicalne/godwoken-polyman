@@ -82,6 +82,9 @@ function Home() {
   const [ethAccountLockConfig, setEthAccountLockConfig] = useState<EthAccountLockConfig>();
   const [sudtToken, setSudtToken] = useState<string>();
   const [sudtTotalAmount, setSudtTotalAmount] = useState<string>();
+  const [chainId, setChainId] = useState<string>();
+  const [creatorId, setCreatorId] = useState<string>();
+  const [contractTypeHash, setContractTypeHash] = useState<string>();
 
   const updateWallet = (new_wallet_addr?: string) => {
     if(new_wallet_addr){
@@ -95,8 +98,10 @@ function Home() {
       getSudtToken();
       getSudtTotalAmount();
     };
+    getCreatorId();
     getRollupTypeHash();
     getEthAccountLockConfig();
+    getPolyjuiceContractValidatorTypeHash();
   }, [selectedAddress]);
 
 
@@ -165,6 +170,38 @@ function Home() {
     }  
   }
 
+  const getCreatorId = async () => {
+    const web3Api = new Web3Api();
+    try {
+      const data = await web3Api.getCreatorId();
+      console.log(data);
+      if(data.error)
+        return notify(`failed to get creator id, `, data.error);
+      
+      await setCreatorId(data.result);
+    } catch (error) {
+      console.log(`get creator id error`);
+      console.log(error);
+      notify(JSON.stringify(error));
+    } 
+  }
+
+  const getPolyjuiceContractValidatorTypeHash = async () => {
+    const web3Api = new Web3Api();
+    try {
+      const data = await web3Api.getPolyjucieContractTypeHash();
+      console.log(data);
+      if(data.error)
+        return notify(`failed to get polyjuice contract validator type hash, `, data.error);
+      
+      await setContractTypeHash(data.result);
+    } catch (error) {
+      console.log(`get creator id error`);
+      console.log(error);
+      notify(JSON.stringify(error));
+    } 
+  }
+
   const getRollupTypeHash = async () => {
     const api = new Api();
     try {
@@ -191,6 +228,10 @@ function Home() {
       console.log(error);
       notify(JSON.stringify(error));
     } 
+  }
+
+  const updateChainIdFromWalletPorvider = async (chainId: string) => {
+    setChainId(chainId);
   }
 
   const deposit =  async () => {
@@ -262,7 +303,6 @@ function Home() {
         from: window.ethereum.selectedAddress, // must match user's active address.
         value: '0x00', // Only required to send ether to the recipient from the initiating external account.
         data: contractCode, // Optional, but used for defining smart contract creation and interaction.
-        chainId: 3, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
       };
       console.log(transactionObject);
       const txReceipt = await web3.eth.sendTransaction(transactionObject);
@@ -326,7 +366,6 @@ function Home() {
           from: window.ethereum.selectedAddress, // must match user's active address.
           value: '0x00', // Only required to send ether to the recipient from the initiating external account.
           data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
-          chainId: 3, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
         };
 
         const web3 = init_web3_provider(); 
@@ -384,7 +423,6 @@ function Home() {
     }
   }
 
-
   const displayShortEthAddress = (eth_address: string) => {
     const length = eth_address.length;
     if(length !== 42){
@@ -401,7 +439,12 @@ function Home() {
     return sudt_token.slice(0, 6) + '...' + sudt_token.slice(sudt_token.length - 4);
   }
 
-  
+  const chainInfo = `
+  Rollup script hash: ${rollupTypeHash}
+  ETH account lock type hash: ${ethAccountLockConfig?.code_hash}
+  Polyjuice contract type hash: ${contractTypeHash} 
+  Polyjuice creator_id(CKB): ${creatorId}
+      `;
 
 const sudt_token_info = `
 symbol: MLMC
@@ -409,7 +452,6 @@ sudt token: ${ displayShortSudtToken(sudtToken) }
 total amount: ${ utils.shannon2CKB(sudtTotalAmount || '') }
 decimal places: 8 (same with CKB)
 `
-
 
   return (
     <div>
@@ -419,13 +461,23 @@ decimal places: 8 (same with CKB)
 
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.header}>
-              <MetamaskWallet onUpdateWalletAddress={updateWallet} triggerUpdateBalanceMethod={updateBalance} />
+              <MetamaskWallet onUpdateWalletAddress={updateWallet}  updateChainId={updateChainIdFromWalletPorvider} triggerUpdateBalanceMethod={updateBalance} />
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} style={styles.contract_container}>
+              Devnet Chain Info:   
+              <SyntaxHighlighter language="javascript" style={gruvboxDark}>
+                {chainInfo}
+              </SyntaxHighlighter>
+              more info: <a target="_blank" href={`/godwoken_info`}> Rollup Configs</a>
             </Grid>
           </Grid>
 
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <FreshButton text={"Deposit CKB"} onClick={deposit} custom_style={styles.button} />
+              <FreshButton text={"Deposit 400 CKB"} onClick={deposit} custom_style={styles.button} />
             </Grid>
           </Grid>
 
@@ -488,7 +540,7 @@ decimal places: 8 (same with CKB)
                 <p>depositting sudt by defaut will give you 400 sudt each time. and the capacity of ckb required is also 400 ckb, so the balance of your layer2 ckb will also increase. </p>
                 <hr />
                 <p>How to deploy?</p>
-                <p>when you click the third button to deploy erc20-proxy contract, the kicker just retrun an predefined erc20-proxy contract bytecode and assemble an deployed tx for you. after you sign this tx with metamask(using personal sign method), the proxy will be deployed. </p>
+                <p>when you click the third button to deploy erc20-proxy contract, the kicker just return an predefined erc20-proxy contract bytecode and assemble an deployed tx for you. after you sign this tx with metamask(using personal sign method), the proxy will be deployed. </p>
                 <p>then you can take the contract address and the abi file (you can download from <a href="https://github.com/nervosnetwork/godwoken-polyjuice/blob/main/solidity/erc20/SudtERC20Proxy.abi">here</a>), and interact with the contract through the simple Contract Debugger on kicker.</p>
               </div>
             </Grid>

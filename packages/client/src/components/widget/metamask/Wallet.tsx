@@ -51,13 +51,15 @@ export type WalletStatus =
 export interface WalletProps {
   onUpdateWalletAddress?: (wallet_addr: string | undefined) => void
   triggerUpdateBalanceMethod?: () => void
+  updateChainId?: (chainId: string) => void
 }
 
 export default function Wallet (props: WalletProps) {
 
-    const { onUpdateWalletAddress } = props;
+    const { onUpdateWalletAddress, updateChainId: getChainIdCallback } = props;
     var { triggerUpdateBalanceMethod: getBalanceMethod } = props;
 
+    const [chainId, setChainId] = useState<string>();
     const [selectedAddress, setSelectedAddress] = useState<string>();
     const [metamaskStatus, setMetamaskStatus] = useState<WalletStatus>();
     const [chainIdStatus, setChainIdStatus] = useState<boolean>();
@@ -75,13 +77,12 @@ export default function Wallet (props: WalletProps) {
             throw new Error("please install MetaMask!");
         }
 
-        console.log(window.ethereum.isConnected());
-
         if( window.ethereum.isConnected() ){
-          console.log('is conneted...')
           setNetworkStatus(true);
         }
 
+        await fetchChainId();
+        
         await checkChainIdIsOk();
 
         listenForChainIdChanged();
@@ -93,6 +94,15 @@ export default function Wallet (props: WalletProps) {
 
     const getProvider = () => {
         return window.ethereum;   
+    }
+
+    const fetchChainId = async () => {
+      const current_chain_id = await window.ethereum.request({ method: 'eth_chainId' });
+      await setChainId(current_chain_id);
+      if(getChainIdCallback){
+        getChainIdCallback(current_chain_id);
+      }
+      return current_chain_id;
     }
 
     const isMetaMaskOnborad = async () => {
@@ -107,7 +117,7 @@ export default function Wallet (props: WalletProps) {
 
     const checkChainIdIsOk = async () => {
         try {
-          const current_chain_id = await window.ethereum.request({ method: 'eth_chainId' });
+          const current_chain_id = await fetchChainId();
           console.log(`current chain id: ${current_chain_id}`);
           const api = new Api(); 
           const res = await api.getChainId();
@@ -131,6 +141,7 @@ export default function Wallet (props: WalletProps) {
         window.ethereum.on('chainChanged', handleChainChanged);
         function handleChainChanged(_chainId: string) {
           console.log('chain_id changed!');
+          setChainId(_chainId);
           window.location.reload();
         }
     }
