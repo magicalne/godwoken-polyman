@@ -14,6 +14,10 @@ class Api{
         this.base_url = utils.get_env_mode() === 'development' ? config.development_server_url : config.production_server_url;
     };
 
+    getUrl(){
+        return this.base_url;
+    }
+
     async getGodwokenScriptDeployResultFile(){
         let res = await axios.get(`${this.base_url}/get_godwoken_script_deploy_result_file`, { 
             params:{
@@ -23,7 +27,7 @@ class Api{
     }
 
     async getGodwokenConfigFile(){
-        let res = await axios.get(`${this.base_url}/get_godwoken_config_file`, { 
+        let res = await axios.get(`${this.base_url}/get_godwoken_config`, { 
             params:{
             }
         });

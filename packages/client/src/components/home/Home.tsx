@@ -303,7 +303,6 @@ function Home() {
         from: window.ethereum.selectedAddress, // must match user's active address.
         value: '0x00', // Only required to send ether to the recipient from the initiating external account.
         data: contractCode, // Optional, but used for defining smart contract creation and interaction.
-        chainId: 3, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
       };
       console.log(transactionObject);
       const txReceipt = await web3.eth.sendTransaction(transactionObject);
@@ -367,7 +366,6 @@ function Home() {
           from: window.ethereum.selectedAddress, // must match user's active address.
           value: '0x00', // Only required to send ether to the recipient from the initiating external account.
           data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
-          chainId: 3, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
         };
 
         const web3 = init_web3_provider(); 
@@ -469,10 +467,11 @@ decimal places: 8 (same with CKB)
 
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.contract_container}>
-              Devnet Chain Info: 
+              Devnet Chain Info:   
               <SyntaxHighlighter language="javascript" style={gruvboxDark}>
                 {chainInfo}
               </SyntaxHighlighter>
+              more info: <a target="_blank" href={`/godwoken_info`}> Rollup Configs</a>
             </Grid>
           </Grid>
 
