@@ -7,6 +7,7 @@ import serverConfig from "../configs/polyman-config.json";
 import { getRollupTypeHash } from '../js/transactions/deposit';
 // import { generateGodwokenConfig } from './util';
 import godwoken_config from "../configs/godwoken-config.json";
+import scriptsDeployResult from "../configs/scripts-deploy-result.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import fs from 'fs';
 import { UInt32ToLeBytes } from "./util";
@@ -73,6 +74,10 @@ const setUpRouters = (
 
     app.get("/get_godwoken_config", ( req, res ) => {
         res.send({status: 'ok', data: godwoken_config}); 
+    });
+
+    app.get("/get_godwoken_script_deploy_result_file", ( req, res ) => {
+        res.send({status: 'ok', data: scriptsDeployResult}); 
     });
 
     app.get("/get_eth_acccount_lock", ( req, res ) => {
