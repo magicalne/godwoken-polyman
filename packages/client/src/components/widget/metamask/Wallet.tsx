@@ -50,14 +50,14 @@ export type WalletStatus =
   
 export interface WalletProps {
   onUpdateWalletAddress?: (wallet_addr: string | undefined) => void
-  triggerUpdateBalanceMethod?: () => void
+  updateBalanceTrigger?: number
   updateChainId?: (chainId: string) => void
 }
 
 export default function Wallet (props: WalletProps) {
 
     const { onUpdateWalletAddress, updateChainId: getChainIdCallback } = props;
-    var { triggerUpdateBalanceMethod: getBalanceMethod } = props;
+    var { updateBalanceTrigger } = props;
 
     const [chainId, setChainId] = useState<string>();
     const [selectedAddress, setSelectedAddress] = useState<string>();
@@ -189,16 +189,13 @@ export default function Wallet (props: WalletProps) {
       if(!selectedAddress)return;
       const web3Api = new Web3Api(); 
       try {
-        console.log(selectedAddress);
         const data = await web3Api.getBalance(selectedAddress);
-        console.log(data);
         if(!data)
           return console.log(`balance is undefinded.`);
           
         const balance = BigInt(data).toString();
-        console.log(balance);
         await setBalance(utils.shannon2CKB(balance));
-        console.log(utils.shannon2CKB(balance));
+        console.log('try refresh balance..', utils.shannon2CKB(balance), '');
       } catch (error) {
         console.log(`get bablance error`);
         console.log(error);
@@ -216,15 +213,13 @@ export default function Wallet (props: WalletProps) {
     }
 
     useEffect( () => {
-        if(getBalanceMethod){
-          // todo: this is tricky
-          getBalanceMethod = () => {
-            getBalance();
-          }
-        }
         init();
         getBalance();
     }, []);
+
+    useEffect(()=> {
+      getBalance();
+    }, [updateBalanceTrigger]);
 
     useEffect( () => {
       if(onUpdateWalletAddress)
