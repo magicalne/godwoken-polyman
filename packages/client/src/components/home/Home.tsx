@@ -15,6 +15,7 @@ import ContractDebugger from '../widget/contract-debugger/ContractDebugger';
 import config from '../../config/constant.json';
 import Web3 from 'web3';
 import { PolyjuiceHttpProvider, PolyjuiceConfig } from "@polyjuice-provider/web3";
+import { asyncSleep } from "../../utils/index";
 import './Home.css';
 
 declare global {
@@ -86,6 +87,8 @@ function Home() {
   const [creatorId, setCreatorId] = useState<string>();
   const [contractTypeHash, setContractTypeHash] = useState<string>();
 
+  const [updateBalanceTrigger, setUpdateBalanceTrigger] = useState<number>(0);
+
   const updateWallet = (new_wallet_addr?: string) => {
     if(new_wallet_addr){
       setSelectedAddress(new_wallet_addr);
@@ -103,9 +106,6 @@ function Home() {
     getEthAccountLockConfig();
     getPolyjuiceContractValidatorTypeHash();
   }, [selectedAddress]);
-
-
-  var updateBalance = () => {};
 
   const init_web3_provider = () => {
     const godwoken_web3_rpc_url = config.web3_server_url;
@@ -238,11 +238,12 @@ function Home() {
     if(!selectedAddress)return notify(`metamask account not found.`);
     const api = new Api();
     try {
+      notify('ready to submit a deposit tx, might takes couple mitutes...', 'info');
       const res = await api.deposit(selectedAddress);
-      console.log(res);
+      console.log('deposit result =>', res);
       if(res.status === 'ok'){
-        notify(`your account id: ${res.data.account_id}`, 'success');
-        updateBalance();
+        notify(`deposit success! your account id: ${res.data.account_id}. refresh page if your balance not updating.`, 'success');
+        setUpdateBalanceTrigger(updateBalanceTrigger+1);
       }else{
         notify(JSON.stringify(res.error));
       }
@@ -461,7 +462,7 @@ decimal places: 8 (same with CKB)
 
           <Grid container spacing={3}>
             <Grid item xs={12} style={styles.header}>
-              <MetamaskWallet onUpdateWalletAddress={updateWallet}  updateChainId={updateChainIdFromWalletPorvider} triggerUpdateBalanceMethod={updateBalance} />
+              <MetamaskWallet onUpdateWalletAddress={updateWallet}  updateChainId={updateChainIdFromWalletPorvider} updateBalanceTrigger={updateBalanceTrigger} />
             </Grid>
           </Grid>
 
