@@ -14,7 +14,7 @@ const styles = {
   wallet_container: {
     maxWidth: '300px',
     maxHeigth: '20px',
-    margin: '40px auto',
+    margin: '20px auto',
     display: 'flex' as const,
     padding: '5px',
     alignItems: 'center' as const,

@@ -300,12 +300,12 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
                     />
                 </p>
                 <p style={styles.contract_addr_input_container}>
-                   <input type="text" placeholder="contract address" style={styles.contract_addr_input} onChange={handleContractAddrChange} />
+                   <input type="text" placeholder="enter contract address.." style={styles.contract_addr_input} onChange={handleContractAddrChange} />
                 </p>
             </div>
 
             <div style={styles.log_container}>
-                <div style={styles.log_container_title}> Logs </div>
+                <div style={styles.log_container_title}> Call Logs </div>
                 <div style={styles.log_main_area}>
                     {
                        callLogs.map((log,i)=><li key={i}>{i}: {log}</li>)

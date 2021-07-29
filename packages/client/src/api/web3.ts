@@ -43,6 +43,21 @@ export default class Web3Api{
       return response.data;
     }
 
+    async getChainId(){
+      let response = await axios.post(this.url, {
+          jsonrpc: '2.0',
+          id: + new Date(),
+          method: 'eth_chainId',
+          params: [],
+      }, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          
+      });
+      return response.data;
+    }
+
     async getBalance(eth_address: string){
         let response = await axios.post(this.url, {
             jsonrpc: '2.0',
