@@ -129,7 +129,7 @@ const setUpRouters = (
             }
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
     
@@ -142,7 +142,7 @@ const setUpRouters = (
             res.send({status:'ok', data: {eth_address: eth_address, account_id: account_id}});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -160,7 +160,7 @@ const setUpRouters = (
             res.send({status:'ok', data: {account_id, l2_sudt_script_hash}});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error}); 
+            res.send({status:'failed', error: error.message}); 
         }
     } );
 
@@ -170,7 +170,7 @@ const setUpRouters = (
             res.send({status:'ok', data: {sudt_token: sudt_token}});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -185,7 +185,7 @@ const setUpRouters = (
             res.send({status:'ok', data: {amount: change_amount }});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -201,7 +201,7 @@ const setUpRouters = (
   //     res.send({status:'ok', data: data});
   //   } catch (error) {
   //     console.log(error);
-  //     res.send({status:'failed', error: error});
+  //     res.send({status:'failed', error: error.message});
   //   }
   // });
 
@@ -213,7 +213,7 @@ const setUpRouters = (
             res.send({status:'ok', data: data});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
     
@@ -231,7 +231,7 @@ const setUpRouters = (
             res.send({status:'ok', data: data});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -262,7 +262,7 @@ const setUpRouters = (
             res.send({status:'ok', data: data});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -289,7 +289,7 @@ const setUpRouters = (
             res.send({status:'ok', data: balance.toString()});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -301,7 +301,7 @@ const setUpRouters = (
             res.send({status:'ok', data: receipt});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -317,7 +317,7 @@ const setUpRouters = (
             res.send({status:'ok', data: contract_addr});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -344,7 +344,7 @@ const setUpRouters = (
             res.send({status:'ok', data: balance.toString()});
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});
+            res.send({status:'failed', error: error.message});
         }
     } );
 
@@ -359,7 +359,7 @@ const setUpRouters = (
             return res.send({status:'ok', data: {sudt_token: sudt_token}});   
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});   
+            res.send({status:'failed', error: error.message});   
         }
     });
 
@@ -370,7 +370,16 @@ const setUpRouters = (
             return res.send({status:'ok', data: {total_amount: total_amount.toString()}}); 
         } catch (error) {
             console.log(error);
-            res.send({status:'failed', error: error});   
+            res.send({status:'failed', error: error.message});   
+        }
+    });
+
+    app.get( "/get_server_configs", async (req, res) => {
+        try {
+            return res.send({status:'ok', data: serverConfig});  
+        } catch (error) {
+            console.log(error);
+            res.send({status:'failed', error: error.message}); 
         }
     });
 }
