@@ -39,6 +39,7 @@ export default function ChainInfo() {
   const [chainId, setChainId] = useState<string>();
   const [creatorId, setCreatorId] = useState<string>();
   const [contractTypeHash, setContractTypeHash] = useState<string>();
+  const [serverConfig, setServerConfig] = useState<any>();
 
   const getChainId = async () => {
     const web3Api = new Web3Api();
@@ -51,7 +52,7 @@ export default function ChainInfo() {
     } catch (error) {
       console.log(`get chain id error`);
       console.log(error);
-      notify(JSON.stringify(error));
+      notify(error.message);
     }
   };
 
@@ -66,7 +67,7 @@ export default function ChainInfo() {
     } catch (error) {
       console.log(`get creator id error`);
       console.log(error);
-      notify(JSON.stringify(error));
+      notify(error.message);
     }
   };
 
@@ -85,7 +86,7 @@ export default function ChainInfo() {
     } catch (error) {
       console.log(`get creator id error`);
       console.log(error);
-      notify(JSON.stringify(error));
+      notify(error.message);
     }
   };
 
@@ -101,7 +102,7 @@ export default function ChainInfo() {
     } catch (error) {
       console.log(`get rollup type hash error`);
       console.log(error);
-      notify(JSON.stringify(error));
+      notify(error.message);
     }
   };
 
@@ -117,7 +118,23 @@ export default function ChainInfo() {
     } catch (error) {
       console.log(`get eth account lock error`);
       console.log(error);
-      notify(JSON.stringify(error));
+      notify(error.message);
+    }
+  };
+
+  const getServerConfig = async () => {
+    const api = new Api();
+    try {
+      const res = await api.getServerConfig();
+      if (res.status !== "ok")
+        return notify(
+          `failed to get server config. ${JSON.stringify(res.error)}`
+        );
+      setServerConfig(res.data);
+    } catch (error) {
+      console.log(`get server config error`);
+      console.log(error);
+      notify(error.message);
     }
   };
 
@@ -127,28 +144,36 @@ export default function ChainInfo() {
     getRollupTypeHash();
     getEthAccountLockConfig();
     getPolyjuiceContractValidatorTypeHash();
+    getServerConfig();
   }, []);
 
   const AllApis = `
   ## Web3 Api
   EndPoint:  ${new Web3Api().url}
-  ChainInfo: JsonRpc 2.0, poly_getChainInfo
-  RollupTypeHash: JsonRpc 2.0, poly_getRollupTypeHash 
-  RollupConfigHash: JsonRpc 2.0, poly_getRollupConfigHash
-  EthAccountLockHash: JsonRpc 2.0, poly_getEthAccountLockHash  
-  PolyjuiceContractTypeHash: JsonRpc 2.0, poly_getContractValidatorTypeHash
+  - ChainInfo: JsonRpc 2.0, poly_getChainInfo
+  - RollupTypeHash: JsonRpc 2.0, poly_getRollupTypeHash 
+  - RollupConfigHash: JsonRpc 2.0, poly_getRollupConfigHash
+  - EthAccountLockHash: JsonRpc 2.0, poly_getEthAccountLockHash  
+  - PolyjuiceContractTypeHash: JsonRpc 2.0, poly_getContractValidatorTypeHash
 
   ## Kicker Api
   EndPoint:  ${new Api().getUrl()}
-  RollupTypeHash: Http Get ${new Api().getUrl()}/get_rollup_type_hash 
-  EthAccountLock: Http Get ${new Api().getUrl()}/get_eth_account_lock
-  `
+  - RollupTypeHash: Http Get, ${new Api().getUrl()}/get_rollup_type_hash 
+  - EthAccountLock: Http Get, ${new Api().getUrl()}/get_eth_account_lock
+  - DepositWithEthAddress: Http Get, ${new Api().getUrl()}/deposit?eth_address=<your eth address>
+  
+  ## Godwoken JsonRpc
+  EndPoint: http://localhost:8119
+
+  ## CKB JsonRpc
+  EndPoint: http://localhost:8114
+  `;
 
   function createData(name: string, value: string | undefined) {
     return { name, value };
   }
 
-  const rows = [
+  const chainInfoRows = [
     createData("Chain ID", chainId),
     createData("Polyjuice Creator_id(CKB)", creatorId),
     createData("Rollup Script Hash", rollupTypeHash),
@@ -156,12 +181,80 @@ export default function ChainInfo() {
     createData("Polyjuice Contract Type Hash", contractTypeHash),
   ];
 
+  const chainInfoTable = (
+    <TableContainer component={Paper}>
+      <Table aria-label="simple table">
+        <TableHead>
+          <TableRow></TableRow>
+        </TableHead>
+        <TableBody>
+          {chainInfoRows.map((row) => (
+            <TableRow key={row.name}>
+              <TableCell component="th" scope="row">
+                {row.name}
+              </TableCell>
+              <TableCell>{row.value}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
+  function createSystemWalletData(
+    name: string,
+    addr: string | undefined,
+    pk: string | undefined
+  ) {
+    return { name, addr, pk };
+  }
+
+  const systemWalletRows = [
+    createSystemWalletData("Type", "CKB Address", "Private Key"),
+    createSystemWalletData(
+      "the only and lonely CKB miner",
+      serverConfig?.miner_ckb_devnet_addr,
+      serverConfig?.miner_private_key
+    ),
+    createSystemWalletData(
+      "the only and lonely Godwoken miner",
+      serverConfig?.miner_ckb_devnet_addr,
+      serverConfig?.miner_private_key
+    ),
+    createSystemWalletData(
+      "the meta-user to create everything",
+      serverConfig?.user_ckb_devnet_addr,
+      serverConfig?.user_private_key
+    ),
+  ];
+
+  const systemWalletTable = (
+    <TableContainer component={Paper}>
+      <Table aria-label="simple table">
+        <TableHead>
+          <TableRow></TableRow>
+        </TableHead>
+        <TableBody>
+          {systemWalletRows.map((row) => (
+            <TableRow key={row.name}>
+              <TableCell component="th" scope="row">
+                {row.name}
+              </TableCell>
+              <TableCell>{row.addr}</TableCell>
+              <TableCell>{row.pk}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
   const ApiInfo = (
     <Grid container spacing={3}>
       <Grid item xs={12}>
-        Api:
+        <Typography>Some Apis</Typography>
         <SyntaxHighlighter language="md" style={gruvboxDark}>
-          { AllApis }
+          {AllApis}
         </SyntaxHighlighter>
       </Grid>
     </Grid>
@@ -174,24 +267,17 @@ export default function ChainInfo() {
           Full Rollup Configs
         </Link>
       </Typography>
-      <TableContainer component={Paper}>
-        <Table aria-label="simple table">
-          <TableHead>
-            <TableRow></TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.name}>
-                <TableCell component="th" scope="row">
-                  {row.name}
-                </TableCell>
-                <TableCell>{row.value}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <br />
+      {chainInfoTable}
 
+      <br />
+      <br />
+
+      <Typography>System Pre-defined Wallets</Typography>
+      <br />
+      {systemWalletTable}
+
+      <br />
       <br />
 
       {ApiInfo}

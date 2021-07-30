@@ -18,6 +18,14 @@ class Api{
         return this.base_url;
     }
 
+    async getServerConfig(){
+        let res = await axios.get(`${this.base_url}/get_server_configs`, { 
+            params:{
+            }
+        });
+        return res.data;
+    }
+
     async getGodwokenScriptDeployResultFile(){
         let res = await axios.get(`${this.base_url}/get_godwoken_script_deploy_result_file`, { 
             params:{
