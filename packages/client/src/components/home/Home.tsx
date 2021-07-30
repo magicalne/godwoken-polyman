@@ -10,6 +10,7 @@ import ChainInfo, { EthAccountLockConfig } from "../widget/chainInfo/ChainInfo";
 import Accounts from "../widget/features/accounts";
 import Contracts from "../widget/features/contracts";
 import Erc20ProxyDemo from "../widget/features/erc20ProxyDemo";
+import BgBanner from "../../resource/bg-banner.jpeg";
 
 declare global {
   interface Window {
@@ -22,7 +23,7 @@ const styles = {
   ...{
     header: {
       minHeight: "300px",
-      margin: "10px",
+      //backgroundImage: "url('"+ BgBanner + "')"
     },
     address: {
       color: "#a0eec0",
@@ -139,14 +140,14 @@ function Home() {
         <header className="App-header">
           <NotifyPlace />
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} style={styles.header}>
+          <Grid container>
+            <Grid item xs={12} style={styles.header} spacing={3}>
               <MetamaskWallet
                 onUpdateWalletAddress={updateWallet}
                 updateBalanceTrigger={updateBalanceTrigger}
               />
             </Grid>
-            <Grid item xs={12} style={styles.header}>
+            <Grid item xs={12} spacing={3}>
               <SimpleTabs names={tabsNames} tabs={tabsContent} />
             </Grid>
           </Grid>
