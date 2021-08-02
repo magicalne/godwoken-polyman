@@ -7,8 +7,6 @@
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf ./db",
-    "clean:temp": "rm -rf ./temp-db",
-    "clean:call-polyman-db": "rm -rf ./call-polyman-db",
     "start-call-polyman": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node ./src/callPolyman.ts",
     "start-call-polyman:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node ./src/callPolyman.ts",
     "prepare-money": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/prepare_money.ts",
