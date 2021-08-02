@@ -1,9 +1,8 @@
 import path from "path";
 import { Api } from "./api";
-import serverConfig from "../configs/polyman-config.json";
+import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";
 import { asyncSleep } from "./util";
-
-const _indexer_path = path.resolve(__dirname, "../temp-db/ckb-indexer-data");
+const INDEXER_DB_PATH = path.resolve(DefaultIndexerPath, "./prepare_money/ckb-indexer-data");
 
 let cfgIdx = 2;
 switch (process.env.MODE) {
@@ -17,15 +16,15 @@ switch (process.env.MODE) {
     cfgIdx = 2;
 }
 
-const ckb_rpc = serverConfig.components.ckb.rpc[cfgIdx];
-const godwoken_rpc = serverConfig.components.ckb.rpc[cfgIdx] ;
-const miner_private_key = serverConfig.miner_private_key;
-const miner_ckb_devnet_addr = serverConfig.miner_ckb_devnet_addr;
-const user_ckb_devnet_addr = serverConfig.user_ckb_devnet_addr;
-const user_account_init_amount = BigInt(serverConfig.user_account_init_amount);
+const ckb_rpc = PolymanConfig.components.ckb.rpc[cfgIdx];
+const godwoken_rpc = PolymanConfig.components.ckb.rpc[cfgIdx] ;
+const miner_private_key = PolymanConfig.miner_private_key;
+const miner_ckb_devnet_addr = PolymanConfig.miner_ckb_devnet_addr;
+const user_ckb_devnet_addr = PolymanConfig.user_ckb_devnet_addr;
+const user_account_init_amount = BigInt(PolymanConfig.user_account_init_amount);
 
 console.log("start..");
-const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
+const api = new Api(ckb_rpc, godwoken_rpc, INDEXER_DB_PATH);
 api.syncLayer1();
 
 var retry = 0;

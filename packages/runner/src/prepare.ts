@@ -1,4 +1,4 @@
-import PolymanConfig from '../configs/polyman-config.json';
+import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";
 import express from 'express';
 import cors from 'cors';
 import timeout from "connect-timeout";
@@ -26,7 +26,7 @@ const miner_ckb_devnet_addr = PolymanConfig.miner_ckb_devnet_addr;
 const user_ckb_devnet_addr = PolymanConfig.user_ckb_devnet_addr;
 const user_account_init_amount = BigInt(PolymanConfig.user_account_init_amount);
 const user_private_key = PolymanConfig.user_private_key;
-const INDEXER_ROOT_DB_PATH = "../call-polyman-db";
+const INDEXER_ROOT_DB_PATH = path.resolve(DefaultIndexerPath, "./call-polyman");
 
 export const app = express();
 const corsOptions = {

@@ -1,10 +1,9 @@
 import path from "path";
 import { Api } from "./api";
-import serverConfig from "../configs/polyman-config.json";
+import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";
 import { asyncSleep } from "./util";
-import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 
-const _indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data-sudt");
+const INDEXER_DB_PATH = path.resolve(DefaultIndexerPath, "./sudt/ckb-indexer-data");
 
 let cfgIdx = 2;
 switch (process.env.MODE) {
@@ -18,12 +17,12 @@ switch (process.env.MODE) {
     cfgIdx = 2;
 }
 
-const ckb_rpc = serverConfig.components.ckb.rpc[cfgIdx];
-const godwoken_rpc = serverConfig.components.godwoken.rpc[cfgIdx];
-const user_private_key = serverConfig.user_private_key;
+const ckb_rpc = PolymanConfig.components.ckb.rpc[cfgIdx];
+const godwoken_rpc = PolymanConfig.components.godwoken.rpc[cfgIdx];
+const user_private_key = PolymanConfig.user_private_key;
 
 console.log("start..");
-const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
+const api = new Api(ckb_rpc, godwoken_rpc, INDEXER_DB_PATH);
 api.syncLayer1();
 
 var retry = 0;

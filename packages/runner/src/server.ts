@@ -3,16 +3,15 @@ import path from 'path';
 import express from 'express';
 import cors from "cors";
 import timeout from "connect-timeout";
-import serverConfig from "../configs/polyman-config.json";
+import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";;
 import { getRollupTypeHash } from '../js/transactions/deposit';
-// import { generateGodwokenConfig } from './util';
 import godwoken_config from "../configs/godwoken-config.json";
 import scriptsDeployResult from "../configs/scripts-deploy-result.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import fs from 'fs';
 import { UInt32ToLeBytes } from "./util";
 
-let indexer_path = path.resolve(__dirname, "../db/ckb-indexer-data");
+let INDEXER_DB_PATH = path.resolve(DefaultIndexerPath, "./api-server/ckb-indexer-data");
 let cfgIdx = 2;
 switch (process.env.MODE) {
   case "docker-compose":
@@ -20,32 +19,32 @@ switch (process.env.MODE) {
     break;
   case "testnet":
     cfgIdx = 0;
-    indexer_path = path.resolve(__dirname, "../db/ckb-indexer-testnet");
+    INDEXER_DB_PATH = path.resolve(__dirname, "../db/ckb-indexer-testnet");
     break;
   default:
     cfgIdx = 2;
 }
-const ckb_rpc = serverConfig.components.ckb.rpc[cfgIdx];
-const godwoken_rpc = serverConfig.components.godwoken.rpc[cfgIdx];
-const godwoken_web3_rpc_url = serverConfig.components.godwoken.web3_rpc[cfgIdx];
+const ckb_rpc = PolymanConfig.components.ckb.rpc[cfgIdx];
+const godwoken_rpc = PolymanConfig.components.godwoken.rpc[cfgIdx];
+const godwoken_web3_rpc_url = PolymanConfig.components.godwoken.web3_rpc[cfgIdx];
 
-const sudt_id_str = serverConfig.default_sudt_id_str;
-const default_deposit_amount = serverConfig.default_amount;
-const default_sudt_issue_amount = serverConfig.default_issue_sudt_amount;
-const default_sudt_capacity = serverConfig.default_deposit_sudt_capacity;
-const default_issue_sudt_capacity = serverConfig.default_issue_sudt_capacity;
-const user_private_key = serverConfig.user_private_key;
-const user_ckb_address = serverConfig.user_ckb_devnet_addr;
-const miner_private_key = serverConfig.miner_private_key;
-const miner_ckb_address = serverConfig.miner_ckb_devnet_addr;
+const sudt_id_str = PolymanConfig.default_sudt_id_str;
+const default_deposit_amount = PolymanConfig.default_amount;
+const default_sudt_issue_amount = PolymanConfig.default_issue_sudt_amount;
+const default_sudt_capacity = PolymanConfig.default_deposit_sudt_capacity;
+const default_issue_sudt_capacity = PolymanConfig.default_issue_sudt_capacity;
+const user_private_key = PolymanConfig.user_private_key;
+const user_ckb_address = PolymanConfig.user_ckb_devnet_addr;
+const miner_private_key = PolymanConfig.miner_private_key;
+const miner_ckb_address = PolymanConfig.miner_ckb_devnet_addr;
 const change_amount = '10000000000'; // 100 ckb change for pay fee.
 
-const api = new Api(ckb_rpc, godwoken_rpc, indexer_path, godwoken_web3_rpc_url);
+const api = new Api(ckb_rpc, godwoken_rpc, INDEXER_DB_PATH, godwoken_web3_rpc_url);
 api.syncLayer1();
 
 export const app = express();
 const corsOptions = {
-    origin: serverConfig.cros_server_list,
+    origin: PolymanConfig.cros_server_list,
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     credentials: true
 }
@@ -376,7 +375,7 @@ const setUpRouters = (
 
     app.get( "/get_server_configs", async (req, res) => {
         try {
-            return res.send({status:'ok', data: serverConfig});  
+            return res.send({status:'ok', data: PolymanConfig});  
         } catch (error) {
             console.log(error);
             res.send({status:'failed', error: error.message}); 
@@ -425,8 +424,8 @@ export async function start() {
         miner_private_key,
         miner_ckb_address,
     );
-    app.listen( serverConfig.server_port, () => {
-        console.log( `api server started at http://localhost:${ serverConfig.server_port }` );
+    app.listen( PolymanConfig.server_port, () => {
+        console.log( `api server started at http://localhost:${ PolymanConfig.server_port }` );
     } );
     return;
 }
