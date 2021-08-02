@@ -1,9 +1,9 @@
 import path from "path";
 import { Api } from "./api";
-import PolymanConfig from "../configs/polyman-config.json";
+import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";
 import { asyncSleep } from "./util";
 
-const INDEXER_DB_PATH = path.resolve(PolymanConfig.store.default_indexer_db_path, "./sudt/ckb-indexer-data");
+const INDEXER_DB_PATH = path.resolve(DefaultIndexerPath, "./sudt/ckb-indexer-data");
 
 let cfgIdx = 2;
 switch (process.env.MODE) {

@@ -3,16 +3,15 @@ import path from 'path';
 import express from 'express';
 import cors from "cors";
 import timeout from "connect-timeout";
-import PolymanConfig from "../configs/polyman-config.json";
+import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";;
 import { getRollupTypeHash } from '../js/transactions/deposit';
-// import { generateGodwokenConfig } from './util';
 import godwoken_config from "../configs/godwoken-config.json";
 import scriptsDeployResult from "../configs/scripts-deploy-result.json";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import fs from 'fs';
 import { UInt32ToLeBytes } from "./util";
 
-let INDEXER_DB_PATH = path.resolve(PolymanConfig.store.default_indexer_db_path, "./api-server/ckb-indexer-data");
+let INDEXER_DB_PATH = path.resolve(DefaultIndexerPath, "./api-server/ckb-indexer-data");
 let cfgIdx = 2;
 switch (process.env.MODE) {
   case "docker-compose":
