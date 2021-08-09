@@ -240,7 +240,7 @@ const setUpRouters = (
             if(!creator_account_id)
                 return res.send({status:'failed', error: `creator_account_id not found.`});
             
-            const contract_file = path.resolve(__dirname, "../configs/bin/erc20proxy.bin");
+            const contract_file = path.resolve(__dirname, "../configs/bin/newErc20Proxy.bin");
             const contract_code = '0x' + await fs.readFileSync(contract_file).toString('utf-8');
             const eth_address = req.body.data.eth_address + '';
             await api.syncToTip();
