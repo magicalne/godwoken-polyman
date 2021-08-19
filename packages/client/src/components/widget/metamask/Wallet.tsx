@@ -8,7 +8,7 @@ import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import Web3Api from '../../../api/web3';
 import Api from '../../../api/index';
-import utils from '../../../utils/index';
+import utils, { asyncSleep } from '../../../utils/index';
 
 const styles = {
   wallet_container: {
@@ -192,10 +192,25 @@ export default function Wallet (props: WalletProps) {
         const data = await web3Api.getBalance(selectedAddress);
         if(!data)
           return console.log(`balance is undefinded.`);
-          
-        const balance = BigInt(data).toString();
-        await setBalance(utils.shannon2CKB(balance));
-        console.log('try refresh balance..', utils.shannon2CKB(balance), '');
+        
+        const newBalance = BigInt(data).toString();
+        if(balance === utils.shannon2CKB(newBalance)){
+          // wait 20 secs to refresh balance
+          console.log('balance not changed, wait for 20 secs to re-fetch..');
+
+          await asyncSleep(20000);
+          const data = await web3Api.getBalance(selectedAddress);
+          if(!data)
+            return console.log(`balance is undefinded.`);
+        
+          const newBalance = BigInt(data).toString();
+          await setBalance(utils.shannon2CKB(newBalance));
+          console.log('try refresh balance..', utils.shannon2CKB(newBalance), '');
+          return;
+        }
+
+        await setBalance(utils.shannon2CKB(newBalance));
+        console.log('try refresh balance..', utils.shannon2CKB(newBalance), '');
       } catch (error) {
         console.log(`get bablance error`);
         console.log(error);

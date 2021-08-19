@@ -56,13 +56,13 @@ const styles = {
 
 export interface DepositProps {
   addressVec: (string | undefined)[];
+  updateBalanceTrigger?: () => void;
 }
 
 export default function Accounts(props: DepositProps) {
   const classes = useStyles();
-  const { addressVec } = props;
+  const { addressVec, updateBalanceTrigger } = props;
   const [selectedAddress, setSelectedAddress] = React.useState("");
-  const [updateBalanceTrigger, setUpdateBalanceTrigger] = useState<number>(0);
   const [hints, setHints] = useState<string>("");
   const inputEthAddressRef = useRef<HTMLInputElement>();
 
@@ -98,7 +98,7 @@ export default function Accounts(props: DepositProps) {
           `deposit success! your account id: ${res.data.account_id}.`,
           "success"
         );
-        setUpdateBalanceTrigger(updateBalanceTrigger + 1);
+        if(updateBalanceTrigger) updateBalanceTrigger();
       } else {
         notify(JSON.stringify(res.error));
       }
