@@ -73,6 +73,10 @@ function Home() {
   const [ethAccountLockConfig, setEthAccountLockConfig] =
     useState<EthAccountLockConfig>();
   const [updateBalanceTrigger, setUpdateBalanceTrigger] = useState<number>(0);
+  
+  const updateBalanceCaller = () => {
+    setUpdateBalanceTrigger(updateBalanceTrigger + 1);
+  };
 
   const updateWallet = (new_wallet_addr?: string) => {
     if (new_wallet_addr) {
@@ -119,7 +123,7 @@ function Home() {
 
   const tabsContent = [
     <ChainInfo />,
-    <Accounts addressVec={[selectedAddress]} />,
+    <Accounts addressVec={[selectedAddress]} updateBalanceTrigger={updateBalanceCaller} />,
     <Contracts
       selectedAddress={selectedAddress}
       rollupTypeHash={rollupTypeHash}
