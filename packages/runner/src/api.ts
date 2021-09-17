@@ -259,7 +259,7 @@ export class Api {
     console.log(JSON.stringify(tx, null, 2));
 
 
-    const txHash: Hash = await this.ckb_rpc.send_transaction(tx);
+    const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
 
     return txHash;
   }
@@ -351,7 +351,7 @@ export class Api {
 
     console.log(JSON.stringify(tx, null, 2));
   
-    const txHash: Hash = await this.ckb_rpc.send_transaction(tx);
+    const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
   
     return {tx_hash: txHash, l2_sudt_script_hash: utils.computeScriptHash(layer2SudtScript)};
   }
@@ -717,7 +717,7 @@ export class Api {
   
     const tx = sealTransaction(txSkeleton, [content]);
   
-    const txHash: Hash = await this.ckb_rpc.send_transaction(tx);
+    const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
 
     await this.waitForCkbTx(txHash);
     
@@ -1151,7 +1151,7 @@ export class Api {
     const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
     const content: HexString = key.signRecoverable(message, miner_privatekey);
     const tx = sealTransaction(txSkeleton, [content]);
-    const txHash: Hash = await this.ckb_rpc.send_transaction(tx);
+    const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
     console.log(`txHash ${txHash} is sent!`);
 
     // Wait for tx to land on chain.
@@ -1320,7 +1320,7 @@ export class Api {
     console.log(JSON.stringify(tx, null, 2));
     
     try {
-      const txHash: Hash = await this.ckb_rpc.send_transaction(tx);
+      const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
       console.log(`txHash ${txHash} is now sent...`);
       const tx_with_status = await this.waitForCkbTx(txHash);
       console.log(JSON.stringify(tx_with_status, null, 2));
