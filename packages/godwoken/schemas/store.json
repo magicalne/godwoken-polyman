@@ -438,7 +438,7 @@
           "type": "Byte32"
         },
         {
-          "name": "uncles_hash",
+          "name": "extra_hash",
           "type": "Byte32"
         },
         {
