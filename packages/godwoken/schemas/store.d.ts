@@ -92,21 +92,46 @@ export class WithdrawalReceipt {
   getPostState(): AccountMerkleState;
 }
 
+export function SerializeSMTBranchKey(value: object): ArrayBuffer;
+export class SMTBranchKey {
+  constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
+  validate(compatible?: boolean): void;
+  static size(): Number;
+  getHeight(): number;
+  getNodeKey(): Byte32;
+}
+
 export function SerializeSMTBranchNode(value: object): ArrayBuffer;
 export class SMTBranchNode {
   constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
   validate(compatible?: boolean): void;
-  getForkHeight(): number;
-  getKey(): Byte32;
-  getNode(): Bytes;
+  getLeft(): SMTMergeValue;
+  getRight(): SMTMergeValue;
 }
 
-export function SerializeSMTLeafNode(value: object): ArrayBuffer;
-export class SMTLeafNode {
+export function SerializeSMTMergeValue(value: UnionType): ArrayBuffer;
+export class SMTMergeValue {
+  constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
+  validate(compatible?: boolean): void;
+  unionType(): string;
+  value(): any;
+}
+
+export function SerializeSMTMergeWithZero(value: object): ArrayBuffer;
+export class SMTMergeWithZero {
   constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
   validate(compatible?: boolean): void;
   static size(): Number;
-  getKey(): Byte32;
+  getBaseNode(): Byte32;
+  getZeroBits(): Byte32;
+  getZeroCount(): number;
+}
+
+export function SerializeSMTValue(value: object): ArrayBuffer;
+export class SMTValue {
+  constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
+  validate(compatible?: boolean): void;
+  static size(): Number;
   getValue(): Byte32;
 }
 
@@ -138,8 +163,8 @@ export class Uint64 {
   validate(compatible?: boolean): void;
   indexAt(i: number): number;
   raw(): ArrayBuffer;
-  toBigEndianUint64(): BigInt;
-  toLittleEndianUint64(): BigInt;
+  toBigEndianBigUint64(): bigint;
+  toLittleEndianBigUint64(): bigint;
   static size(): Number;
 }
 
@@ -346,7 +371,7 @@ export class RawHeader {
   getParentHash(): Byte32;
   getTransactionsRoot(): Byte32;
   getProposalsHash(): Byte32;
-  getUnclesHash(): Byte32;
+  getExtraHash(): Byte32;
   getDao(): Byte32;
 }
 
@@ -377,6 +402,17 @@ export class Block {
   getProposals(): ProposalShortIdVec;
 }
 
+export function SerializeBlockV1(value: object): ArrayBuffer;
+export class BlockV1 {
+  constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
+  validate(compatible?: boolean): void;
+  getHeader(): Header;
+  getUncles(): UncleBlockVec;
+  getTransactions(): TransactionVec;
+  getProposals(): ProposalShortIdVec;
+  getExtension(): Bytes;
+}
+
 export function SerializeCellbaseWitness(value: object): ArrayBuffer;
 export class CellbaseWitness {
   constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
@@ -392,6 +428,14 @@ export class WitnessArgs {
   getLock(): BytesOpt;
   getInputType(): BytesOpt;
   getOutputType(): BytesOpt;
+}
+
+export function SerializeUint32Vec(value: Array<CanCastToArrayBuffer>): ArrayBuffer;
+export class Uint32Vec {
+  constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
+  validate(compatible?: boolean): void;
+  indexAt(i: number): Uint32;
+  length(): number;
 }
 
 export function SerializeBlockMerkleState(value: object): ArrayBuffer;
@@ -788,9 +832,18 @@ export class VerifyTransactionContext {
   validate(compatible?: boolean): void;
   getAccountCount(): Uint32;
   getKvState(): KVPairVec;
+  getLoadData(): BytesVec;
   getScripts(): ScriptVec;
   getReturnDataHash(): Byte32;
   getBlockHashes(): BlockHashEntryVec;
+}
+
+export function SerializeCKBMerkleProof(value: object): ArrayBuffer;
+export class CKBMerkleProof {
+  constructor(reader: CanCastToArrayBuffer, options?: CreateOptions);
+  validate(compatible?: boolean): void;
+  getIndices(): Uint32Vec;
+  getLemmas(): Byte32Vec;
 }
 
 export function SerializeVerifyTransactionWitness(value: object): ArrayBuffer;
@@ -799,7 +852,7 @@ export class VerifyTransactionWitness {
   validate(compatible?: boolean): void;
   getL2Tx(): L2Transaction;
   getRawL2Block(): RawL2Block;
-  getTxProof(): Bytes;
+  getTxProof(): CKBMerkleProof;
   getKvStateProof(): Bytes;
   getBlockHashesProof(): Bytes;
   getContext(): VerifyTransactionContext;
@@ -820,7 +873,7 @@ export class VerifyTransactionSignatureWitness {
   validate(compatible?: boolean): void;
   getRawL2Block(): RawL2Block;
   getL2Tx(): L2Transaction;
-  getTxProof(): Bytes;
+  getTxProof(): CKBMerkleProof;
   getKvStateProof(): Bytes;
   getContext(): VerifyTransactionSignatureContext;
 }
@@ -831,7 +884,7 @@ export class VerifyWithdrawalWitness {
   validate(compatible?: boolean): void;
   getRawL2Block(): RawL2Block;
   getWithdrawalRequest(): WithdrawalRequest;
-  getWithdrawalProof(): Bytes;
+  getWithdrawalProof(): CKBMerkleProof;
 }
 
 export function SerializeRollupSubmitBlock(value: object): ArrayBuffer;

@@ -126,31 +126,63 @@
       ]
     },
     {
+      "type": "struct",
+      "name": "SMTBranchKey",
+      "fields": [
+        {
+          "name": "height",
+          "type": "byte"
+        },
+        {
+          "name": "node_key",
+          "type": "Byte32"
+        }
+      ]
+    },
+    {
       "type": "table",
       "name": "SMTBranchNode",
       "fields": [
         {
-          "name": "fork_height",
-          "type": "byte"
+          "name": "left",
+          "type": "SMTMergeValue"
         },
         {
-          "name": "key",
+          "name": "right",
+          "type": "SMTMergeValue"
+        }
+      ]
+    },
+    {
+      "type": "union",
+      "name": "SMTMergeValue",
+      "items": [
+        "SMTValue",
+        "SMTMergeWithZero"
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "SMTMergeWithZero",
+      "fields": [
+        {
+          "name": "base_node",
           "type": "Byte32"
         },
         {
-          "name": "node",
-          "type": "Bytes"
+          "name": "zero_bits",
+          "type": "Byte32"
+        },
+        {
+          "name": "zero_count",
+          "type": "byte"
         }
       ]
     },
     {
       "type": "struct",
-      "name": "SMTLeafNode",
+      "name": "SMTValue",
       "fields": [
-        {
-          "name": "key",
-          "type": "Byte32"
-        },
         {
           "name": "value",
           "type": "Byte32"
@@ -503,6 +535,33 @@
     },
     {
       "type": "table",
+      "name": "BlockV1",
+      "fields": [
+        {
+          "name": "header",
+          "type": "Header"
+        },
+        {
+          "name": "uncles",
+          "type": "UncleBlockVec"
+        },
+        {
+          "name": "transactions",
+          "type": "TransactionVec"
+        },
+        {
+          "name": "proposals",
+          "type": "ProposalShortIdVec"
+        },
+        {
+          "name": "extension",
+          "type": "Bytes"
+        }
+      ],
+      "imported_depth": 1
+    },
+    {
+      "type": "table",
       "name": "CellbaseWitness",
       "fields": [
         {
@@ -533,6 +592,12 @@
           "type": "BytesOpt"
         }
       ],
+      "imported_depth": 1
+    },
+    {
+      "type": "fixvec",
+      "name": "Uint32Vec",
+      "item": "Uint32",
       "imported_depth": 1
     },
     {
@@ -1269,6 +1334,10 @@
           "type": "KVPairVec"
         },
         {
+          "name": "load_data",
+          "type": "BytesVec"
+        },
+        {
           "name": "scripts",
           "type": "ScriptVec"
         },
@@ -1279,6 +1348,21 @@
         {
           "name": "block_hashes",
           "type": "BlockHashEntryVec"
+        }
+      ],
+      "imported_depth": 1
+    },
+    {
+      "type": "table",
+      "name": "CKBMerkleProof",
+      "fields": [
+        {
+          "name": "indices",
+          "type": "Uint32Vec"
+        },
+        {
+          "name": "lemmas",
+          "type": "Byte32Vec"
         }
       ],
       "imported_depth": 1
@@ -1297,7 +1381,7 @@
         },
         {
           "name": "tx_proof",
-          "type": "Bytes"
+          "type": "CKBMerkleProof"
         },
         {
           "name": "kv_state_proof",
@@ -1347,7 +1431,7 @@
         },
         {
           "name": "tx_proof",
-          "type": "Bytes"
+          "type": "CKBMerkleProof"
         },
         {
           "name": "kv_state_proof",
@@ -1374,7 +1458,7 @@
         },
         {
           "name": "withdrawal_proof",
-          "type": "Bytes"
+          "type": "CKBMerkleProof"
         }
       ],
       "imported_depth": 1

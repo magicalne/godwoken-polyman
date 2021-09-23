@@ -182,7 +182,7 @@ export class Uint64 {
   }
 
   toLittleEndianBigUint64() {
-    return this.view.getUint64(0, true);
+    return this.view.getBigUint64(0, true);
   }
 
   static size() {
@@ -367,7 +367,7 @@ export class BytesVec {
 
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
-    for (let i = 0; i < len(offsets) - 1; i++) {
+    for (let i = 0; i < offsets.length - 1; i++) {
       new Bytes(this.view.buffer.slice(offsets[i], offsets[i + 1]), { validate: false }).validate();
     }
   }
@@ -506,7 +506,7 @@ export class UncleBlockVec {
 
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
-    for (let i = 0; i < len(offsets) - 1; i++) {
+    for (let i = 0; i < offsets.length - 1; i++) {
       new UncleBlock(this.view.buffer.slice(offsets[i], offsets[i + 1]), { validate: false }).validate();
     }
   }
@@ -544,7 +544,7 @@ export class TransactionVec {
 
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
-    for (let i = 0; i < len(offsets) - 1; i++) {
+    for (let i = 0; i < offsets.length - 1; i++) {
       new Transaction(this.view.buffer.slice(offsets[i], offsets[i + 1]), { validate: false }).validate();
     }
   }
@@ -699,7 +699,7 @@ export class CellOutputVec {
 
   validate(compatible = false) {
     const offsets = verifyAndExtractOffsets(this.view, 0, true);
-    for (let i = 0; i < len(offsets) - 1; i++) {
+    for (let i = 0; i < offsets.length - 1; i++) {
       new CellOutput(this.view.buffer.slice(offsets[i], offsets[i + 1]), { validate: false }).validate();
     }
   }
@@ -1070,7 +1070,7 @@ export class RawHeader {
     return new Byte32(this.view.buffer.slice(0 + Uint32.size() + Uint32.size() + Uint64.size() + Uint64.size() + Uint64.size() + Byte32.size() + Byte32.size(), 0 + Uint32.size() + Uint32.size() + Uint64.size() + Uint64.size() + Uint64.size() + Byte32.size() + Byte32.size() + Byte32.size()), { validate: false });
   }
 
-  getUnclesHash() {
+  getExtraHash() {
     return new Byte32(this.view.buffer.slice(0 + Uint32.size() + Uint32.size() + Uint64.size() + Uint64.size() + Uint64.size() + Byte32.size() + Byte32.size() + Byte32.size(), 0 + Uint32.size() + Uint32.size() + Uint64.size() + Uint64.size() + Uint64.size() + Byte32.size() + Byte32.size() + Byte32.size() + Byte32.size()), { validate: false });
   }
 
@@ -1088,7 +1088,7 @@ export class RawHeader {
     this.getParentHash().validate(compatible);
     this.getTransactionsRoot().validate(compatible);
     this.getProposalsHash().validate(compatible);
-    this.getUnclesHash().validate(compatible);
+    this.getExtraHash().validate(compatible);
     this.getDao().validate(compatible);
   }
   static size() {
@@ -1233,6 +1233,69 @@ export function SerializeBlock(value) {
   buffers.push(SerializeUncleBlockVec(value.uncles));
   buffers.push(SerializeTransactionVec(value.transactions));
   buffers.push(SerializeProposalShortIdVec(value.proposals));
+  return serializeTable(buffers);
+}
+
+export class BlockV1 {
+  constructor(reader, { validate = true } = {}) {
+    this.view = new DataView(assertArrayBuffer(reader));
+    if (validate) {
+      this.validate();
+    }
+  }
+
+  validate(compatible = false) {
+    const offsets = verifyAndExtractOffsets(this.view, 0, true);
+    new Header(this.view.buffer.slice(offsets[0], offsets[1]), { validate: false }).validate();
+    new UncleBlockVec(this.view.buffer.slice(offsets[1], offsets[2]), { validate: false }).validate();
+    new TransactionVec(this.view.buffer.slice(offsets[2], offsets[3]), { validate: false }).validate();
+    new ProposalShortIdVec(this.view.buffer.slice(offsets[3], offsets[4]), { validate: false }).validate();
+    new Bytes(this.view.buffer.slice(offsets[4], offsets[5]), { validate: false }).validate();
+  }
+
+  getHeader() {
+    const start = 4;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new Header(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getUncles() {
+    const start = 8;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new UncleBlockVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getTransactions() {
+    const start = 12;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new TransactionVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getProposals() {
+    const start = 16;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.getUint32(start + 4, true);
+    return new ProposalShortIdVec(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+
+  getExtension() {
+    const start = 20;
+    const offset = this.view.getUint32(start, true);
+    const offset_end = this.view.byteLength;
+    return new Bytes(this.view.buffer.slice(offset, offset_end), { validate: false });
+  }
+}
+
+export function SerializeBlockV1(value) {
+  const buffers = [];
+  buffers.push(SerializeHeader(value.header));
+  buffers.push(SerializeUncleBlockVec(value.uncles));
+  buffers.push(SerializeTransactionVec(value.transactions));
+  buffers.push(SerializeProposalShortIdVec(value.proposals));
+  buffers.push(SerializeBytes(value.extension));
   return serializeTable(buffers);
 }
 
