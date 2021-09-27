@@ -9,9 +9,9 @@ import FreshButton from "../fresh_button";
 import { notify } from "../notify";
 import config from "../../../config/constant.json";
 import Web3 from "web3";
+import { PolyjuiceConfig } from "@polyjuice-provider/base"
 import {
   PolyjuiceHttpProvider,
-  PolyjuiceConfig,
 } from "@polyjuice-provider/web3";
 import { EthAccountLockConfig } from "../chainInfo/ChainInfo";
 
