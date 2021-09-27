@@ -1,7 +1,8 @@
 import { Divider, Grid, Typography } from "@material-ui/core";
-import PolyjuiceHttpProvider, {
+import {
   PolyjuiceConfig,
-} from "@polyjuice-provider/web3";
+} from "@polyjuice-provider/base"
+import PolyjuiceHttpProvider from "@polyjuice-provider/web3";
 import config from "../../../config/constant.json";
 import React, { useEffect, useState } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";

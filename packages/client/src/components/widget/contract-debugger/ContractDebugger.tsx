@@ -7,7 +7,8 @@ import commonStyle from '../common_style';
 import utils from '../../../utils/index';
 import config from '../../../config/constant.json';
 import Web3 from 'web3';
-import { PolyjuiceHttpProvider, PolyjuiceConfig} from "@polyjuice-provider/web3";
+import { PolyjuiceConfig } from "@polyjuice-provider/base"
+import { PolyjuiceHttpProvider } from "@polyjuice-provider/web3";
 
 const Web3EthAbi = require('web3-eth-abi');
 

@@ -258,7 +258,7 @@
           "type": "Byte32"
         },
         {
-          "name": "uncles_hash",
+          "name": "extra_hash",
           "type": "Byte32"
         },
         {
@@ -314,6 +314,32 @@
         {
           "name": "proposals",
           "type": "ProposalShortIdVec"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "name": "BlockV1",
+      "fields": [
+        {
+          "name": "header",
+          "type": "Header"
+        },
+        {
+          "name": "uncles",
+          "type": "UncleBlockVec"
+        },
+        {
+          "name": "transactions",
+          "type": "TransactionVec"
+        },
+        {
+          "name": "proposals",
+          "type": "ProposalShortIdVec"
+        },
+        {
+          "name": "extension",
+          "type": "Bytes"
         }
       ]
     },
