@@ -84,12 +84,12 @@ const setUpRouters = (
     });
 
     app.get("/get_creator_id", async ( req, res ) => {
-        const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
+        const createCreatorId = await api.findCreatorAccoundId(sudt_id_str);
         res.send({status: 'ok', data: createCreatorId });
     });
 
     app.get("/get_chain_id", async ( req, res ) => {
-        const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
+        const createCreatorId = await api.findCreatorAccoundId(sudt_id_str);
         res.send({status: 'ok', data: createCreatorId });
     });
 
@@ -219,7 +219,7 @@ const setUpRouters = (
     
     app.post( "/deploy_contract", async ( req, res ) => {
         try {
-            const creator_account_id = await api.findCreateCreatorAccoundId(sudt_id_str);
+            const creator_account_id = await api.findCreatorAccoundId(sudt_id_str);
             if(!creator_account_id)
                 return res.send({status:'failed', error: `creator_account_id not found.`});
             
@@ -236,7 +236,7 @@ const setUpRouters = (
 
     app.post( "/deploy_erc20_proxy_contract", async ( req, res ) => {
         try {
-            const creator_account_id = await api.findCreateCreatorAccoundId(sudt_id_str);
+            const creator_account_id = await api.findCreatorAccoundId(sudt_id_str);
             if(!creator_account_id)
                 return res.send({status:'failed', error: `creator_account_id not found.`});
             
@@ -395,10 +395,9 @@ export async function start() {
     // start a polyjuice chain
     try {
         await api.syncToTip();
-        const createCreatorId = await api.findCreateCreatorAccoundId(sudt_id_str);
-        if(createCreatorId === null){
+        const creatorId = await api.findCreatorAccoundId(sudt_id_str);
+        if(creatorId === null){
             const from_id = await api.deposit(user_private_key, undefined, default_deposit_amount);
-            //const from_id = '0x2';
             console.log(`create deposit account.${from_id}`);
             const creator_account_id = await api.createCreatorAccount(
               from_id,
@@ -409,7 +408,7 @@ export async function start() {
             console.log(`create creator account =>`, creator_account_id);
             console.log(`init polyjuice chain.`);
         } else {
-            console.log(`polyjuice chain already exits, skip createCreatorAccount.`);
+            console.log(`polyjuice chain(creatorId: ${creatorId}) already exits, skip createCreatorAccount.`);
         }
     } catch (e) {
         throw new Error(e);
