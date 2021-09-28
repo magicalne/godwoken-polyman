@@ -88,11 +88,6 @@ const setUpRouters = (
         res.send({status: 'ok', data: createCreatorId });
     });
 
-    app.get("/get_chain_id", async ( req, res ) => {
-        const createCreatorId = await api.findCreatorAccoundId(sudt_id_str);
-        res.send({status: 'ok', data: createCreatorId });
-    });
-
     app.post( "/send_l2_tx", async ( req, res ) => {
         try {
             const raw_l2tx = req.body.data.raw_l2tx;
