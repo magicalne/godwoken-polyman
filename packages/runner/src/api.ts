@@ -27,7 +27,7 @@ const NormalizeSUDTTransfer = normalizer.NormalizeSUDTTransfer;
 //const UnoinType = normalizer.UnoinType;
 import { Polyjuice } from "@godwoken-polyman/polyjuice";
 
-import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus } from "@ckb-lumos/base";
+import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus, HexNumber } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
 import { Indexer, CellCollector } from "@ckb-lumos/indexer";
 import { key } from "@ckb-lumos/hd";
@@ -112,11 +112,16 @@ export class Api {
   /**
    * getAccountIdByScriptHash using Godwoken Web3 RPC
    */
-  public async getAccountIdByScriptHash(scriptHash: Hash): Promise<number> {
+  public async getAccountIdByScriptHash(scriptHash: Hash): Promise<number | null> {
     const accountID = await this.godwokenWeb3Rpc
       .gw_get_account_id_by_script_hash(scriptHash).catch(console.error);
-    //console.debug("gw_get_account_id_by_script_hash =>", accountID);
-    return accountID;
+    
+    if(accountID && typeof accountID === "string" && accountID.startsWith("0x") ){
+      console.log("find creator account_id =>", accountID);
+      return parseInt(accountID, 16);
+    }else{
+      return null;
+    }
   }
 
   async syncLayer1(reinit:boolean=false) {
@@ -1121,7 +1126,7 @@ export class Api {
     return await this.getAccountId(l2_script_hash);
   }
   
-  async findCreateCreatorAccoundId(sudt_id_str: string) {
+  async findCreatorAccoundId(sudt_id_str: string) {
     const script_args = getRollupTypeHash() + numberToUInt32LE(parseInt(sudt_id_str)).slice(2);
     const l2_script: Script = {
       code_hash: this.validator_code_hash,
@@ -1129,8 +1134,9 @@ export class Api {
       args: script_args,
     };
     const l2_script_hash = serializeScript(l2_script);
+    
 
-    return this.getAccountIdByScriptHash(l2_script_hash);
+    return await this.getAccountIdByScriptHash(l2_script_hash);
   }
 
   async giveUserLayer1AccountSomeMoney(miner_address: string, miner_privatekey: string, user_address: string, amount: bigint){
