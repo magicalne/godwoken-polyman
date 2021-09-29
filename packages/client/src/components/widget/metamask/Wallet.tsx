@@ -120,9 +120,10 @@ export default function Wallet (props: WalletProps) {
           const current_chain_id = await fetchChainId();
           console.log(`current chain id: ${current_chain_id}`);
           const api = new Api(); 
-          const res = await api.getChainId();
+          const web3Api = new Web3Api(); 
+          const res = await web3Api.getChainId();
           console.log(res);
-          const chain_id = res.data;
+          const chain_id = res.result;
           if(current_chain_id !== chain_id){
             console.error(`current chain id not equals ${current_chain_id} !== polyjuice chain id ${chain_id}`);
             await setChainIdStatus(false);
