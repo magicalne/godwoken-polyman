@@ -166,6 +166,7 @@ app.get('/deploy_godwoken_scripts', async function(req, res){
 
     const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-deploy-scripts`);
     const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
+    api.syncLayer1();
 
     var retry = 0;
     const run_deploy_scripts = async (maxRetryLimit: number, intervals=5000) => {
@@ -173,8 +174,8 @@ app.get('/deploy_godwoken_scripts', async function(req, res){
         // todo: save/load history and check if scripts exist on-chain.
         retry++;
         const contract_code_hash = await readScriptCodeHashFromFile(script_path);
-        const { outpoint } = await api.deployLayer1ContractWithTypeId(contract_code_hash, user_private_key);
-        console.log(`deploy script ${script_name}, outpoint: ${JSON.stringify(outpoint)}`);
+        const { outpoint, script_hash } = await api.deployLayer1ContractWithTypeId(contract_code_hash, user_private_key);
+        console.log(`deploy script ${script_name}, outpoint: ${JSON.stringify(outpoint)}, script_hash: ${script_hash}`);
         console.log(`finished~`);
         res.send({status: 'ok', data: `deploy script ${script_name}, outpoint: ${JSON.stringify(outpoint)}. finished~`});
       } catch (e) {

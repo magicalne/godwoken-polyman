@@ -1228,8 +1228,8 @@ export class Api {
   ){
     const code_hash = await this.getSudtContractCodeHex();
     let that = this;
-    const callback = async (outpoint: OutPoint) => {
-      await that.genSudtConfig(outpoint, code_hash);
+    const callback = async (outpoint: OutPoint, script_hash: HexString) => {
+      await that.genSudtConfig(outpoint, script_hash);
     }
     await this.deployLayer1ContractWithTypeId(code_hash, private_key, callback);
     return;
@@ -1238,9 +1238,9 @@ export class Api {
   async deployLayer1ContractWithTypeId(
     contract_code_hex: HexString,
     private_key: string,
-    callback?: (outpoint: OutPoint) => any
+    callback?: (outpoint: OutPoint, script_hash: HexString) => any
   ){
-    callback = callback || function(_outpoint: OutPoint){};
+    callback = callback || function(_outpoint: OutPoint, _script_hash: HexString){};
 
     var txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager }); 
     const ckb_address = privateKeyToCkbAddress(private_key);
@@ -1308,9 +1308,9 @@ export class Api {
 
     console.log(real_type, lock);
     
-    const contract_code_hash = utils.computeScriptHash(real_type);
+    const contract_script_hash = utils.computeScriptHash(real_type);
 
-    console.log(`contract_code_hash: ${contract_code_hash}`);
+    console.log(`contract_script_hash: ${contract_script_hash}`);
 
     txSkeleton = txSkeleton.update("outputs", (outputs) => {
       return outputs.push(outputCell);
@@ -1342,8 +1342,8 @@ export class Api {
         index: '0x1'
       }
 
-      callback(outpoint);
-      return {outpoint};
+      callback(outpoint, contract_script_hash);
+      return {outpoint, script_hash: contract_script_hash};
     } catch (error) {
       console.log(error);
       throw new Error(error);
