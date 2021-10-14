@@ -74,12 +74,12 @@ import { TxReceipt } from "@godwoken-polyman/godwoken/schemas/store";
 export class Api {
   public validator_code_hash: string;
   public ckb_rpc_url: string;
-  private ckb_rpc: RPC;
+  public ckb_rpc: RPC;
   public godwokenWeb3Rpc: RPC;
   public godwoken_rpc_url: string;
   public godwoken: Godwoken;
-  private indexer: Indexer | null;
-  private transactionManager: TransactionManager | null;
+  public indexer: Indexer | null;
+  public transactionManager: TransactionManager | null;
   public indexer_path: string;
   public polyjuice: Polyjuice | null;
 
@@ -163,7 +163,7 @@ export class Api {
     });
 
     this.indexer.startForever();
-    this.transactionManager = new TransactionManager(this.indexer)
+    this.transactionManager = new TransactionManager(this.indexer);
     this.transactionManager.start();
 
     console.log("waiting for sync ...");
@@ -1234,6 +1234,93 @@ export class Api {
     await this.deployLayer1ContractWithTypeId(code_hash, private_key, callback);
     return;
   }
+  
+  async constructScriptDeployTransaction(
+    contract_code_hex: HexString,
+    private_key: string,
+  ){
+    var txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager }); 
+    const ckb_address = privateKeyToCkbAddress(private_key);
+    const lock: Script = parseAddress(ckb_address);
+    
+    // "TYPE_ID" in hex
+    // pub const TYPE_ID_CODE_HASH: H256 = h256!("0x545950455f4944");
+    const type: Script = {
+      code_hash: "0x00000000000000000000000000000000000000000000000000545950455f4944",
+      hash_type: "type",
+      args: '0x' + "0".repeat(64) // inputcell+index
+    }
+
+    var outputCell: Cell = {
+      cell_output: {
+        capacity: "0x000000000001",
+        lock: lock,
+        type: type
+      },
+      data: contract_code_hex,
+    };
+
+    var capacity;
+    try {
+      capacity = minimalCellCapacity(outputCell, {validate:false});
+      console.log('capacity needed: ', capacity);
+      outputCell.cell_output.capacity = '0x' + capacity.toString(16);
+    } catch (error) {
+      console.log(JSON.stringify(error));
+      throw new Error(JSON.stringify(error, null, 2));
+    }
+
+    try {
+      txSkeleton = await common.injectCapacity(
+        txSkeleton,
+        [ckb_address],
+        capacity
+      );
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+
+    if(!txSkeleton.inputs.first())
+      throw new Error("txSkeleton.inputs.first() is undefined.");
+
+    const first_input_cell: Cell = txSkeleton.inputs.first();
+
+    const first_cell_input = {
+      "since": "0x0",
+      "previous_output": first_input_cell.out_point! 
+    }
+
+    const type_id_args_hex = this.generateTypeIDArgsHash(first_cell_input, 1); 
+    
+    outputCell.cell_output.type!.args = type_id_args_hex;
+
+    const real_type = outputCell.cell_output.type!;
+
+    const contract_script_hash = utils.computeScriptHash(real_type);
+
+    console.log(`contract_script_hash: ${contract_script_hash}`);
+
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push(outputCell);
+    });
+
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [ckb_address],
+      BigInt(1000)
+    );
+
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, private_key);
+
+    const tx = sealTransaction(txSkeleton, [content]);
+    const txHash: Hash = await this.transactionManager.send_transaction(tx);
+    console.log(`transaction ${txHash} is now sent...`);
+    return txHash;
+  }
 
   async deployLayer1ContractWithTypeId(
     contract_code_hex: HexString,
@@ -1284,8 +1371,6 @@ export class Api {
       throw new Error(error);
     }
 
-    console.log('inject success!');
-    
     if(!txSkeleton.inputs.first())
       throw new Error("txSkeleton.inputs.first() is undefined.");
 
@@ -1296,18 +1381,12 @@ export class Api {
       "previous_output": first_input_cell.out_point! 
     }
 
-    console.log(first_cell_input);
-
     const type_id_args_hex = this.generateTypeIDArgsHash(first_cell_input, 1); 
     
-    console.log('type_id_args_hex:', type_id_args_hex);
-
     outputCell.cell_output.type!.args = type_id_args_hex;
 
     const real_type = outputCell.cell_output.type!;
 
-    console.log(real_type, lock);
-    
     const contract_script_hash = utils.computeScriptHash(real_type);
 
     console.log(`contract_script_hash: ${contract_script_hash}`);
@@ -1329,13 +1408,13 @@ export class Api {
 
     const tx = sealTransaction(txSkeleton, [content]);
 
-    console.log(JSON.stringify(tx, null, 2));
+    // console.log(JSON.stringify(tx, null, 2));
     
     try {
       const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
-      console.log(`txHash ${txHash} is now sent...`);
+      console.log(`transaction ${txHash} is now sent...`);
       const tx_with_status = await this.waitForCkbTx(txHash);
-      console.log(JSON.stringify(tx_with_status, null, 2));
+      console.log(`${txHash} status: ${tx_with_status.tx_status}`);
 
       const outpoint: OutPoint = {
         tx_hash: txHash,
@@ -1384,8 +1463,8 @@ export class Api {
     lumos_config.SCRIPTS.SUDT = sudt;
     await fs.writeFileSync(file_path, JSON.stringify(lumos_config, null, 2));
     console.log('lumos-config.json has been updated!');
-    console.log('re-init lumos...');
-    await this.reinit_lumos();
+    // console.log('re-init lumos...');
+    // await this.reinit_lumos();
   }
 
   async reinit_lumos(){

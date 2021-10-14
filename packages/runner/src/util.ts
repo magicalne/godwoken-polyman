@@ -25,6 +25,7 @@ import TOML from '@iarna/toml';
 import fs from 'fs';
 import path from 'path';
 import { getRollupTypeHash } from "../js/transactions/deposit";
+import { GodwokenScriptsInfo } from "./types";
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));
@@ -293,4 +294,21 @@ export async function readScriptCodeHashFromFile(script_path: string){
   const contract_file = path.join(script_path);
   const complied_code = await fs.readFileSync(contract_file);
   return '0x' + complied_code.toString('hex');
+}
+
+export async function getDeployScriptsInfo(_file_path: string) {
+  const file_path = path.resolve(_file_path);
+  try {
+    const scripts_file = await fs.readFileSync(file_path);
+    const scripts = JSON.parse(scripts_file.toLocaleString());
+
+    if("built_scripts" in scripts){
+      const script_info: GodwokenScriptsInfo = scripts.built_scripts;
+      return script_info;
+    }else{
+      throw new Error(`built_scripts not exist in scripts json ${scripts}`);
+    }
+  } catch (error) {
+    throw new Error(`failed to read and parse scripts file,` + error.message);
+  }
 }
