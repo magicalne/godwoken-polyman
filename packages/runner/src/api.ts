@@ -60,7 +60,7 @@ import { URL } from "url";
 
 import {
   asyncSleep,
-  caculateLayer2LockScriptHash,
+  calculateLayer2LockScriptHash,
   serializeScript,
   waitForBlockSync,
   privateKeyToCkbAddress,
@@ -430,7 +430,7 @@ export class Api {
     console.log(`tx ${txHash} is now onChain!`);
 
     //get deposit account id
-    const script_hash = caculateLayer2LockScriptHash(ethAddress);
+    const script_hash = calculateLayer2LockScriptHash(ethAddress);
     console.log(`compute_scripthash: ${script_hash}`);
 
     // wait for confirm
@@ -505,7 +505,7 @@ export class Api {
       creator_account_id,
     });
     const script_hash = eth_address
-      ? caculateLayer2LockScriptHash(eth_address)
+      ? calculateLayer2LockScriptHash(eth_address)
       : accountScriptHash(privkey);
     const from_id = await this.getAccountIdByScriptHash(script_hash);
     if (!from_id) {
@@ -597,7 +597,7 @@ export class Api {
       console.log("deposit sudt sucessful!");
 
       //get deposit account id
-      const script_hash = caculateLayer2LockScriptHash(ethAddress);
+      const script_hash = calculateLayer2LockScriptHash(ethAddress);
       console.log(`compute_scripthash: ${script_hash}`);
 
       // wait for confirm
@@ -750,7 +750,7 @@ export class Api {
   }
 
   async getAccountIdByEthAddr(eth_address: string){
-    const id = await this.getAccountIdByScriptHash(caculateLayer2LockScriptHash(eth_address));
+    const id = await this.getAccountIdByScriptHash(calculateLayer2LockScriptHash(eth_address));
     return id;
   }
 
@@ -1076,7 +1076,7 @@ export class Api {
       sudt_id: 1,
       creator_account_id,
     });
-    const script_hash = caculateLayer2LockScriptHash(eth_address);
+    const script_hash = calculateLayer2LockScriptHash(eth_address);
     const _from_id = await this.getAccountIdByScriptHash(script_hash);
     const from_id = parseInt(_from_id + '');
     if (!from_id) {
@@ -1226,16 +1226,22 @@ export class Api {
   async deployLayer1Sudt(
     private_key: string
   ){
-    const code_hex = await this.getSudtContractCodeHex();
-    await this.deployLayer1ContractWithTypeId(code_hex, private_key);
+    const code_hash = await this.getSudtContractCodeHex();
+    let that = this;
+    const callback = async (outpoint: OutPoint) => {
+      await that.genSudtConfig(outpoint, code_hash);
+    }
+    await this.deployLayer1ContractWithTypeId(code_hash, private_key, callback);
     return;
   }
 
   async deployLayer1ContractWithTypeId(
     contract_code_hex: HexString,
     private_key: string,
+    callback?: (outpoint: OutPoint) => any
   ){
-    
+    callback = callback || function(_outpoint: OutPoint){};
+
     var txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager }); 
     const ckb_address = privateKeyToCkbAddress(private_key);
     const lock: Script = parseAddress(ckb_address);
@@ -1302,9 +1308,9 @@ export class Api {
 
     console.log(real_type, lock);
     
-    const sudt_code_hash = utils.computeScriptHash(real_type);
+    const contract_code_hash = utils.computeScriptHash(real_type);
 
-    console.log(`sudt_code_hash: ${sudt_code_hash}`);
+    console.log(`contract_code_hash: ${contract_code_hash}`);
 
     txSkeleton = txSkeleton.update("outputs", (outputs) => {
       return outputs.push(outputCell);
@@ -1336,7 +1342,8 @@ export class Api {
         index: '0x1'
       }
 
-      await this.genSudtConfig(outpoint, sudt_code_hash);
+      callback(outpoint);
+      return {outpoint};
     } catch (error) {
       console.log(error);
       throw new Error(error);

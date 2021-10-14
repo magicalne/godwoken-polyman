@@ -2,7 +2,7 @@ import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";
 import express from 'express';
 import cors from 'cors';
 import timeout from "connect-timeout";
-import { asyncSleep, generateGodwokenConfig } from './util';
+import { asyncSleep, generateGodwokenConfig, readScriptCodeHashFromFile } from './util';
 import path from "path";
 import { Api } from "./api";
 import { execSync } from "child_process";
@@ -159,6 +159,43 @@ app.get('/get_lumos_script_info', function(req, res){
   }
 });
 
+app.get('/deploy_godwoken_scripts', async function(req, res){
+  try {
+    const script_name: string = req.query.script_name + '';
+    const script_path = req.query.script_path + '';
+
+    const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-deploy-scripts`);
+    const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
+
+    var retry = 0;
+    const run_deploy_scripts = async (maxRetryLimit: number, intervals=5000) => {
+      try {
+        // todo: save/load history and check if scripts exist on-chain.
+        retry++;
+        const contract_code_hash = await readScriptCodeHashFromFile(script_path);
+        const { outpoint } = await api.deployLayer1ContractWithTypeId(contract_code_hash, user_private_key);
+        console.log(`deploy script ${script_name}, outpoint: ${JSON.stringify(outpoint)}`);
+        console.log(`finished~`);
+        res.send({status: 'ok', data: `deploy script ${script_name}, outpoint: ${JSON.stringify(outpoint)}. finished~`});
+      } catch (e) {
+        console.error(e);
+        if(retry < maxRetryLimit){
+          await asyncSleep(intervals);
+          console.log(`retry...${retry}th times`);
+          run_deploy_scripts(maxRetryLimit);
+        }else{
+          console.error(`failed to deploy godwoken script ${script_name}.`);
+          res.send({status: 'failed', data: `failed to deploy godwoken script ${script_name}.`});
+        }
+      }
+    };
+   
+    // retry 20 times max.
+    await run_deploy_scripts(20);
+  } catch (error) {
+    res.send({status: 'failed', error: error}); 
+  }
+});
 
 export function start () {
    app.listen(PolymanConfig.prepare_service_port, () => {

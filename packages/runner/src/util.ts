@@ -54,7 +54,7 @@ export async function waitForBlockSync(
   }
 }
 
-export function caculateLayer2LockScriptHash(layer2LockArgs: string) {
+export function calculateLayer2LockScriptHash(layer2LockArgs: string) {
   const rollup_type_hash = getRollupTypeHash();
   const script = {
     code_hash: deploymentConfig.eth_account_lock.code_hash,
@@ -179,7 +179,7 @@ export function deepCompare(o: object, p: object)
     return true;
 }
 
-// todo: refactor this class to fit ts strice mode
+// todo: refactor this class to fit ts strict mode
 export class DeepDiffMapper {
 
   private VALUE_CREATED = 'created';
@@ -287,4 +287,10 @@ export class DeepDiffMapper {
   isValue(x: any) {
     return !this.isObject(x) && !this.isArray(x);
   }
+}
+
+export async function readScriptCodeHashFromFile(script_path: string){
+  const contract_file = path.join(script_path);
+  const complied_code = await fs.readFileSync(contract_file);
+  return '0x' + complied_code.toString('hex');
 }
