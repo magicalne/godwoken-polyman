@@ -6,8 +6,7 @@ import { asyncSleep, generateGodwokenConfig, getDeployScriptsPaths, loadJsonFile
 import path from "path";
 import { Api } from "./api";
 import { execSync } from "child_process";
-import { HexString } from "@ckb-lumos/base";
-import { GodwokenScriptsDeployResult, ScriptDeploymentTransactionInfo, GodwokenScriptDep } from "./types";
+import { ScriptDeploymentTransactionInfo } from "./types";
 
 let cfgIdx = 2;
 switch (process.env.MODE) {
@@ -52,10 +51,6 @@ app.get('/ping', async function (req, res) {
 
 app.get('/prepare_money', async function (req, res) {
     console.log("start prepare money..");
-   // const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-prepare-money`);
-   // const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
-   // api.syncLayer1();
-
     var retry = 0;
     const run_prepare_money = async (maxRetryLimit: number, intervals=5000) => {
         try {
@@ -90,9 +85,6 @@ app.get('/prepare_money', async function (req, res) {
 
 app.get('/prepare_sudt_scripts', async function (req, res) {
   console.log("start prepare sudt_scripts..");
-//  const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-prepare-sudt-scripts`);
-//  const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
-//  api.syncLayer1();
 
   var retry = 0;
   const run_prepare_sudt_scripts = async (maxRetryLimit: number, intervals=5000) => {
@@ -142,9 +134,7 @@ app.get('/gen_config', async function (req, res) {
 });
 
 app.get('/get_lumos_config', function(req, res){
-  try {
-  //  const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-get-lumos-config`);
-  //  const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
+  try {;
     const config = api.getLumosConfigFile();
     res.send({status: 'ok', data: config }); 
   } catch (error) {
@@ -156,9 +146,6 @@ app.get('/get_lumos_script_info', function(req, res){
   try {
     const script_name: string = req.query.script_name + '';
     const key = req.query.key + '';
-
-  //  const _indexer_path = path.resolve(__dirname, `${INDEXER_ROOT_DB_PATH}/ckb-indexer-data-get-lumos-config`);
-  //  const api = new Api(ckb_rpc, godwoken_rpc, _indexer_path);
     const config = api.getLumosConfigFile();
     res.send({status: 'ok', data: config.SCRIPTS[script_name][key] }); 
   } catch (error) {
@@ -258,7 +245,7 @@ app.get('/deploy_godwoken_scripts', async function(req, res){
   }
 });
 
-app.get('/deploy_script', async function(req, res){
+app.get('/deploy_one_script', async function(req, res){
   try {
     const script_name: string = req.query.script_name + '';
     const script_path = req.query.script_path + '';
