@@ -27,7 +27,7 @@ const NormalizeSUDTTransfer = normalizer.NormalizeSUDTTransfer;
 //const UnoinType = normalizer.UnoinType;
 import { Polyjuice } from "@godwoken-polyman/polyjuice";
 
-import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus, HexNumber } from "@ckb-lumos/base";
+import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus, HexNumber, Output } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
 import { Indexer, CellCollector } from "@ckb-lumos/indexer";
 import { key } from "@ckb-lumos/hd";
@@ -70,6 +70,7 @@ import {
   DeepDiffMapper,
 } from "./util";
 import { TxReceipt } from "@godwoken-polyman/godwoken/schemas/store";
+import { ScriptDeploymentTransactionInfo } from "./types";
 
 export class Api {
   public validator_code_hash: string;
@@ -619,7 +620,7 @@ export class Api {
     
   }
 
-  async checkIfL1SudtScriptExits(ckb_rpc_url: string){
+  async checkIfL1SudtScriptExist(ckb_rpc_url: string){
     const config = getConfig();
     if(!config.SCRIPTS.SUDT){
         console.error("sudt scripts not found in lumos config, please deploy first.");
@@ -1234,11 +1235,29 @@ export class Api {
     await this.deployLayer1ContractWithTypeId(code_hash, private_key, callback);
     return;
   }
+
+  async checkIfScriptCellExist(script_cell_outpoint: OutPoint, ckb_rpc_url: string){
+    // check if script cell exist and is alive
+    const rpc = new RPC(ckb_rpc_url);
+    const result = await rpc.get_transaction(script_cell_outpoint.tx_hash);
+    if(!result){
+      console.log(`cell transaction not found: ${result}, script not exist.`);
+      return false;
+    }
+
+    const cell = result.transaction.outputs[parseInt(script_cell_outpoint.index, 16)];
+    if(!cell){
+      console.log(`script cell not found: ${cell}, script not exist.`);
+      return false;
+    }
+    
+    return true;
+  }
   
-  async constructScriptDeployTransaction(
+  async sendScriptDeployTransaction(
     contract_code_hex: HexString,
     private_key: string,
-  ){
+  ): Promise<ScriptDeploymentTransactionInfo>{
     var txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager }); 
     const ckb_address = privateKeyToCkbAddress(private_key);
     const lock: Script = parseAddress(ckb_address);
@@ -1317,9 +1336,13 @@ export class Api {
     const content: HexString = key.signRecoverable(message, private_key);
 
     const tx = sealTransaction(txSkeleton, [content]);
-    const txHash: Hash = await this.transactionManager.send_transaction(tx);
-    console.log(`transaction ${txHash} is now sent...`);
-    return txHash;
+    const tx_hash: Hash = await this.transactionManager.send_transaction(tx);
+    console.log(`transaction ${tx_hash} is now sent...`);
+    const outpoint: OutPoint = {
+      tx_hash: tx_hash,
+      index: "0x1", 
+    }
+    return { outpoint, script_hash: contract_script_hash };
   }
 
   async deployLayer1ContractWithTypeId(

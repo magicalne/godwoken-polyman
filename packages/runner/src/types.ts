@@ -1,4 +1,4 @@
-import { DepType, HexNumber, HexString } from "@ckb-lumos/base"
+import { DepType, HexNumber, HexString, OutPoint } from "@ckb-lumos/base"
 
 export type GodwokenScriptsInfo = {
     "eth_account_lock": string,
@@ -45,5 +45,10 @@ export type GodwokenScriptsDeployResult = {
 	"polyjuice_validator": GodwokenScriptDep,
 	"state_validator_lock": GodwokenScriptDep,
 	"poa_state": GodwokenScriptDep
+}
+
+export type ScriptDeploymentTransactionInfo = {
+	outpoint: OutPoint,
+	script_hash: HexString
 }
       

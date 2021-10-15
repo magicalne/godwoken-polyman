@@ -26,6 +26,7 @@ import fs from 'fs';
 import path from 'path';
 import { getRollupTypeHash } from "../js/transactions/deposit";
 import { GodwokenScriptsInfo } from "./types";
+import { OutPoint } from "@ckb-lumos/base/lib/core";
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));
@@ -287,6 +288,22 @@ export class DeepDiffMapper {
 
   isValue(x: any) {
     return !this.isObject(x) && !this.isArray(x);
+  }
+}
+
+export async function saveJsonFile(jsonObj: Object, path: string) {
+  const data = JSON.stringify(jsonObj, null, 2);
+  await fs.writeFileSync(path, data);
+}
+
+export async function loadJsonFile(path: string) {
+  try {
+    const data = await fs.readFileSync(path);
+    const data_json = JSON.parse(data.toLocaleString()); 
+    return data_json;
+  } catch (error) {
+    console.log("scripts deployment history file not exist.")
+    return null;
   }
 }
 
