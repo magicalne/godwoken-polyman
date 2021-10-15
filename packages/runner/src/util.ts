@@ -25,7 +25,7 @@ import TOML from '@iarna/toml';
 import fs from 'fs';
 import path from 'path';
 import { getRollupTypeHash } from "../js/transactions/deposit";
-import { GodwokenScriptsInfo } from "./types";
+import { GodwokenScriptsPath } from "./types";
 import { OutPoint } from "@ckb-lumos/base/lib/core";
 
 export function asyncSleep(ms = 0) {
@@ -293,7 +293,13 @@ export class DeepDiffMapper {
 
 export async function saveJsonFile(jsonObj: Object, path: string) {
   const data = JSON.stringify(jsonObj, null, 2);
-  await fs.writeFileSync(path, data);
+  try {
+    await fs.writeFileSync(path, data);
+    return true;
+  } catch (error) {
+    console.log(`can not save the json file, err: ${error.message}`);
+    return false;
+  };
 }
 
 export async function loadJsonFile(path: string) {
@@ -313,15 +319,15 @@ export async function readScriptCodeHashFromFile(script_path: string){
   return '0x' + complied_code.toString('hex');
 }
 
-export async function getDeployScriptsInfo(_file_path: string) {
+export async function getDeployScriptsPaths(_file_path: string) {
   const file_path = path.resolve(_file_path);
   try {
     const scripts_file = await fs.readFileSync(file_path);
     const scripts = JSON.parse(scripts_file.toLocaleString());
 
     if("built_scripts" in scripts){
-      const script_info: GodwokenScriptsInfo = scripts.built_scripts;
-      return script_info;
+      const scripts_paths: GodwokenScriptsPath = scripts.built_scripts;
+      return scripts_paths;
     }else{
       throw new Error(`built_scripts not exist in scripts json ${scripts}`);
     }

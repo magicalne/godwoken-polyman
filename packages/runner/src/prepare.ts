@@ -2,12 +2,12 @@ import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";
 import express from 'express';
 import cors from 'cors';
 import timeout from "connect-timeout";
-import { asyncSleep, generateGodwokenConfig, getDeployScriptsInfo, loadJsonFile, readScriptCodeHashFromFile, saveJsonFile } from './util';
+import { asyncSleep, generateGodwokenConfig, getDeployScriptsPaths, loadJsonFile, readScriptCodeHashFromFile, saveJsonFile } from './util';
 import path from "path";
 import { Api } from "./api";
 import { execSync } from "child_process";
 import { HexString } from "@ckb-lumos/base";
-import { ScriptDeploymentTransactionInfo } from "./types";
+import { GodwokenScriptsDeployResult, ScriptDeploymentTransactionInfo, GodwokenScriptDep } from "./types";
 
 let cfgIdx = 2;
 switch (process.env.MODE) {
@@ -169,13 +169,16 @@ app.get('/get_lumos_script_info', function(req, res){
 app.get('/deploy_godwoken_scripts', async function(req, res){
   try {
     const scripts_deploy_file_path: string = req.query.scripts_file_path + '';
-    let scripts_info = await getDeployScriptsInfo(scripts_deploy_file_path);
+    const scripts_deploy_result_file_path: string = req.query.deploy_result_file_path + '';
+    let scripts_paths = await getDeployScriptsPaths(scripts_deploy_file_path);
     
-    let script_names = Object.keys(scripts_info);
+    let script_names = Object.keys(scripts_paths);
     const total_scripts_number = script_names.length;
     
     let deploy_counter = 0;
-    console.time("deploy godwoken scripts now.");
+    console.log("deploy godwoken scripts now.");
+    const statist_time_label = `total-deploy-time-for-${total_scripts_number}-godwoken-scripts`;
+    console.time(statist_time_label);
     
     // load deployment history file
     const history = await loadJsonFile(scripts_deployed_history_path);
@@ -209,7 +212,7 @@ app.get('/deploy_godwoken_scripts', async function(req, res){
     for(const script_name of script_names){
       retry = 0;
       const script_path_root = '/code/workspace/';
-      const script_path = script_path_root + scripts_info[script_name];
+      const script_path = script_path_root + scripts_paths[script_name];
       // each script will try re-deploy when failed, retry will be 5 times max.
       await run_deploy_script(script_name, script_path, script_deployment_tx_info);
     }
@@ -226,18 +229,32 @@ app.get('/deploy_godwoken_scripts', async function(req, res){
     }
     // save history of successful deployment scripts.
     saveJsonFile(scripts_history, scripts_deployed_history_path);
+    console.timeEnd(statist_time_label);
 
     if(deploy_counter === total_scripts_number){
-      const result = {status: 'ok', data: `success deployed ${total_scripts_number} godwoken scripts. finished~`};
+      // save the scripts_deploy_result file
+      const deploy_result = Object.keys(scripts_history).reduce(function(result, key) {
+        result[key] = {
+          script_type_hash: scripts_history[key].script_hash,
+          cell_dep: {
+              "out_point": scripts_history[key].outpoint,
+              "dep_type": "code"
+            }
+        }
+        return result;
+      }, {});
+      const isDeployResultFileGenerated = await saveJsonFile(deploy_result, scripts_deploy_result_file_path);
+
+      const result = {status: 'ok', data: `success deployed ${total_scripts_number} godwoken scripts. generateDeployResultFile: ${isDeployResultFileGenerated}. finished~`};
       console.log(result);
       res.send(result);
     }else{
-      const result = {status:'failed', data: `we are only able to deployed ${deploy_counter} scripts, required total: ${total_scripts_number}`};
+      const result = {status:'failed', data: `we are only able to deployed ${deploy_counter} scripts, required total: ${total_scripts_number}.`};
       console.log(result);
       res.send(result);
     }
   } catch (error) {
-    res.send({status: 'failed', error: error.message}); 
+    res.send({status: 'failed', error: error.message});
   }
 });
 

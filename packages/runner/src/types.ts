@@ -1,6 +1,6 @@
 import { DepType, HexNumber, HexString, OutPoint } from "@ckb-lumos/base"
 
-export type GodwokenScriptsInfo = {
+export type GodwokenScriptsPath = {
     "eth_account_lock": string,
     "deposit_lock": string,
     "polyjuice_generator": string,
