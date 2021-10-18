@@ -50,7 +50,7 @@ export function getDepositLockArgs(
     layer2_lock: {
       code_hash: deploymentConfig.eth_account_lock.code_hash,
       hash_type: deploymentConfig.eth_account_lock.hash_type as "data" | "type",
-      args:  rollup_type_hash + layer2_lock_args.slice(2),
+      args: rollup_type_hash + layer2_lock_args.slice(2),
     },
     cancel_timeout: cancelTimeout, // relative timestamp, 2 days
   };
@@ -58,7 +58,8 @@ export function getDepositLockArgs(
 }
 
 export function getRollupTypeHash(): HexString {
-  const rollupTypeScript: Script = godwokenConfig.chain.rollup_type_script as Script;
+  const rollupTypeScript: Script = godwokenConfig.chain
+    .rollup_type_script as Script;
   const hash: HexString = utils.computeScriptHash(rollupTypeScript);
   console.log("rollupTypeHash:", hash);
   return hash;
@@ -69,9 +70,8 @@ export function getL2SudtScriptHash(l1_sudt_script: Script): HexString {
   const sudt_script = {
     code_hash: deploymentConfig.l2_sudt_validator.code_hash,
     hash_type: deploymentConfig.l2_sudt_validator.hash_type as "data" | "type",
-    args: getRollupTypeHash() + script_hash.slice(2)
-  }
+    args: getRollupTypeHash() + script_hash.slice(2),
+  };
   console.log(`sudt_script: ${JSON.stringify(sudt_script)}`);
   return utils.computeScriptHash(sudt_script);
 }
-

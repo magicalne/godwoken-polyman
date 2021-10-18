@@ -3,7 +3,10 @@ import { Api } from "./api";
 import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";
 import { asyncSleep } from "./util";
 
-const INDEXER_DB_PATH = path.resolve(DefaultIndexerPath, "./sudt/ckb-indexer-data");
+const INDEXER_DB_PATH = path.resolve(
+  DefaultIndexerPath,
+  "./sudt/ckb-indexer-data"
+);
 
 let cfgIdx = 2;
 switch (process.env.MODE) {
@@ -30,12 +33,14 @@ const intervals = 5000; // 5 seconds
 
 export const run = async (maxRetryLimit: number) => {
   try {
-    const isSudtScriptAlreadyExits = await api.checkIfL1SudtScriptExits(ckb_rpc);
-    if(isSudtScriptAlreadyExits){
+    const isSudtScriptAlreadyExits = await api.checkIfL1SudtScriptExits(
+      ckb_rpc
+    );
+    if (isSudtScriptAlreadyExits) {
       console.log(`sudt script already prepared.`);
       console.log(`finished~`);
-      process.exit(0); 
-    }else{
+      process.exit(0);
+    } else {
       retry++;
       await api.deployLayer1Sudt(user_private_key);
       console.log(`prepared sudt scripts.`);
@@ -44,11 +49,11 @@ export const run = async (maxRetryLimit: number) => {
     }
   } catch (e) {
     console.error(e);
-    if(retry < maxRetryLimit){
+    if (retry < maxRetryLimit) {
       await asyncSleep(intervals);
       console.log(`retry...${retry}th times`);
       run(maxRetryLimit);
-    }else{
+    } else {
       console.error(`failed to prepare sudt script for lumos.`);
       process.exit(1);
     }
@@ -56,4 +61,3 @@ export const run = async (maxRetryLimit: number) => {
 };
 
 run(20);
-

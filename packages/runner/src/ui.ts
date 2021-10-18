@@ -1,16 +1,18 @@
-import Config from '../configs/polyman-config.json';
-import express from 'express';
-import path from 'path';
+import Config from "../configs/polyman-config.json";
+import express from "express";
+import path from "path";
 
 export const app = express();
-app.use(express.static(path.join(__dirname, '../ui')));
+app.use(express.static(path.join(__dirname, "../ui")));
 
-app.get('/*', function (req: any, res: { sendFile: (arg0: any) => void; }) {
-  res.sendFile(path.join(__dirname, '../ui', 'index.html'));
+app.get("/*", function (req: any, res: { sendFile: (arg0: any) => void }) {
+  res.sendFile(path.join(__dirname, "../ui", "index.html"));
 });
 
-export function start () {
-   app.listen(Config.ui_port, () => {
-       console.log(`ui server started at http://localhost:${Config.ui_port}, go there to deploy contract!`);
-   });
+export function start() {
+  app.listen(Config.ui_port, () => {
+    console.log(
+      `ui server started at http://localhost:${Config.ui_port}, go there to deploy contract!`
+    );
+  });
 }

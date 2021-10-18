@@ -7,9 +7,7 @@ export const deploymentConfig: DeploymentConfig = {
   custodian_lock: buildScriptFromCodeHash(
     config.custodian_lock.script_type_hash
   ),
-  deposit_lock: buildScriptFromCodeHash(
-    config.deposit_lock.script_type_hash
-  ),
+  deposit_lock: buildScriptFromCodeHash(config.deposit_lock.script_type_hash),
   withdrawal_lock: buildScriptFromCodeHash(
     config.withdrawal_lock.script_type_hash
   ),

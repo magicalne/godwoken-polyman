@@ -8,7 +8,7 @@ import { core as base_core, Script, utils } from "@ckb-lumos/base";
 import { scriptToAddress } from "@ckb-lumos/helpers";
 import { getConfig, initializeConfig } from "@ckb-lumos/config-manager";
 import { deploymentConfig } from "../js/utils/deployment_config";
-import { getRollupTypeHash } from "../js/transactions/deposit"
+import { getRollupTypeHash } from "../js/transactions/deposit";
 import {
   Godwoken,
   GodwokenUtils,
@@ -64,7 +64,7 @@ export function accountScriptHash(privkey: any) {
   const rollup_type_hash = getRollupTypeHash();
   const script: Script = {
     code_hash: deploymentConfig.eth_account_lock.code_hash,
-    hash_type: deploymentConfig.eth_account_lock.hash_type as "data" | "type", 
+    hash_type: deploymentConfig.eth_account_lock.hash_type as "data" | "type",
     args: rollup_type_hash + ethAddress(privkey).slice(2),
   };
   return utils
@@ -93,7 +93,12 @@ export function _generateTransactionMessageToSign(
 ) {
   //console.log("RawL2Transaction", raw_l2tx);
   const godwoken_utils = new GodwokenUtils(rollup_type_hash);
-  return godwoken_utils.generateTransactionMessageToSign(raw_l2tx, sender_script_hash, receiver_script_hash, add_prefix);
+  return godwoken_utils.generateTransactionMessageToSign(
+    raw_l2tx,
+    sender_script_hash,
+    receiver_script_hash,
+    add_prefix
+  );
 }
 
 export function _createAccountRawL2Transaction(
