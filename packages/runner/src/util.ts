@@ -25,6 +25,7 @@ import TOML from '@iarna/toml';
 import fs from 'fs';
 import path from 'path';
 import { getRollupTypeHash } from "../js/transactions/deposit";
+import { GodwokenScriptsPath } from "./types";
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));
@@ -54,7 +55,7 @@ export async function waitForBlockSync(
   }
 }
 
-export function caculateLayer2LockScriptHash(layer2LockArgs: string) {
+export function calculateLayer2LockScriptHash(layer2LockArgs: string) {
   const rollup_type_hash = getRollupTypeHash();
   const script = {
     code_hash: deploymentConfig.eth_account_lock.code_hash,
@@ -179,7 +180,7 @@ export function deepCompare(o: object, p: object)
     return true;
 }
 
-// todo: refactor this class to fit ts strice mode
+// todo: refactor this class to fit ts strict mode
 export class DeepDiffMapper {
 
   private VALUE_CREATED = 'created';
@@ -288,3 +289,49 @@ export class DeepDiffMapper {
     return !this.isObject(x) && !this.isArray(x);
   }
 }
+
+export async function saveJsonFile(jsonObj: Object, path: string) {
+  const data = JSON.stringify(jsonObj, null, 2);
+  try {
+    await fs.writeFileSync(path, data);
+    return true;
+  } catch (error) {
+    console.log(`can not save the json file, err: ${error.message}`);
+    return false;
+  };
+}
+
+export async function loadJsonFile(path: string) {
+  try {
+    const data = await fs.readFileSync(path);
+    const data_json = JSON.parse(data.toLocaleString()); 
+    return data_json;
+  } catch (error) {
+    console.log("scripts deployment history file not exist.")
+    return null;
+  }
+}
+
+export async function readScriptCodeHashFromFile(script_path: string){
+  const contract_file = path.join(script_path);
+  const complied_code = await fs.readFileSync(contract_file);
+  return '0x' + complied_code.toString('hex');
+}
+
+export async function getDeployScriptsPaths(_file_path: string) {
+  const file_path = path.resolve(_file_path);
+  try {
+    const scripts_file = await fs.readFileSync(file_path);
+    const scripts = JSON.parse(scripts_file.toLocaleString());
+
+    if("built_scripts" in scripts){
+      const scripts_paths: GodwokenScriptsPath = scripts.built_scripts;
+      return scripts_paths;
+    }else{
+      throw new Error(`built_scripts not exist in scripts json ${scripts}`);
+    }
+  } catch (error) {
+    throw new Error(`failed to read and parse scripts file,` + error.message);
+  }
+}
+

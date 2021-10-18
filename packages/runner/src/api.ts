@@ -27,7 +27,7 @@ const NormalizeSUDTTransfer = normalizer.NormalizeSUDTTransfer;
 //const UnoinType = normalizer.UnoinType;
 import { Polyjuice } from "@godwoken-polyman/polyjuice";
 
-import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus, HexNumber } from "@ckb-lumos/base";
+import { HexString, Cell, Script, Hash, utils, core as ckb_core, OutPoint, TransactionWithStatus, HexNumber, Output } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
 import { Indexer, CellCollector } from "@ckb-lumos/indexer";
 import { key } from "@ckb-lumos/hd";
@@ -60,7 +60,7 @@ import { URL } from "url";
 
 import {
   asyncSleep,
-  caculateLayer2LockScriptHash,
+  calculateLayer2LockScriptHash,
   serializeScript,
   waitForBlockSync,
   privateKeyToCkbAddress,
@@ -70,16 +70,17 @@ import {
   DeepDiffMapper,
 } from "./util";
 import { TxReceipt } from "@godwoken-polyman/godwoken/schemas/store";
+import { ScriptDeploymentTransactionInfo } from "./types";
 
 export class Api {
   public validator_code_hash: string;
   public ckb_rpc_url: string;
-  private ckb_rpc: RPC;
+  public ckb_rpc: RPC;
   public godwokenWeb3Rpc: RPC;
   public godwoken_rpc_url: string;
   public godwoken: Godwoken;
-  private indexer: Indexer | null;
-  private transactionManager: TransactionManager | null;
+  public indexer: Indexer | null;
+  public transactionManager: TransactionManager | null;
   public indexer_path: string;
   public polyjuice: Polyjuice | null;
 
@@ -163,7 +164,7 @@ export class Api {
     });
 
     this.indexer.startForever();
-    this.transactionManager = new TransactionManager(this.indexer)
+    this.transactionManager = new TransactionManager(this.indexer);
     this.transactionManager.start();
 
     console.log("waiting for sync ...");
@@ -430,7 +431,7 @@ export class Api {
     console.log(`tx ${txHash} is now onChain!`);
 
     //get deposit account id
-    const script_hash = caculateLayer2LockScriptHash(ethAddress);
+    const script_hash = calculateLayer2LockScriptHash(ethAddress);
     console.log(`compute_scripthash: ${script_hash}`);
 
     // wait for confirm
@@ -505,7 +506,7 @@ export class Api {
       creator_account_id,
     });
     const script_hash = eth_address
-      ? caculateLayer2LockScriptHash(eth_address)
+      ? calculateLayer2LockScriptHash(eth_address)
       : accountScriptHash(privkey);
     const from_id = await this.getAccountIdByScriptHash(script_hash);
     if (!from_id) {
@@ -597,7 +598,7 @@ export class Api {
       console.log("deposit sudt sucessful!");
 
       //get deposit account id
-      const script_hash = caculateLayer2LockScriptHash(ethAddress);
+      const script_hash = calculateLayer2LockScriptHash(ethAddress);
       console.log(`compute_scripthash: ${script_hash}`);
 
       // wait for confirm
@@ -619,7 +620,7 @@ export class Api {
     
   }
 
-  async checkIfL1SudtScriptExits(ckb_rpc_url: string){
+  async checkIfL1SudtScriptExist(ckb_rpc_url: string){
     const config = getConfig();
     if(!config.SCRIPTS.SUDT){
         console.error("sudt scripts not found in lumos config, please deploy first.");
@@ -750,7 +751,7 @@ export class Api {
   }
 
   async getAccountIdByEthAddr(eth_address: string){
-    const id = await this.getAccountIdByScriptHash(caculateLayer2LockScriptHash(eth_address));
+    const id = await this.getAccountIdByScriptHash(calculateLayer2LockScriptHash(eth_address));
     return id;
   }
 
@@ -1076,7 +1077,7 @@ export class Api {
       sudt_id: 1,
       creator_account_id,
     });
-    const script_hash = caculateLayer2LockScriptHash(eth_address);
+    const script_hash = calculateLayer2LockScriptHash(eth_address);
     const _from_id = await this.getAccountIdByScriptHash(script_hash);
     const from_id = parseInt(_from_id + '');
     if (!from_id) {
@@ -1226,16 +1227,179 @@ export class Api {
   async deployLayer1Sudt(
     private_key: string
   ){
-    const code_hex = await this.getSudtContractCodeHex();
-    await this.deployLayer1ContractWithTypeId(code_hex, private_key);
+    const code_hash = await this.getSudtContractCodeHex();
+    let that = this;
+    const callback = async (outpoint: OutPoint, script_hash: HexString) => {
+      await that.genSudtConfig(outpoint, script_hash);
+    }
+    await this.deployLayer1ContractWithTypeId(code_hash, private_key, callback);
     return;
+  }
+
+  async checkIfScriptCellExist(script_cell_outpoint: OutPoint, ckb_rpc_url: string){
+    // check if script cell exist and is alive
+    const rpc = new RPC(ckb_rpc_url);
+    const result = await rpc.get_transaction(script_cell_outpoint.tx_hash);
+    if(!result){
+      console.log(`cell transaction not found: ${result}, script not exist.`);
+      return false;
+    }
+
+    const cell = result.transaction.outputs[parseInt(script_cell_outpoint.index, 16)];
+    if(!cell){
+      console.log(`script cell not found: ${cell}, script not exist.`);
+      return false;
+    }
+    
+    return true;
+  }
+
+  // split cells evenly
+  async sendSplitCells(total_capacity: bigint, total_pieces: number, private_key: string){
+    var txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager }); 
+    const ckb_address = privateKeyToCkbAddress(private_key);
+    const lock: Script = parseAddress(ckb_address); 
+
+    const capacity_per_cell = total_capacity / BigInt(total_pieces);
+    let outputCell: Cell = {
+      cell_output: {
+        capacity: `0x${capacity_per_cell.toString(16)}`,
+        lock: lock,
+      },
+      data: "0x",
+    };
+    let outputCells: Cell[] = [];
+    for(let i=0;i<total_pieces;i++){
+      outputCells.push(outputCell); 
+    }
+    try {
+      txSkeleton = await common.injectCapacity(
+        txSkeleton,
+        [ckb_address],
+        capacity_per_cell * BigInt(total_pieces)
+      );
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push(...outputCells);
+    });
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [ckb_address],
+      BigInt(1000)
+    );
+
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, private_key);
+
+    const tx = sealTransaction(txSkeleton, [content]);
+    const tx_hash: Hash = await this.transactionManager.send_transaction(tx);
+    console.log(`transaction ${tx_hash} is now sent...`);
+    return tx_hash;
+  }
+  
+  async sendScriptDeployTransaction(
+    contract_code_hex: HexString,
+    private_key: string,
+  ): Promise<ScriptDeploymentTransactionInfo>{
+    var txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager }); 
+    const ckb_address = privateKeyToCkbAddress(private_key);
+    const lock: Script = parseAddress(ckb_address);
+    
+    // "TYPE_ID" in hex
+    // pub const TYPE_ID_CODE_HASH: H256 = h256!("0x545950455f4944");
+    const type: Script = {
+      code_hash: "0x00000000000000000000000000000000000000000000000000545950455f4944",
+      hash_type: "type",
+      args: '0x' + "0".repeat(64) // inputcell+index
+    }
+
+    var outputCell: Cell = {
+      cell_output: {
+        capacity: "0x000000000001",
+        lock: lock,
+        type: type
+      },
+      data: contract_code_hex,
+    };
+
+    let capacity: bigint;
+    try {
+      capacity = minimalCellCapacity(outputCell, {validate:false});
+      console.log('capacity needed: ', capacity);
+      outputCell.cell_output.capacity = '0x' + capacity.toString(16);
+    } catch (error) {
+      console.log(JSON.stringify(error));
+      throw new Error(JSON.stringify(error, null, 2));
+    }
+
+    try {
+      txSkeleton = await common.injectCapacity(
+        txSkeleton,
+        [ckb_address],
+        capacity
+      );
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+
+    if(!txSkeleton.inputs.first())
+      throw new Error("txSkeleton.inputs.first() is undefined.");
+
+    const first_input_cell: Cell = txSkeleton.inputs.first();
+
+    const first_cell_input = {
+      "since": "0x0",
+      "previous_output": first_input_cell.out_point! 
+    }
+
+    const type_id_args_hex = this.generateTypeIDArgsHash(first_cell_input, 1); 
+    
+    outputCell.cell_output.type!.args = type_id_args_hex;
+
+    const real_type = outputCell.cell_output.type!;
+
+    const contract_script_hash = utils.computeScriptHash(real_type);
+
+    console.log(`contract_script_hash: ${contract_script_hash}`);
+
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push(outputCell);
+    });
+
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [ckb_address],
+      BigInt(1000)
+    );
+
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, private_key);
+
+    const tx = sealTransaction(txSkeleton, [content]);
+    const tx_hash: Hash = await this.transactionManager.send_transaction(tx);
+    console.log(`transaction ${tx_hash} is now sent...`);
+    const outpoint: OutPoint = {
+      tx_hash: tx_hash,
+      index: "0x1", 
+    }
+    return { outpoint, script_hash: contract_script_hash };
   }
 
   async deployLayer1ContractWithTypeId(
     contract_code_hex: HexString,
     private_key: string,
+    callback?: (outpoint: OutPoint, script_hash: HexString) => any
   ){
-    
+    callback = callback || function(_outpoint: OutPoint, _script_hash: HexString){};
+
     var txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager }); 
     const ckb_address = privateKeyToCkbAddress(private_key);
     const lock: Script = parseAddress(ckb_address);
@@ -1278,8 +1442,6 @@ export class Api {
       throw new Error(error);
     }
 
-    console.log('inject success!');
-    
     if(!txSkeleton.inputs.first())
       throw new Error("txSkeleton.inputs.first() is undefined.");
 
@@ -1290,21 +1452,15 @@ export class Api {
       "previous_output": first_input_cell.out_point! 
     }
 
-    console.log(first_cell_input);
-
     const type_id_args_hex = this.generateTypeIDArgsHash(first_cell_input, 1); 
     
-    console.log('type_id_args_hex:', type_id_args_hex);
-
     outputCell.cell_output.type!.args = type_id_args_hex;
 
     const real_type = outputCell.cell_output.type!;
 
-    console.log(real_type, lock);
-    
-    const sudt_code_hash = utils.computeScriptHash(real_type);
+    const contract_script_hash = utils.computeScriptHash(real_type);
 
-    console.log(`sudt_code_hash: ${sudt_code_hash}`);
+    console.log(`contract_script_hash: ${contract_script_hash}`);
 
     txSkeleton = txSkeleton.update("outputs", (outputs) => {
       return outputs.push(outputCell);
@@ -1323,20 +1479,21 @@ export class Api {
 
     const tx = sealTransaction(txSkeleton, [content]);
 
-    console.log(JSON.stringify(tx, null, 2));
+    // console.log(JSON.stringify(tx, null, 2));
     
     try {
       const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
-      console.log(`txHash ${txHash} is now sent...`);
+      console.log(`transaction ${txHash} is now sent...`);
       const tx_with_status = await this.waitForCkbTx(txHash);
-      console.log(JSON.stringify(tx_with_status, null, 2));
+      console.log(`${txHash} status: ${tx_with_status.tx_status}`);
 
       const outpoint: OutPoint = {
         tx_hash: txHash,
         index: '0x1'
       }
 
-      await this.genSudtConfig(outpoint, sudt_code_hash);
+      callback(outpoint, contract_script_hash);
+      return {outpoint, script_hash: contract_script_hash};
     } catch (error) {
       console.log(error);
       throw new Error(error);
@@ -1377,8 +1534,8 @@ export class Api {
     lumos_config.SCRIPTS.SUDT = sudt;
     await fs.writeFileSync(file_path, JSON.stringify(lumos_config, null, 2));
     console.log('lumos-config.json has been updated!');
-    console.log('re-init lumos...');
-    await this.reinit_lumos();
+    // console.log('re-init lumos...');
+    // await this.reinit_lumos();
   }
 
   async reinit_lumos(){
