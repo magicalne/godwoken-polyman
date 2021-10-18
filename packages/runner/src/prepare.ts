@@ -133,20 +133,20 @@ app.get('/gen_config', async function (req, res) {
   }
 });
 
-app.get('/get_lumos_config', function(req, res){
+app.get('/get_lumos_config', async function(req, res){
   try {;
-    const config = api.getLumosConfigFile();
+    const config = await api.getLumosConfigFile();
     res.send({status: 'ok', data: config }); 
   } catch (error) {
     res.send({status: 'failed', error: error}); 
   }
 });
 
-app.get('/get_lumos_script_info', function(req, res){
+app.get('/get_lumos_script_info', async function(req, res){
   try {
     const script_name: string = req.query.script_name + '';
     const key = req.query.key + '';
-    const config = api.getLumosConfigFile();
+    const config = await api.getLumosConfigFile();
     res.send({status: 'ok', data: config.SCRIPTS[script_name][key] }); 
   } catch (error) {
     res.send({status: 'failed', error: error}); 
