@@ -153,29 +153,44 @@ app.get('/get_lumos_script_info', function(req, res){
   }
 });
 
+app.get('/spilt_miner_cells', async function(req, res){
+  try {
+    const total_capacity: bigint = BigInt(req.query.total_capacity + '');
+    const total_pieces = parseInt(req.query.total_pieces + '');
+    const tx_hash = await api.sendSplitCells(total_capacity, total_pieces, miner_private_key);
+    res.send({status:'ok', data: tx_hash});
+  } catch (error) {
+    res.send({status: 'failed', error: error}); 
+  }
+});
+
 app.get('/deploy_godwoken_scripts', async function(req, res){
+  const totalProgressDuration = 63;
   try {
     const scripts_deploy_file_path: string = req.query.scripts_file_path + '';
     const scripts_deploy_result_file_path: string = req.query.deploy_result_file_path + '';
     let scripts_paths = await getDeployScriptsPaths(scripts_deploy_file_path);
     
     let script_names = Object.keys(scripts_paths);
-    const total_scripts_number = script_names.length;
+    let total_scripts_number = script_names.length;
     
     let deploy_counter = 0;
-    console.log("deploy godwoken scripts now.");
-    const statist_time_label = `total-deploy-time-for-${total_scripts_number}-godwoken-scripts`;
+    console.log("start deploying godwoken scripts now.");
+    const statist_time_label = `total-deploy-time-for-godwoken-scripts`;
     console.time(statist_time_label);
     
     // load deployment history file
     const history = await loadJsonFile(scripts_deployed_history_path);
+    let already_deployed_scripts: string[] = [];
 
     let retry = 0;
     const run_deploy_script = async (script_name: string, script_path: string, result_collector: Map<string, ScriptDeploymentTransactionInfo>, maxRetryLimit: number = 5, intervals=5000) => {
       try {
         retry++;
         if(history && script_name in history && await api.checkIfScriptCellExist((history[script_name] as ScriptDeploymentTransactionInfo).outpoint, ckb_rpc_url)){
-          console.log(`script ${script_name} already deployed and is saved in history, skip.`);
+          console.log(`script "${script_name}" already deployed and is saved in history, skip.`);
+          already_deployed_scripts.push(script_name);
+          total_scripts_number--;
           return result_collector.set(script_name, history[script_name] as ScriptDeploymentTransactionInfo); 
         }
         
@@ -206,17 +221,28 @@ app.get('/deploy_godwoken_scripts', async function(req, res){
 
     let scripts_history = {};
     for(const [script_name, deployment] of script_deployment_tx_info){
-      await api.waitForCkbTx(deployment.outpoint.tx_hash);
+      if(!already_deployed_scripts.includes(script_name)){
+        await api.waitForCkbTx(deployment.outpoint.tx_hash);
+        deploy_counter++;
+        console.log(`successful deployed script: ${script_name}, total_progress: ${deploy_counter}/${total_scripts_number}, percentage: ${ 6 + Math.ceil(deploy_counter * totalProgressDuration / total_scripts_number) }, `);
+      }
+
       const history: ScriptDeploymentTransactionInfo = {
         outpoint: deployment.outpoint,
         script_hash: deployment.script_hash
       };
       scripts_history[script_name] = history;
-      deploy_counter ++;
     }
     // save history of successful deployment scripts.
+    console.log("finish deploying godwoken scripts now.");
     saveJsonFile(scripts_history, scripts_deployed_history_path);
     console.timeEnd(statist_time_label);
+
+    if(deploy_counter === 0 && total_scripts_number === 0){
+      const result = {status: 'ok', data: `all godwoken scripts are already deployed. skip~`};
+      console.log(result);
+      return res.send(result); 
+    }
 
     if(deploy_counter === total_scripts_number){
       // save the scripts_deploy_result file
@@ -231,15 +257,14 @@ app.get('/deploy_godwoken_scripts', async function(req, res){
         return result;
       }, {});
       const isDeployResultFileGenerated = await saveJsonFile(deploy_result, scripts_deploy_result_file_path);
-
-      const result = {status: 'ok', data: `success deployed ${total_scripts_number} godwoken scripts. generateDeployResultFile: ${isDeployResultFileGenerated}. finished~`};
+      const result = {status: 'ok', data: `${total_scripts_number} scripts deployed. generate deploy Result File: ${isDeployResultFileGenerated}. finished~`};
       console.log(result);
-      res.send(result);
-    }else{
-      const result = {status:'failed', data: `we are only able to deployed ${deploy_counter} scripts, required total: ${total_scripts_number}.`};
-      console.log(result);
-      res.send(result);
+      return res.send(result);
     }
+
+    const result = {status:'failed', data: `only able to deployed ${deploy_counter} scripts, required total: ${total_scripts_number}. try again to deploy the rest.`};
+    console.log(result);
+    res.send(result);
   } catch (error) {
     res.send({status: 'failed', error: error.message});
   }

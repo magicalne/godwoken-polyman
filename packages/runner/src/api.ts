@@ -1253,6 +1253,54 @@ export class Api {
     
     return true;
   }
+
+  // split cells evenly
+  async sendSplitCells(total_capacity: bigint, total_pieces: number, private_key: string){
+    var txSkeleton = TransactionSkeleton({ cellProvider: this.transactionManager }); 
+    const ckb_address = privateKeyToCkbAddress(private_key);
+    const lock: Script = parseAddress(ckb_address); 
+
+    const capacity_per_cell = total_capacity / BigInt(total_pieces);
+    let outputCell: Cell = {
+      cell_output: {
+        capacity: `0x${capacity_per_cell.toString(16)}`,
+        lock: lock,
+      },
+      data: "0x",
+    };
+    let outputCells: Cell[] = [];
+    for(let i=0;i<total_pieces;i++){
+      outputCells.push(outputCell); 
+    }
+    try {
+      txSkeleton = await common.injectCapacity(
+        txSkeleton,
+        [ckb_address],
+        capacity_per_cell * BigInt(total_pieces)
+      );
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push(...outputCells);
+    });
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [ckb_address],
+      BigInt(1000)
+    );
+
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, private_key);
+
+    const tx = sealTransaction(txSkeleton, [content]);
+    const tx_hash: Hash = await this.transactionManager.send_transaction(tx);
+    console.log(`transaction ${tx_hash} is now sent...`);
+    return tx_hash;
+  }
   
   async sendScriptDeployTransaction(
     contract_code_hex: HexString,
@@ -1279,7 +1327,7 @@ export class Api {
       data: contract_code_hex,
     };
 
-    var capacity;
+    let capacity: bigint;
     try {
       capacity = minimalCellCapacity(outputCell, {validate:false});
       console.log('capacity needed: ', capacity);

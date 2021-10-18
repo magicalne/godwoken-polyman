@@ -26,7 +26,6 @@ import fs from 'fs';
 import path from 'path';
 import { getRollupTypeHash } from "../js/transactions/deposit";
 import { GodwokenScriptsPath } from "./types";
-import { OutPoint } from "@ckb-lumos/base/lib/core";
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));
@@ -335,3 +334,4 @@ export async function getDeployScriptsPaths(_file_path: string) {
     throw new Error(`failed to read and parse scripts file,` + error.message);
   }
 }
+
