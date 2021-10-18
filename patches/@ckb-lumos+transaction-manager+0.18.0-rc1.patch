@@ -1,0 +1,13 @@
+diff --git a/node_modules/@ckb-lumos/transaction-manager/lib/index.js b/node_modules/@ckb-lumos/transaction-manager/lib/index.js
+index 19338ac..966fd01 100644
+--- a/node_modules/@ckb-lumos/transaction-manager/lib/index.js
++++ b/node_modules/@ckb-lumos/transaction-manager/lib/index.js
+@@ -116,7 +116,7 @@ class TransactionManager {
+         );
+       }
+     });
+-    const txHash = await this.rpc.send_transaction(tx);
++    const txHash = await this.rpc.send_transaction(tx, "passthrough");
+     tx.hash = txHash;
+     this.transactions = this.transactions.add(
+       new values.TransactionValue(tx, { validate: false })
