@@ -1567,7 +1567,11 @@ export class Api {
     return '0x' + complied_code.toString('hex');
   }
 
-  getLumosConfigFile(){
-    return getConfig();
+  async getLumosConfigFile(){
+    const file_path = path.resolve(__dirname, '../configs/lumos-config.json');
+    const data = await fs.readFileSync(file_path);
+    const data_json = JSON.parse(data.toString("utf-8"));
+    return data_json;
+    //return getConfig();
   }
 }
