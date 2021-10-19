@@ -121,7 +121,7 @@ export class Api {
       typeof accountID === "string" &&
       accountID.startsWith("0x")
     ) {
-      console.log("find creator account_id =>", accountID);
+      console.log(`getAccountIdByScriptHash => ${accountID}`);
       return parseInt(accountID, 16);
     } else {
       return null;
@@ -274,8 +274,6 @@ export class Api {
 
     const tx = sealTransaction(txSkeleton, [content]);
 
-    console.log(JSON.stringify(tx, null, 2));
-
     const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
 
     return txHash;
@@ -422,8 +420,6 @@ export class Api {
     while (true) {
       await asyncSleep(1000);
       const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
-      //console.log('---------------------')
-      //console.log(JSON.stringify(txWithStatus, null, 2));
       if (txWithStatus === null) {
         throw new Error(
           `the tx ${txHash} is disapeared from ckb, please re-try.`
@@ -441,7 +437,6 @@ export class Api {
           txWithStatus.tx_status.block_hash
         );
         break;
-        //console.log(JSON.stringify(txWithStatus, null, 2));
       }
     }
     console.log(`tx ${txHash} is now onChain!`);
@@ -1152,8 +1147,6 @@ export class Api {
     while (true) {
       await asyncSleep(1000);
       const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
-      //console.log('---------------------')
-      //console.log(JSON.stringify(txWithStatus, null, 2));
       if (txWithStatus === null) {
         throw new Error(`the tx is disapeared from ckb, please re-try.`);
       }
@@ -1461,8 +1454,6 @@ export class Api {
     const content: HexString = key.signRecoverable(message, private_key);
 
     const tx = sealTransaction(txSkeleton, [content]);
-
-    // console.log(JSON.stringify(tx, null, 2));
 
     try {
       const txHash: Hash = await this.ckb_rpc.send_transaction(
