@@ -32,7 +32,6 @@ import {
   sealTransaction,
   generateAddress,
   minimalCellCapacity,
-  createTransactionFromSkeleton,
   TransactionSkeletonType,
 } from "@ckb-lumos/helpers";
 import {
@@ -299,10 +298,6 @@ export class Api {
       ownerLockHash,
       layer2LockArgs
     );
-    const l2_lock_script_hash = utils.computeScriptHash(
-      depositLockArgs.layer2_lock
-    );
-    console.log(`Layer 2 lock script hash: ${l2_lock_script_hash}`);
     const serializedArgs: HexString = serializeArgs(depositLockArgs);
     const depositLock: Script = generateDepositLock(
       deploymentConfig,
@@ -321,12 +316,9 @@ export class Api {
       capacity
     );
 
-    console.log(txSkeleton.get("outputs").get(0)!.cell_output.type!);
-
     const sudtScriptHash = utils.computeScriptHash(
       txSkeleton.get("outputs").get(0)!.cell_output.type!
     );
-    console.log(`Layer 1 sudt script hash:`, sudtScriptHash);
 
     const scriptHash = await this.godwoken.getScriptHash(1);
     const script = await this.godwoken.getScript(scriptHash);
@@ -335,29 +327,12 @@ export class Api {
       hash_type: script.hash_type,
       args: getRollupTypeHash() + sudtScriptHash.slice(2),
     };
-    console.log("layer 2 sudt script:", layer2SudtScript);
-    console.log(
-      `Layer 2 sudt script hash:`,
-      utils.computeScriptHash(layer2SudtScript)
-    );
-
-    // if(txSkeleton.get("outputs").get(1)){
-    //   txSkeleton.get("outputs").get(1).cell_output.type = null;
-    //   txSkeleton.get("outputs").get(1).data = '0x';
-    // }
-
-    console.log(
-      JSON.stringify(createTransactionFromSkeleton(txSkeleton), null, 2)
-    );
-
-    console.log("ready to pay fee..");
 
     txSkeleton = await common.payFeeByFeeRate(
       txSkeleton,
       [fromAddress],
       BigInt(1000)
     );
-    console.log("pay fee..");
 
     txSkeleton = common.prepareSigningEntries(txSkeleton);
 
@@ -365,8 +340,6 @@ export class Api {
     const content: HexString = key.signRecoverable(message, privateKey);
 
     const tx = sealTransaction(txSkeleton, [content]);
-
-    console.log(JSON.stringify(tx, null, 2));
 
     const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
 
@@ -422,7 +395,7 @@ export class Api {
       const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
       if (txWithStatus === null) {
         throw new Error(
-          `the tx ${txHash} is disapeared from ckb, please re-try.`
+          `the tx ${txHash} is disappeared from ckb, please re-try.`
         );
       }
 
@@ -808,7 +781,7 @@ export class Api {
     while (true) {
       await asyncSleep(1000);
       const new_account_id = await this.getAccountIdByScriptHash(script_hash);
-      console.log(`account_id: ${new_account_id}`);
+      console.log(`try fetching account_id: ${new_account_id}`);
 
       if (new_account_id) {
         break;
@@ -1019,10 +992,8 @@ export class Api {
       sudt_id_hex_str.slice(2).length === 1
         ? "0" + sudt_id_hex_str.slice(2)
         : sudt_id_hex_str.slice(2);
-    console.log(`sudt_id_pack: ${pack_sudt_id}`);
     let args = `000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000204fce5e3e25026110000000000000000000000000000000000000000000000000000000000000000000000${pack_sudt_id}0000000000000000000000000000000000000000000000000000000000000004746573740000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000027474000000000000000000000000000000000000000000000000000000000000`;
     let contract_code_with_constructor = init_code.trimEnd().concat(args);
-    console.log(`erc20_proxy code: ${contract_code_with_constructor}`);
     return this.generateDeployTx(
       creator_account_id_str,
       contract_code_with_constructor,
