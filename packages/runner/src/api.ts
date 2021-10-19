@@ -1040,7 +1040,7 @@ export class Api {
 
   async generateErc20ProxyContractCode(
     sudt_id_hex_str: string,
-    init_code: string,
+    init_code: string
   ) {
     if (sudt_id_hex_str.slice(2).length > 2)
       throw new Error(
@@ -1185,11 +1185,7 @@ export class Api {
       cellProvider: this.transactionManager,
     });
     try {
-      await common.injectCapacity(
-        txSkeleton,
-        [ckb_address],
-        amount
-      );
+      await common.injectCapacity(txSkeleton, [ckb_address], amount);
       return true;
     } catch (error) {
       return false;

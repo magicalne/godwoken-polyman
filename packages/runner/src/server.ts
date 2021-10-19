@@ -306,7 +306,7 @@ const setUpRouters = (
 
       const data = await api.generateErc20ProxyContractCode(
         sudt_id + "",
-        contract_code,
+        contract_code
       );
       res.send({ status: "ok", data: data });
     } catch (error) {
