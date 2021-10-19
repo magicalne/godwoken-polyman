@@ -1,24 +1,12 @@
-import { readFileSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
-import { argv, exit } from "process";
-
 import { normalizers, Reader } from "ckb-js-toolkit";
-import { Command } from "commander";
 import { core as base_core, Script, utils } from "@ckb-lumos/base";
 import { scriptToAddress } from "@ckb-lumos/helpers";
-import { getConfig, initializeConfig } from "@ckb-lumos/config-manager";
+import { getConfig } from "@ckb-lumos/config-manager";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import { getRollupTypeHash } from "../js/transactions/deposit";
 import {
-  Godwoken,
   GodwokenUtils,
-  L2Transaction,
   RawL2Transaction,
-  RawWithdrawalRequest,
-  WithdrawalRequest,
-  CreateAccount,
-  UInt32LEToNumber,
-  u32ToHex,
   toBuffer,
 } from "@godwoken-polyman/godwoken";
 import * as secp256k1 from "secp256k1";
@@ -91,7 +79,6 @@ export function _generateTransactionMessageToSign(
   receiver_script_hash: string,
   add_prefix?: boolean
 ) {
-  //console.log("RawL2Transaction", raw_l2tx);
   const godwoken_utils = new GodwokenUtils(rollup_type_hash);
   return godwoken_utils.generateTransactionMessageToSign(
     raw_l2tx,

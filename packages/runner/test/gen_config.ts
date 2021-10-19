@@ -1,3 +1,6 @@
 import { generateGodwokenConfig } from "../src/util";
 
-generateGodwokenConfig('../configs/config.toml', '../configs/godwoken-config.json');
+generateGodwokenConfig(
+  "../configs/config.toml",
+  "../configs/godwoken-config.json"
+);

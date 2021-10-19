@@ -5,26 +5,11 @@ import {
   accountScriptHash,
 } from "./common";
 import {
-  core,
-  toBuffer,
   Godwoken,
-  GodwokenUtils,
   L2Transaction,
   RawL2Transaction,
-  RawWithdrawalRequest,
-  WithdrawalRequest,
-  CreateAccount,
-  UInt32LEToNumber,
   numberToUInt32LE,
-  u32ToHex,
-  RunResult,
-  normalizer,
 } from "@godwoken-polyman/godwoken";
-const NormalizeSUDTQuery = normalizer.NormalizeSUDTQuery;
-const NormalizeSUDTTransfer = normalizer.NormalizeSUDTTransfer;
-//const SUDTQuery = normalizer.SUDTQuery;
-//const SUDTTransfer = normalizer.SUDTTransfer;
-//const UnoinType = normalizer.UnoinType;
 import { Polyjuice } from "@godwoken-polyman/polyjuice";
 
 import {
@@ -36,8 +21,6 @@ import {
   core as ckb_core,
   OutPoint,
   TransactionWithStatus,
-  HexNumber,
-  Output,
 } from "@ckb-lumos/base";
 import { DeploymentConfig } from "../js/base/index";
 import { Indexer, CellCollector } from "@ckb-lumos/indexer";
@@ -50,7 +33,6 @@ import {
   generateAddress,
   minimalCellCapacity,
   createTransactionFromSkeleton,
-  TransactionSkeletonInterface,
   TransactionSkeletonType,
 } from "@ckb-lumos/helpers";
 import {
@@ -62,7 +44,7 @@ import {
   getL2SudtScriptHash,
 } from "../js/transactions/deposit";
 import { common, sudt } from "@ckb-lumos/common-scripts";
-import { RPC, Reader, normalizers as ckb_normalizers } from "ckb-js-toolkit";
+import { RPC, normalizers as ckb_normalizers } from "ckb-js-toolkit";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import path from "path";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
@@ -80,7 +62,6 @@ import {
   deepCompare,
   DeepDiffMapper,
 } from "./util";
-import { TxReceipt } from "@godwoken-polyman/godwoken/schemas/store";
 import { ScriptDeploymentTransactionInfo } from "./types";
 
 export class Api {
@@ -163,7 +144,7 @@ export class Api {
 
     initializeConfig();
 
-    var indexerPath;
+    let indexerPath;
     if (reinit === true) {
       indexerPath = path.resolve(this.indexer_path + `_${Date.now()}`);
     } else {
@@ -720,7 +701,7 @@ export class Api {
       type: type_script,
     });
 
-    var capacity = 0n;
+    let capacity = 0n;
 
     for await (const cell of cellCollector.collect()) {
       const c = BigInt(
@@ -801,7 +782,7 @@ export class Api {
 
   // Wait for tx to land on chain.
   async waitForCkbTx(tx_hash: string) {
-    var finalized_tx: TransactionWithStatus;
+    let finalized_tx: TransactionWithStatus;
     while (true) {
       await asyncSleep(1000);
       const txWithStatus = await this.ckb_rpc!.get_transaction(tx_hash);
@@ -988,61 +969,6 @@ export class Api {
     return await this.godwoken.getTransactionReceipt(tx_hash);
   }
 
-  /*
-  async generateTransferTx(
-    sudt_id_str: string,
-    to_id_str: string,
-    amount_str: string,
-    fee_str: string,
-    rollup_type_hash: string,
-    eth_address: string,
-  ) {
-    const script_hash = caculateLayer2LockScriptHash(eth_address);
-    const fromId = await this.getAccountIdByScriptHash(script_hash);
-    if (!fromId) {
-      console.log("Can not find account id by script_hash:", script_hash);
-      throw new Error(`Can not find account id by script_hash: ${script_hash}`);
-    }
-    const sudtId = parseInt(sudt_id_str);
-    const toId = parseInt(to_id_str);
-    // TODO: should use big integer
-    const amount = parseInt(amount_str);
-    // TODO: should use big integer
-    const fee = parseInt(fee_str);
-    const nonce = await this.godwoken.getNonce(fromId);
-
-    const sudtTransfer: SUDTTransfer = {
-      to: "0x" + toId.toString(16),
-      amount: "0x" + amount.toString(16),
-      fee: "0x" + fee.toString(16),
-    };
-
-    const sudtArgs: UnoinType = {
-      type: "SUDTTransfer",
-      value: NormalizeSUDTTransfer(sudtTransfer),
-    };
-
-    const serializedSudtArgs = new Reader(
-      core.SerializeSUDTArgs(sudtArgs)
-    ).serializeJson();
-
-    console.log("serialized sudt args:", sudtArgs);
-
-    const raw_l2tx: RawL2Transaction = {
-      from_id: "0x" + fromId.toString(16),
-      to_id: "0x" + sudtId.toString(16),
-      nonce: "0x" + nonce.toString(16),
-      args: serializedSudtArgs,
-    };
-
-    const message = _generateTransactionMessageToSign(
-      raw_l2tx,
-      rollup_type_hash
-    );
-    return {type: 'transfer', raw_l2tx: raw_l2tx, message: message, l2_script_args: eth_address};
-  }
-  */
-
   async generateCreateCreatorAccountTx(
     from_id_str: string,
     sudt_id_str: string,
@@ -1114,10 +1040,7 @@ export class Api {
 
   async generateErc20ProxyContractCode(
     sudt_id_hex_str: string,
-    creator_account_id_str: string,
     init_code: string,
-    rollup_type_hash: string,
-    eth_address: string
   ) {
     if (sudt_id_hex_str.slice(2).length > 2)
       throw new Error(
@@ -1167,31 +1090,10 @@ export class Api {
       getRollupTypeHash()
     );
     console.log(`layer2 tx: ${JSON.stringify(raw_l2tx)}`);
-
-    //const add_prefix_in_message = false; //metamask will add prefix.
-    //const message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash, add_prefix_in_message);
-    //const prefixd_message = await this.generateLayer2TransactionMessageToSign(raw_l2tx, rollup_type_hash);
-    //console.log(`prefixd_message: ${prefixd_message}`);
-    //console.log(`un_prefix_message: ${message}`);
-
-    // const message = calcMessage({
-    //   nonce: '0x' + nonce.toString(16),
-    //   gasPrice: '0x' + 50n.toString(16),
-    //   gasLimit: '0x' + 1000011221000n.toString(16),
-    //   to: '0x',
-    //   value: '0x' + 0n.toString(16),
-    //   data: init_code,
-    //   v: '0x3',
-    //   r: '0x',
-    //   s: '0x',
-    // });
-    const message = null;
-    console.log(`message: ${message}`);
-
     return {
       type: "deploy",
       raw_l2tx: raw_l2tx,
-      message: message,
+      message: null,
       l2_script_args: eth_address,
     };
   }
@@ -1272,7 +1174,7 @@ export class Api {
     console.log(`tx ${txHash} is now onChain!`);
   }
 
-  // check if an address's balance meets the requirment.
+  // check if an address's balance meets the requirement.
   async checkCkbBalance(ckb_address: string, amount: bigint) {
     if (!this.indexer) throw new Error(`this.indexer not found.`);
     if (!this.transactionManager)
@@ -1283,29 +1185,12 @@ export class Api {
       cellProvider: this.transactionManager,
     });
     try {
-      txSkeleton = await common.injectCapacity(
+      await common.injectCapacity(
         txSkeleton,
         [ckb_address],
         amount
       );
       return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  // check if sudt contract already deployed in ckb layer1
-  async isLayer1SudtScriptExits() {
-    if (!this.indexer) throw new Error(`this.indexer not found.`);
-    if (!this.transactionManager)
-      throw new Error(`this.transactionManager not found.`);
-
-    await this.syncToTip();
-    let txSkeleton = TransactionSkeleton({
-      cellProvider: this.transactionManager,
-    });
-    try {
-      // todo: maybe it is not able to check?
     } catch (error) {
       return false;
     }
@@ -1349,7 +1234,7 @@ export class Api {
     total_pieces: number,
     private_key: string
   ) {
-    var txSkeleton = TransactionSkeleton({
+    let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
     const ckb_address = privateKeyToCkbAddress(private_key);
@@ -1401,7 +1286,7 @@ export class Api {
     contract_code_hex: HexString,
     private_key: string
   ): Promise<ScriptDeploymentTransactionInfo> {
-    var txSkeleton = TransactionSkeleton({
+    let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
     const ckb_address = privateKeyToCkbAddress(private_key);
@@ -1416,7 +1301,7 @@ export class Api {
       args: "0x" + "0".repeat(64), // inputcell+index
     };
 
-    var outputCell: Cell = {
+    let outputCell: Cell = {
       cell_output: {
         capacity: "0x000000000001",
         lock: lock,
@@ -1499,7 +1384,7 @@ export class Api {
     callback =
       callback || function (_outpoint: OutPoint, _script_hash: HexString) {};
 
-    var txSkeleton = TransactionSkeleton({
+    let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
     const ckb_address = privateKeyToCkbAddress(private_key);
@@ -1514,7 +1399,7 @@ export class Api {
       args: "0x" + "0".repeat(64), // inputcell+index
     };
 
-    var outputCell: Cell = {
+    let outputCell: Cell = {
       cell_output: {
         capacity: "0x000000000001",
         lock: lock,
@@ -1523,7 +1408,7 @@ export class Api {
       data: contract_code_hex,
     };
 
-    var capacity;
+    let capacity;
     try {
       capacity = minimalCellCapacity(outputCell, { validate: false });
       console.log("capacity needed: ", capacity);
@@ -1609,7 +1494,7 @@ export class Api {
     first_cell_input: any,
     first_output_index: number
   ): HexString {
-    var first_input_molecule;
+    let first_input_molecule;
     try {
       first_input_molecule = ckb_core.SerializeCellInput(
         ckb_normalizers.NormalizeCellInput(first_cell_input)
@@ -1636,7 +1521,7 @@ export class Api {
     };
     const file_path = path.join(__dirname, "../configs/lumos-config.json");
     const file = await fs.readFileSync(file_path);
-    var lumos_config = JSON.parse(file.toString("utf-8"));
+    let lumos_config = JSON.parse(file.toString("utf-8"));
     lumos_config.SCRIPTS.SUDT = sudt;
     await fs.writeFileSync(file_path, JSON.stringify(lumos_config, null, 2));
     console.log("lumos-config.json has been updated!");

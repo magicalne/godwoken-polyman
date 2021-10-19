@@ -293,7 +293,6 @@ const setUpRouters = (
       );
       const contract_code =
         "0x" + (await fs.readFileSync(contract_file).toString("utf-8"));
-      const eth_address = req.body.data.eth_address + "";
       await api.syncToTip();
       // get sudt id
       const sudt_script_hash = api.getL2SudtScriptHash(user_private_key);
@@ -307,10 +306,7 @@ const setUpRouters = (
 
       const data = await api.generateErc20ProxyContractCode(
         sudt_id + "",
-        creator_account_id.toString(),
         contract_code,
-        rollup_type_hash,
-        eth_address
       );
       res.send({ status: "ok", data: data });
     } catch (error) {
@@ -462,7 +458,7 @@ export async function start() {
   // await generateGodwokenConfig('../configs/config.toml',
   //                              '../configs/godwoken-config.json');
 
-  var rollup_type_hash = getRollupTypeHash();
+  let rollup_type_hash = getRollupTypeHash();
 
   // start a polyjuice chain
   try {

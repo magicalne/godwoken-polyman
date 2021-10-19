@@ -1,18 +1,5 @@
 import { RPC } from "ckb-js-toolkit";
-import {
-  CellDep,
-  HexString,
-  HexNumber,
-  Hash,
-  Indexer,
-  Script,
-} from "@ckb-lumos/base";
-import {
-  generateDepositLock,
-  DepositLockArgs,
-  getDepositLockArgs,
-  serializeArgs,
-} from "../js/transactions/deposit";
+import { HexString, Hash, Indexer, Script } from "@ckb-lumos/base";
 import { deploymentConfig } from "../js/utils/deployment_config";
 import { normalizers } from "ckb-js-toolkit";
 import base from "@ckb-lumos/base";
@@ -133,7 +120,7 @@ export function toBigUInt64BE(num: number | bigint) {
 
 // todo: refactor this function to suit ts strict mode
 export function deepCompare(o: object, p: object) {
-  var i: number,
+  let i: number,
     keysO = Object.keys(o).sort(),
     keysP = Object.keys(p).sort();
   if (keysO.length !== keysP.length) return false; //not the same nr of keys
@@ -185,13 +172,13 @@ export class DeepDiffMapper {
       };
     }
 
-    var diff = {};
-    for (var key in obj1) {
+    let diff = {};
+    for (let key in obj1) {
       if (this.isFunction(obj1[key])) {
         continue;
       }
 
-      var value2 = undefined;
+      let value2 = undefined;
       if (obj2[key] !== undefined) {
         value2 = obj2[key];
       }
@@ -199,7 +186,7 @@ export class DeepDiffMapper {
       diff[key] = this.map(obj1[key], value2);
     }
 
-    for (var key in obj2) {
+    for (let key in obj2) {
       if (this.isFunction(obj2[key]) || diff[key] !== undefined) {
         continue;
       }
@@ -217,7 +204,7 @@ export class DeepDiffMapper {
         delete paths[paths.length - 1];
       }
       if (key === "type" && value !== "unchanged") {
-        var path_str = paths.join(".");
+        let path_str = paths.join(".");
         // remove the dead end branch path
         path_str = path_str.replace(/([A-Za-z0-9_]+\.(\.+))/g, "");
         // push the result into target
