@@ -60,7 +60,6 @@ export function getRollupTypeHash(): HexString {
   const rollupTypeScript: Script = godwokenConfig.chain
     .rollup_type_script as Script;
   const hash: HexString = utils.computeScriptHash(rollupTypeScript);
-  console.log("rollupTypeHash:", hash);
   return hash;
 }
 

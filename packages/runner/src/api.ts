@@ -443,7 +443,6 @@ export class Api {
 
     //get deposit account id
     const script_hash = calculateLayer2LockScriptHash(ethAddress);
-    console.log(`compute_scripthash: ${script_hash}`);
 
     // wait for confirm
     await this.waitForAccountIdOnChain(script_hash);
@@ -613,7 +612,6 @@ export class Api {
 
       //get deposit account id
       const script_hash = calculateLayer2LockScriptHash(ethAddress);
-      console.log(`compute_scripthash: ${script_hash}`);
 
       // wait for confirm
       await this.waitForAccountIdOnChain(script_hash);
