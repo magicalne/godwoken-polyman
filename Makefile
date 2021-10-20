@@ -19,5 +19,5 @@ test-jq:
 	docker run --rm ${IMAGE_NAME}:latest-test /bin/bash -c "jq -V"
 
 test-polyman:
-	docker run --rm -v `pwd`/godwoken-polyman:/app ${IMAGE_NAME}:latest-test /bin/bash -c "cp -r godwoken-polyman/node_modules app/node_modules"
-	cd godwoken-polyman && yarn check --verify-tree
+	docker run --rm -v `pwd`:/app ${IMAGE_NAME}:latest-test /bin/bash -c "cp -r godwoken-polyman/node_modules app/node_modules"
+	yarn check --verify-tree
