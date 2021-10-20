@@ -18,6 +18,21 @@ frontend:
 
 - ui: react project under client sub-packages
 
+Prebuild
+------
+
+local development:
+
+```sh
+make build-test-image # (latest tag)
+```
+
+push to docker:
+
+```sh
+make build-push # needs login, will ask you for tag
+```
+
 How to run
 ------
 

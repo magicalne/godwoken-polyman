@@ -1,23 +1,14 @@
-FROM nervos/godwoken-prebuilds:v0.2.0-rc2
+FROM node:14-bullseye
+MAINTAINER Retric Su <retric@cryptape.com>
 
-WORKDIR "/godwoken-polyman"
+COPY . /godwoken-polyman/.
+RUN cd /godwoken-polyman && yarn && yarn build:server
 
 RUN apt-get update \
  && apt-get dist-upgrade -y \
+ && apt-get install curl -y \
+ && apt-get install jq -y \
  && apt-get clean \
  && echo "Finished installing dependencies"
 
-COPY package*.json ./
-COPY packages/client/package*.json ./packages/client/
-COPY packages/godwoken/package*.json ./packages/godwoken/
-COPY packages/polyjuice/package*.json ./packages/polyjuice/
-COPY packages/runner/package*.json ./packages/runner/
-Run yarn install
-
-COPY . ./
-
-EXPOSE 6100
-EXPOSE 6100
-
-USER node
-CMD ["node", "version"]
+EXPOSE 3000 6100 6101 6102
