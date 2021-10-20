@@ -1,13 +1,14 @@
-import { getRollupTypeHash } from "../../js/transactions/deposit";
-import { deploymentConfig } from "../../js/utils/deployment_config";
-import { polymanConfig, filePaths } from "../base/config";
+import {
+  polymanConfig,
+  gwScriptsConfig,
+  filePaths,
+  rollupTypeHash,
+} from "../base/config";
 import { Api } from "../api";
 import path from "path";
-import { loadJsonFile } from "../util";
+import { loadJsonFile } from "../base/util";
 import fs from "fs";
 import { Service } from "./service";
-
-const rollup_type_hash = getRollupTypeHash();
 
 const service_name = "polyjuice";
 
@@ -21,11 +22,11 @@ export class main extends Service {
   }
 
   get_rollup_type_hash() {
-    return rollup_type_hash;
+    return rollupTypeHash;
   }
 
   get_eth_account_lock() {
-    return deploymentConfig.eth_account_lock;
+    return gwScriptsConfig.eth_account_lock;
   }
 
   async get_creator_id() {
@@ -118,7 +119,7 @@ export class main extends Service {
     return await api.generateCreateCreatorAccountTx(
       from_id,
       polymanConfig.default_quantity.sudt_id_str,
-      rollup_type_hash
+      rollupTypeHash
     );
   }
 
@@ -137,7 +138,7 @@ export class main extends Service {
     return await api.generateDeployTx(
       creator_account_id.toString(),
       contract_code,
-      rollup_type_hash,
+      rollupTypeHash,
       eth_address
     );
   }

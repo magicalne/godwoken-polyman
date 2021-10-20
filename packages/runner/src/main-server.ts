@@ -3,8 +3,12 @@ import path from "path";
 import express from "express";
 import cors from "cors";
 import timeout from "connect-timeout";
-import { polymanConfig, urls, indexerDbPath } from "./base/config";
-import { getRollupTypeHash } from "../js/transactions/deposit";
+import {
+  polymanConfig,
+  urls,
+  indexerDbPath,
+  rollupTypeHash,
+} from "./base/config";
 import { main as MainService } from "./services/main";
 import { setUpRouters } from "./base/httpServer";
 
@@ -51,11 +55,10 @@ export async function start() {
         polymanConfig.default_quantity.deposit_amount
       );
       console.log(`create deposit account.${from_id}`);
-      const rollup_type_hash = getRollupTypeHash();
       const creator_account_id = await api.createCreatorAccount(
         from_id,
         polymanConfig.default_quantity.sudt_id_str,
-        rollup_type_hash,
+        rollupTypeHash,
         polymanConfig.addresses.user_private_key
       );
       console.log(`create creator account =>`, creator_account_id);

@@ -1,9 +1,8 @@
 import { normalizers, Reader } from "ckb-js-toolkit";
-import { core as base_core, Script, utils } from "@ckb-lumos/base";
+import { core as base_core, core, Script, utils } from "@ckb-lumos/base";
 import { scriptToAddress } from "@ckb-lumos/helpers";
 import { getConfig } from "@ckb-lumos/config-manager";
-import { deploymentConfig } from "../js/utils/deployment_config";
-import { getRollupTypeHash } from "../js/transactions/deposit";
+import { gwScriptsConfig, rollupTypeHash } from "./config";
 import {
   GodwokenUtils,
   RawL2Transaction,
@@ -30,12 +29,12 @@ export function generateLockScript(privateKey: any) {
   return script;
 }
 
-export function ckbAddress(privateKey: any) {
+export function generateCkbAddress(privateKey: any) {
   const script = generateLockScript(privateKey);
   return scriptToAddress(script);
 }
 
-export function ethAddress(privkey: any) {
+export function generateEthAddress(privkey: any) {
   const privateKeyBuffer = new Reader(privkey).toArrayBuffer();
   const publicKeyArray = secp256k1.publicKeyCreate(
     new Uint8Array(privateKeyBuffer),
@@ -48,12 +47,28 @@ export function ethAddress(privkey: any) {
   return addr;
 }
 
+export function calculateLayer2LockScriptHash(layer2LockArgs: string) {
+  const script = {
+    code_hash: gwScriptsConfig.eth_account_lock.code_hash,
+    hash_type: gwScriptsConfig.eth_account_lock.hash_type,
+    args: rollupTypeHash + layer2LockArgs.slice(2),
+  };
+  return utils
+    .ckbHash(core.SerializeScript(normalizers.NormalizeScript(script)))
+    .serializeJson();
+}
+
+export function serializeScript(script: Script) {
+  return utils
+    .ckbHash(core.SerializeScript(normalizers.NormalizeScript(script)))
+    .serializeJson();
+}
+
 export function accountScriptHash(privkey: any) {
-  const rollup_type_hash = getRollupTypeHash();
   const script: Script = {
-    code_hash: deploymentConfig.eth_account_lock.code_hash,
-    hash_type: deploymentConfig.eth_account_lock.hash_type as "data" | "type",
-    args: rollup_type_hash + ethAddress(privkey).slice(2),
+    code_hash: gwScriptsConfig.eth_account_lock.code_hash,
+    hash_type: gwScriptsConfig.eth_account_lock.hash_type as "data" | "type",
+    args: rollupTypeHash + generateEthAddress(privkey).slice(2),
   };
   return utils
     .ckbHash(base_core.SerializeScript(normalizers.NormalizeScript(script)))
@@ -97,7 +112,7 @@ export function _createAccountRawL2Transaction(
   const script: Script = {
     code_hash: script_code_hash,
     hash_type: "type",
-    args: getRollupTypeHash() + script_args.slice(2),
+    args: rollupTypeHash + script_args.slice(2),
   };
   console.log(`creator args: ${JSON.stringify(script, null, 2)}`);
   return GodwokenUtils.createAccountRawL2Transaction(from_id, nonce, script);

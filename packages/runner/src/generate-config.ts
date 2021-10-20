@@ -1,4 +1,4 @@
-import { generateGodwokenConfig } from "./util";
+import { generateGodwokenConfig } from "./base/util";
 
 const run = async () => {
   // generate config file from config.toml

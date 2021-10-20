@@ -8,7 +8,7 @@ import {
   readScriptCodeHashFromFile,
   retry_execution,
   saveJsonFile,
-} from "../util";
+} from "../base/util";
 import { ScriptDeploymentTransactionInfo } from "../base/types/gw";
 import { execSync } from "child_process";
 import { Service } from "./service";

@@ -1,18 +1,9 @@
 import { RPC } from "ckb-js-toolkit";
-import { HexString, Hash, Indexer, Script } from "@ckb-lumos/base";
-import { deploymentConfig } from "../js/utils/deployment_config";
-import { normalizers } from "ckb-js-toolkit";
-import base from "@ckb-lumos/base";
-import { key } from "@ckb-lumos/hd";
-import crypto from "crypto";
-import keccak256 from "keccak256";
-import { getConfig } from "@ckb-lumos/config-manager";
-import { generateAddress } from "@ckb-lumos/helpers";
+import { HexString, Hash, Indexer } from "@ckb-lumos/base";
 import TOML from "@iarna/toml";
 import fs from "fs";
 import path from "path";
-import { getRollupTypeHash } from "../js/transactions/deposit";
-import { GodwokenScriptsPath } from "./base/types/gw";
+import { GodwokenScriptsPath } from "./types/gw";
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));
@@ -42,50 +33,6 @@ export async function waitForBlockSync(
   }
 }
 
-export function calculateLayer2LockScriptHash(layer2LockArgs: string) {
-  const rollup_type_hash = getRollupTypeHash();
-  const script = {
-    code_hash: deploymentConfig.eth_account_lock.code_hash,
-    hash_type: deploymentConfig.eth_account_lock.hash_type,
-    args: rollup_type_hash + layer2LockArgs.slice(2),
-  };
-  return base.utils
-    .ckbHash(base.core.SerializeScript(normalizers.NormalizeScript(script)))
-    .serializeJson();
-}
-
-export function serializeScript(script: Script) {
-  return base.utils
-    .ckbHash(base.core.SerializeScript(normalizers.NormalizeScript(script)))
-    .serializeJson();
-}
-
-export function privateKeyToCkbAddress(privateKey: HexString): string {
-  const publicKey = key.privateToPublic(privateKey);
-  const publicKeyHash = key.publicKeyToBlake160(publicKey);
-  const scriptConfig = getConfig().SCRIPTS.SECP256K1_BLAKE160!;
-  const script = {
-    code_hash: scriptConfig.CODE_HASH,
-    hash_type: scriptConfig.HASH_TYPE,
-    args: publicKeyHash,
-  };
-  const address = generateAddress(script);
-  return address;
-}
-
-export function privateKeyToEthAddress(privateKey: HexString) {
-  const ecdh = crypto.createECDH(`secp256k1`);
-  ecdh.generateKeys();
-  ecdh.setPrivateKey(Buffer.from(privateKey.slice(2), "hex"));
-  const publicKey: string = "0x" + ecdh.getPublicKey("hex", "uncompressed");
-  const ethAddress =
-    "0x" +
-    keccak256(Buffer.from(publicKey.slice(4), "hex"))
-      .slice(12)
-      .toString("hex");
-  return ethAddress;
-}
-
 export async function generateGodwokenConfig(
   _input_file: string,
   _output_file: string
@@ -96,6 +43,80 @@ export async function generateGodwokenConfig(
   const json_path = path.resolve(__dirname, _output_file);
   await fs.writeFileSync(json_path, JSON.stringify(toml_file_obj, null, 2));
   console.log(`create godwoken-config.json file in ${json_path}. done.`);
+}
+
+export async function saveJsonFile(jsonObj: Object, path: string) {
+  const data = JSON.stringify(jsonObj, null, 2);
+  try {
+    await fs.writeFileSync(path, data);
+    return true;
+  } catch (error) {
+    console.error(`can not save the json file, err: ${error.message}`);
+    return false;
+  }
+}
+
+export async function loadJsonFile(
+  path: string,
+  encoding?: BufferEncoding
+): Promise<Object | null> {
+  try {
+    const data = await fs.readFileSync(path);
+    if (encoding) {
+      const data_json = JSON.parse(data.toString(encoding));
+      return data_json;
+    }
+    const data_json = JSON.parse(data.toLocaleString());
+    return data_json;
+  } catch (error) {
+    console.error(`json file not exist, err: ${error.message}`);
+    return null;
+  }
+}
+
+export async function readScriptCodeHashFromFile(script_path: string) {
+  const contract_file = path.join(script_path);
+  const complied_code = await fs.readFileSync(contract_file);
+  return "0x" + complied_code.toString("hex");
+}
+
+export async function getDeployScriptsPaths(_file_path: string) {
+  const file_path = path.resolve(_file_path);
+  try {
+    const scripts_file = await fs.readFileSync(file_path);
+    const scripts = JSON.parse(scripts_file.toLocaleString());
+
+    if ("built_scripts" in scripts) {
+      const scripts_paths: GodwokenScriptsPath = scripts.built_scripts;
+      return scripts_paths;
+    } else {
+      throw new Error(`built_scripts not exist in scripts json ${scripts}`);
+    }
+  } catch (error) {
+    throw new Error(`failed to read and parse scripts file,` + error.message);
+  }
+}
+
+export async function retry_execution(
+  method: any,
+  args: any[],
+  max_retry_limit: number = 10,
+  intervals: number = 5000,
+  retry: number = 0
+) {
+  try {
+    await method(...args);
+    retry++;
+  } catch (e) {
+    console.error(e);
+    if (retry < max_retry_limit) {
+      await asyncSleep(intervals);
+      console.log(`keep retrying...${retry}th times...`);
+      await retry_execution(method, args, max_retry_limit, intervals, retry);
+    } else {
+      throw new Error(`retry ${max_retry_limit}th times, still failed. abort.`);
+    }
+  }
 }
 
 export function UInt32ToLeBytes(num: number): HexString {
@@ -260,79 +281,5 @@ export class DeepDiffMapper {
 
   isValue(x: any) {
     return !this.isObject(x) && !this.isArray(x);
-  }
-}
-
-export async function saveJsonFile(jsonObj: Object, path: string) {
-  const data = JSON.stringify(jsonObj, null, 2);
-  try {
-    await fs.writeFileSync(path, data);
-    return true;
-  } catch (error) {
-    console.error(`can not save the json file, err: ${error.message}`);
-    return false;
-  }
-}
-
-export async function loadJsonFile(
-  path: string,
-  encoding?: BufferEncoding
-): Promise<Object | null> {
-  try {
-    const data = await fs.readFileSync(path);
-    if (encoding) {
-      const data_json = JSON.parse(data.toString(encoding));
-      return data_json;
-    }
-    const data_json = JSON.parse(data.toLocaleString());
-    return data_json;
-  } catch (error) {
-    console.error(`json file not exist, err: ${error.message}`);
-    return null;
-  }
-}
-
-export async function readScriptCodeHashFromFile(script_path: string) {
-  const contract_file = path.join(script_path);
-  const complied_code = await fs.readFileSync(contract_file);
-  return "0x" + complied_code.toString("hex");
-}
-
-export async function getDeployScriptsPaths(_file_path: string) {
-  const file_path = path.resolve(_file_path);
-  try {
-    const scripts_file = await fs.readFileSync(file_path);
-    const scripts = JSON.parse(scripts_file.toLocaleString());
-
-    if ("built_scripts" in scripts) {
-      const scripts_paths: GodwokenScriptsPath = scripts.built_scripts;
-      return scripts_paths;
-    } else {
-      throw new Error(`built_scripts not exist in scripts json ${scripts}`);
-    }
-  } catch (error) {
-    throw new Error(`failed to read and parse scripts file,` + error.message);
-  }
-}
-
-export async function retry_execution(
-  method: any,
-  args: any[],
-  max_retry_limit: number = 10,
-  intervals: number = 5000,
-  retry: number = 0
-) {
-  try {
-    await method(...args);
-    retry++;
-  } catch (e) {
-    console.error(e);
-    if (retry < max_retry_limit) {
-      await asyncSleep(intervals);
-      console.log(`keep retrying...${retry}th times...`);
-      await retry_execution(method, args, max_retry_limit, intervals, retry);
-    } else {
-      throw new Error(`retry ${max_retry_limit}th times, still failed. abort.`);
-    }
   }
 }

@@ -3,7 +3,11 @@ import {
   _generateTransactionMessageToSign,
   _createAccountRawL2Transaction,
   accountScriptHash,
-} from "./common";
+  calculateLayer2LockScriptHash,
+  serializeScript,
+  generateCkbAddress,
+  generateEthAddress
+} from "./base/common";
 import {
   Godwoken,
   L2Transaction,
@@ -22,7 +26,8 @@ import {
   OutPoint,
   TransactionWithStatus,
 } from "@ckb-lumos/base";
-import { DeploymentConfig } from "../js/base/index";
+import { GwScriptsConfig } from "./base/types/conf";
+import { rollupTypeHash } from "./base/config";
 import { Indexer, CellCollector } from "@ckb-lumos/indexer";
 import { key } from "@ckb-lumos/hd";
 import TransactionManager from "@ckb-lumos/transaction-manager";
@@ -39,12 +44,11 @@ import {
   DepositLockArgs,
   getDepositLockArgs,
   serializeArgs,
-  getRollupTypeHash,
   getL2SudtScriptHash,
-} from "../js/transactions/deposit";
+} from "./base/deposit";
 import { common, sudt } from "@ckb-lumos/common-scripts";
 import { RPC, normalizers as ckb_normalizers } from "ckb-js-toolkit";
-import { deploymentConfig } from "../js/utils/deployment_config";
+import { gwScriptsConfig } from "./base/config";
 import path from "path";
 import { initializeConfig, getConfig } from "@ckb-lumos/config-manager";
 import fs from "fs";
@@ -52,15 +56,11 @@ import { URL } from "url";
 
 import {
   asyncSleep,
-  calculateLayer2LockScriptHash,
-  serializeScript,
   waitForBlockSync,
-  privateKeyToCkbAddress,
-  privateKeyToEthAddress,
   toBigUInt64LE,
   deepCompare,
   DeepDiffMapper,
-} from "./util";
+} from "./base/util";
 import { ScriptDeploymentTransactionInfo } from "./base/types/gw";
 
 export class Api {
@@ -85,7 +85,7 @@ export class Api {
     this.ckb_rpc_url = _ckb_rpc_url;
     this.godwoken_rpc_url = _godwoken_rpc;
 
-    this.validator_code_hash = deploymentConfig.polyjuice_validator.code_hash;
+    this.validator_code_hash = gwScriptsConfig.polyjuice_validator.code_hash;
 
     this.indexer = null;
     this.transactionManager = null;
@@ -205,7 +205,7 @@ export class Api {
   }
 
   async sendTx(
-    deploymentConfig: DeploymentConfig,
+    deploymentConfig: GwScriptsConfig,
     fromAddress: string,
     amount: string,
     layer2LockArgs: HexString,
@@ -274,7 +274,7 @@ export class Api {
   }
 
   async sendSudtTx(
-    deploymentConfig: DeploymentConfig,
+    deploymentConfig: GwScriptsConfig,
     fromAddress: string,
     amount: string,
     layer2LockArgs: HexString,
@@ -320,7 +320,7 @@ export class Api {
     const layer2SudtScript = {
       code_hash: script.code_hash,
       hash_type: script.hash_type,
-      args: getRollupTypeHash() + sudtScriptHash.slice(2),
+      args: rollupTypeHash + sudtScriptHash.slice(2),
     };
 
     txSkeleton = await common.payFeeByFeeRate(
@@ -370,12 +370,12 @@ export class Api {
     }
 
     const privateKey = _privateKey;
-    const ckbAddress = privateKeyToCkbAddress(privateKey);
-    const ethAddress = _ethAddress || privateKeyToEthAddress(privateKey);
+    const ckbAddress = generateCkbAddress(privateKey);
+    const ethAddress = _ethAddress || generateEthAddress(privateKey);
     console.log("using eth address:", ethAddress);
 
     const txHash: Hash = await this.sendTx(
-      deploymentConfig,
+      gwScriptsConfig,
       ckbAddress,
       _amount,
       ethAddress.toLowerCase(),
@@ -432,7 +432,7 @@ export class Api {
     const raw_l2tx = _createAccountRawL2Transaction(
       from_id,
       parseInt(nonce + ""),
-      deploymentConfig.polyjuice_validator.code_hash,
+      gwScriptsConfig.polyjuice_validator.code_hash,
       script_args
     );
 
@@ -457,11 +457,11 @@ export class Api {
 
     // wait for confirm
     const l2_script: Script = {
-      code_hash: deploymentConfig.polyjuice_validator.code_hash,
-      hash_type: deploymentConfig.polyjuice_validator.hash_type as
+      code_hash: gwScriptsConfig.polyjuice_validator.code_hash,
+      hash_type: gwScriptsConfig.polyjuice_validator.hash_type as
         | "type"
         | "data",
-      args: getRollupTypeHash() + script_args.slice(2),
+      args: rollupTypeHash + script_args.slice(2),
     };
     const l2_script_hash = serializeScript(l2_script);
     await this.waitForAccountIdOnChain(l2_script_hash);
@@ -479,7 +479,7 @@ export class Api {
   ) {
     const creator_account_id = parseInt(creator_account_id_str);
     this.polyjuice = new Polyjuice(this.godwoken, {
-      validator_code_hash: deploymentConfig.polyjuice_validator.code_hash,
+      validator_code_hash: gwScriptsConfig.polyjuice_validator.code_hash,
       sudt_id: 1,
       creator_account_id,
     });
@@ -500,7 +500,7 @@ export class Api {
       0n,
       init_code,
       nonce,
-      getRollupTypeHash()
+      rollupTypeHash
     );
 
     console.log(`gas_limit: `);
@@ -557,8 +557,8 @@ export class Api {
 
     try {
       // start deposit sudt with new issue token
-      const ckbAddress = privateKeyToCkbAddress(_privateKey);
-      const ethAddress = _ethAddress || privateKeyToEthAddress(_privateKey);
+      const ckbAddress = generateCkbAddress(_privateKey);
+      const ethAddress = _ethAddress || generateEthAddress(_privateKey);
       console.log("using eth address:", ethAddress);
 
       const lockScript = parseAddress(ckbAddress);
@@ -566,7 +566,7 @@ export class Api {
       console.log(`using sudtTokenArgs: ${sudtTokenArgs}`);
 
       const { tx_hash, l2_sudt_script_hash } = await this.sendSudtTx(
-        deploymentConfig,
+        gwScriptsConfig,
         ckbAddress,
         _amount,
         ethAddress.toLowerCase(),
@@ -627,7 +627,7 @@ export class Api {
   }
 
   getL2SudtScriptHash(private_key: string) {
-    const lock = parseAddress(privateKeyToCkbAddress(private_key));
+    const lock = parseAddress(generateCkbAddress(private_key));
     const lock_hash = utils.computeScriptHash(lock);
     const config = getConfig();
     const l1_sudt_script: Script = {
@@ -640,7 +640,7 @@ export class Api {
   }
 
   getL1SudtToken(private_key: string) {
-    const lock = parseAddress(privateKeyToCkbAddress(private_key));
+    const lock = parseAddress(generateCkbAddress(private_key));
     const lock_hash = utils.computeScriptHash(lock);
     return lock_hash;
   }
@@ -683,7 +683,7 @@ export class Api {
       cellProvider: this.transactionManager,
     });
 
-    const address: string = privateKeyToCkbAddress(privateKey);
+    const address: string = generateCkbAddress(privateKey);
 
     const sudtScriptArgs: HexString = sudt.ownerForSudt(address);
     console.log("sudt script args:", sudtScriptArgs);
@@ -842,7 +842,7 @@ export class Api {
       0n,
       input_data,
       nonce,
-      getRollupTypeHash()
+      rollupTypeHash
     );
 
     const sender_script_hash = await this.godwoken.getScriptHash(from_id);
@@ -941,7 +941,7 @@ export class Api {
     const raw_l2tx = _createAccountRawL2Transaction(
       from_id,
       nonce,
-      deploymentConfig.polyjuice_validator.code_hash,
+      gwScriptsConfig.polyjuice_validator.code_hash,
       script_args
     );
     const message = this.generateLayer2TransactionMessageToSign(
@@ -963,7 +963,7 @@ export class Api {
     const l2_script: Script = {
       code_hash: this.validator_code_hash,
       hash_type: "type",
-      args: getRollupTypeHash() + script_args.slice(2),
+      args: rollupTypeHash + script_args.slice(2),
     };
     const l2_script_hash = serializeScript(l2_script);
     await this.waitForAccountIdOnChain(l2_script_hash);
@@ -1046,7 +1046,7 @@ export class Api {
       0n,
       init_code,
       nonce,
-      getRollupTypeHash()
+      rollupTypeHash
     );
     console.log(`layer2 tx: ${JSON.stringify(raw_l2tx)}`);
     return {
@@ -1064,7 +1064,7 @@ export class Api {
 
   async findCreatorAccountId(sudt_id_str: string) {
     const script_args =
-      getRollupTypeHash() + numberToUInt32LE(parseInt(sudt_id_str)).slice(2);
+      rollupTypeHash + numberToUInt32LE(parseInt(sudt_id_str)).slice(2);
     const l2_script: Script = {
       code_hash: this.validator_code_hash,
       hash_type: "type",
@@ -1190,7 +1190,7 @@ export class Api {
     let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
-    const ckb_address = privateKeyToCkbAddress(private_key);
+    const ckb_address = generateCkbAddress(private_key);
     const lock: Script = parseAddress(ckb_address);
 
     const capacity_per_cell = total_capacity / BigInt(total_pieces);
@@ -1242,7 +1242,7 @@ export class Api {
     let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
-    const ckb_address = privateKeyToCkbAddress(private_key);
+    const ckb_address = generateCkbAddress(private_key);
     const lock: Script = parseAddress(ckb_address);
 
     // "TYPE_ID" in hex
@@ -1340,7 +1340,7 @@ export class Api {
     let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
-    const ckb_address = privateKeyToCkbAddress(private_key);
+    const ckb_address = generateCkbAddress(private_key);
     const lock: Script = parseAddress(ckb_address);
 
     // "TYPE_ID" in hex

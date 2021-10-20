@@ -1,4 +1,4 @@
-import { DeepDiffMapper } from "../src/util";
+import { DeepDiffMapper } from "../src/base/util";
 
 const deepDiffMapper = new DeepDiffMapper();
 

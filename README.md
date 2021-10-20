@@ -1,7 +1,22 @@
 Godwoken Polyman
 =======
 
-this project is original fork from `godwoken-example`. the new project called `godwoken-polyman`, is designed to be running inside [godwoken-kicker](https://github.com/RetricSu/godwoken-kicker.git), where it leverge the polyman to auto deploy a godwoken/polyjuice chain and setup everything needed for developer to deploy their old ETH smart contract on godwoken in the quickest way.
+this project is original fork from `godwoken-example`. the new project called `godwoken-polyman`, is designed to be running inside [godwoken-kicker](https://github.com/RetricSu/godwoken-kicker.git), where it leverage the polyman to auto deploy a godwoken/polyjuice chain and setup everything needed for developer to deploy their old ETH smart contract on godwoken in the quickest way.
+
+How it works
+------
+
+this project contains 3 http-servers and 1 frontend client.
+
+backend:
+
+- setup-server: aka "CallPolyman" in kicker, provide prepare-sudt/prepare-money/.. some system setup service
+- main-server: backend Api for UI client
+- ui-server: simple static server for hosting react client
+
+frontend:
+
+- ui: react project under client sub-packages
 
 How to run
 ------
@@ -38,16 +53,18 @@ change the miner config under `packages/runner/configs/polyman-config.json`
 prepare some money
 
 ```sh
-yarn prepare-money
+yarn workspace @godwoken-polyman/runner start-call-polyman
+// after setup-server is up and running, call http get localhost:6102/prepare-money
 ```
 
 prepare sudt system scripts (deploy such one)
 
 ```sh
-yarn prepare-sudt
+yarn workspace @godwoken-polyman/runner start-call-polyman
+// after setup-server is up and running, call http get localhost:6102/prepare_sudt_scripts
 ```
 
-start the service:
+start the main service and frontend website:
 
 ```sh
 yarn start          # inside docker-compose environment
@@ -63,9 +80,10 @@ Run outside docker-compose
 
 for each command, you can run `:normal` after, it will using the localhost url for godwoken and ckb components.
 
-Anthor simple way to do this is to just change the rpc url to your own one under `components` section in `/packages/runner/configs/polyman-config.json`
+Another simple way to do this is to just change the rpc url to your own one under `components` section in `/packages/runner/configs/polyman-config.json`
 
-## Testnet
+Testnet
+---
 
 If you want to start this [API](packages/runner/src/server.ts) server interacting with [CKB Aggron Testnet](https://explorer.nervos.org/aggron/), please update your own testnet account key pair into `packages/runner/configs/polyman-config.json`.
 
@@ -80,7 +98,7 @@ You can use [Nervos Aggron Faucet](https://faucet.nervos.org/) to make sure that
 
 Note: The `account-cli` tool uses a builtin CKB Indexer, which needs to fully synchronize with a Testnet CKB Indexer before it can create transactions. This may take a long time, but there are 2 ways to speed it up:
 1. Copy the testnet indexer data from `testnet-polyjuice-api:latest` docker image
-```
+```sh
 docker run --rm \
   -v`pwd`/db/ckb-indexer-testnet:/ckb-indexer-testnet \
   ghcr.io/flouse/testnet-polyjuice-api:latest bash -c \
@@ -90,6 +108,6 @@ docker run --rm \
 
 And then, start the API service with `testnet` mode without [UI](packages/runner/src/ui.ts).
 
-```
+```sh
 cd packages/runner && yarn start:testnet
 ```
