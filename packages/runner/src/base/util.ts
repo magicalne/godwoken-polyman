@@ -37,12 +37,10 @@ export async function generateGodwokenConfig(
   _input_file: string,
   _output_file: string
 ) {
-  const toml_path: string = path.resolve(__dirname, _input_file);
-  const toml_file_str = await fs.readFileSync(toml_path).toString();
+  const toml_file_str = await fs.readFileSync(_input_file).toString();
   const toml_file_obj = TOML.parse(toml_file_str);
-  const json_path = path.resolve(__dirname, _output_file);
-  await fs.writeFileSync(json_path, JSON.stringify(toml_file_obj, null, 2));
-  console.log(`create godwoken-config.json file in ${json_path}. done.`);
+  await fs.writeFileSync(_output_file, JSON.stringify(toml_file_obj, null, 2));
+  console.log(`create godwoken-config.json file in ${_output_file}. done.`);
 }
 
 export async function saveJsonFile(jsonObj: Object, path: string) {

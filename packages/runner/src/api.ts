@@ -6,7 +6,7 @@ import {
   calculateLayer2LockScriptHash,
   serializeScript,
   generateCkbAddress,
-  generateEthAddress
+  generateEthAddress,
 } from "./base/common";
 import {
   Godwoken,
