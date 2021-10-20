@@ -129,14 +129,9 @@ function Home() {
       rollupTypeHash={rollupTypeHash}
       ethAccountLockConfig={ethAccountLockConfig}
     />,
-    <Erc20ProxyDemo
-      selectedAddress={selectedAddress}
-      rollupTypeHash={rollupTypeHash}
-      ethAccountLockConfig={ethAccountLockConfig}
-    />,
   ];
 
-  const tabsNames = ["chain Info", "Accounts", "Contract", "Erc20 Proxy Demo"];
+  const tabsNames = ["chain Info", "Accounts", "Contract"];
 
   return (
     <div>
