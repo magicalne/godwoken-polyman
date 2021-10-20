@@ -51,7 +51,7 @@ class Api{
     };
     
     async getEthAccountLockConfig(){
-        let res = await axios.get(`${this.base_url}/get_eth_acccount_lock`, {
+        let res = await axios.get(`${this.base_url}/get_eth_account_lock`, {
             params:{
             }
         });

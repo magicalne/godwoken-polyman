@@ -130,6 +130,7 @@ export default function ChainInfo() {
         return notify(
           `failed to get server config. ${JSON.stringify(res.error)}`
         );
+        console.log(res.data);
       setServerConfig(res.data);
     } catch (error) {
       console.log(`get server config error`);
@@ -213,18 +214,18 @@ export default function ChainInfo() {
     createSystemWalletData("Type", "CKB Address", "Private Key"),
     createSystemWalletData(
       "the only and lonely CKB miner",
-      serverConfig?.miner_ckb_devnet_addr,
-      serverConfig?.miner_private_key
+      serverConfig?.addresses.miner_ckb_devnet_addr,
+      serverConfig?.addresses.miner_private_key
     ),
     createSystemWalletData(
       "the only and lonely Godwoken miner",
-      serverConfig?.miner_ckb_devnet_addr,
-      serverConfig?.miner_private_key
+      serverConfig?.addresses.miner_ckb_devnet_addr,
+      serverConfig?.addresses.miner_private_key
     ),
     createSystemWalletData(
       "the meta-user to create everything",
-      serverConfig?.user_ckb_devnet_addr,
-      serverConfig?.user_private_key
+      serverConfig?.addresses.user_ckb_devnet_addr,
+      serverConfig?.addresses.user_private_key
     ),
   ];
 

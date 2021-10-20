@@ -1,48 +1,56 @@
 {
+  "http_server_options": {
     "ui_port": "6100",
-    "server_port": "6101",
-    "cros_server_list": [
-        "http://localhost:6100",
-        "http://127.0.0.1:6100",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-    ],
-    "prepare_service_port": "6102",
-    "store": {
-      "default_indexer_db_path": "./db"
-    },
+    "main_port": "6101",
+    "setup_port": "6102",
+    "cros_list": [
+      "http://localhost:6100",
+      "http://127.0.0.1:6100",
+      "http://localhost:3000",
+      "http://127.0.0.1:3000"
+    ]
+  },
+  "store": {
+    "default_indexer_db_path": "./db"
+  },
+  "addresses": {
     "user_private_key": "0x6cd5e7be2f6504aa5ae7c0c04178d8f47b7cfc63b71d95d9e6282f5b090431bf",
     "user_ckb_devnet_addr": "ckt1qyqf22qfzaer95xm5d2m5km0f6k288x9warqnhsf4m",
-    "user_account_init_amount": "1200000000000",
     "miner_private_key": "0xdd50cac37ec6dd12539a968c1a2cbedda75bd8724f7bcad486548eaabb87fc8b",
-    "miner_ckb_devnet_addr": "ckt1qyqy84gfm9ljvqr69p0njfqullx5zy2hr9kq0pd3n5",
-    "default_amount": "40000000000",
-    "default_issue_sudt_amount": "500000000000",
-    "default_issue_sudt_capacity": "100000000000",
-    "default_deposit_sudt_capacity": "40000000000",
-    "default_transfer_sudt_ammount": "15",
-    "default_sudt_id_str": "1",
-    "components": {
-        "godwoken": {
-          "chain_id": 71393,
-          "rpc": [
-            "",
-            "http://godwoken:8119",
-            "http://localhost:8119"
-            
-          ],
-          "web3_rpc": [
-            "http://godwoken-testnet-web3-rpc.ckbapp.dev",
-            "http://web3:8024",
-            "http://localhost:8024"
-          ]
-        },
-        "ckb": {
-          "rpc": [
-            "https://testnet.ckb.dev/rpc",
-            "http://ckb:8114",
-            "http://localhost:8114"
-          ]
-        }
+    "miner_ckb_devnet_addr": "ckt1qyqy84gfm9ljvqr69p0njfqullx5zy2hr9kq0pd3n5"
+  },
+  "default_quantity": {
+    "user_account_init_amount": "1200000000000",
+    "deposit_amount": "40000000000",
+    "deposit_minimal_capacity": "40000000000",
+    "deposit_sudt_capacity": "40000000000",
+    "issue_sudt_amount": "500000000000",
+    "issue_sudt_capacity": "100000000000",
+    "transfer_sudt_amount": "15",
+    "change_amount": "10000000000",
+    "sudt_id_str": "1"
+  },
+  "components": {
+    "godwoken": {
+      "rpc": [
+        "http://godwoken-testnet-web3-rpc.ckbapp.dev",
+        "http://godwoken:8119",
+        "http://localhost:8119"
+      ]
+    },
+    "web3": {
+      "rpc": [
+        "http://godwoken-testnet-web3-rpc.ckbapp.dev",
+        "http://web3:8024",
+        "http://localhost:8024"
+      ]
+    },
+    "ckb": {
+      "rpc": [
+        "https://testnet.ckb.dev/rpc",
+        "http://ckb:8114",
+        "http://localhost:8114"
+      ]
     }
+  }
 }
