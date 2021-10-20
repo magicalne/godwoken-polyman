@@ -130,7 +130,7 @@ function buildScriptFromCodeHash(codeHash: string): Script {
 }
 
 function getRollupTypeHash(): HexString {
-  const rollupTypeScript: Script = godwokenConfig.chain
+  const rollupTypeScript: Script = GodwokenConfig.chain
     .rollup_type_script as Script;
   const hash: HexString = utils.computeScriptHash(rollupTypeScript);
   return hash;
