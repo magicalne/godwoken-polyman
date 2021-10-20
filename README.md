@@ -35,6 +35,8 @@ make build-push # needs login, will ask you for tag
 
 docker image: https://hub.docker.com/repository/docker/nervos/godwoken-polyman-prebuilds
 
+the prebuild package is located in `./godwoken-polyman` with node_modules installed and typescript compiled js file in `./godwoken-polyman/packages/runner/src/lib`
+
 How to run
 ------
 
