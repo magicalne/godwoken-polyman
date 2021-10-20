@@ -1,6 +1,10 @@
 .git
 node_modules
+**/node_modules
 npm-debug
 
 packages/runner/db
-packages/runner/temp-db
+packages/runner/lib
+packages/runner/configs/godwoken-config.json
+packages/runner/configs/lumos-config.json
+packages/runner/configs/scripts-deploy-result.json
