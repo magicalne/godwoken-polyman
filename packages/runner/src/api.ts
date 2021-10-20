@@ -61,7 +61,7 @@ import {
   deepCompare,
   DeepDiffMapper,
 } from "./util";
-import { ScriptDeploymentTransactionInfo } from "./types";
+import { ScriptDeploymentTransactionInfo } from "./base/types/gw";
 
 export class Api {
   public validator_code_hash: string;
@@ -78,8 +78,8 @@ export class Api {
   constructor(
     _ckb_rpc_url: string,
     _godwoken_rpc: string,
-    _indexer_path: string,
-    _godwoken_web3_rpc_url?: string
+    _godwoken_web3_rpc_url: string,
+    _indexer_path: string
   ) {
     this.indexer_path = _indexer_path;
     this.ckb_rpc_url = _ckb_rpc_url;
@@ -90,12 +90,7 @@ export class Api {
     this.indexer = null;
     this.transactionManager = null;
     this.ckb_rpc = new RPC(this.ckb_rpc_url);
-    this.godwokenWeb3Rpc = new RPC(
-      _godwoken_web3_rpc_url ||
-        (process.env.MODE === "docker-compose"
-          ? "http://web3:8024"
-          : "http://127.0.0.1:8024")
-    );
+    this.godwokenWeb3Rpc = new RPC(_godwoken_web3_rpc_url);
     this.godwoken = new Godwoken(this.godwoken_rpc_url);
 
     this.polyjuice = null;

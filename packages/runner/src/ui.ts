@@ -1,4 +1,4 @@
-import Config from "../configs/polyman-config.json";
+import { polymanConfig } from "./base/config";
 import express from "express";
 import path from "path";
 
@@ -10,9 +10,9 @@ app.get("/*", function (req: any, res: { sendFile: (arg0: any) => void }) {
 });
 
 export function start() {
-  app.listen(Config.ui_port, () => {
+  app.listen(polymanConfig.http_server_options.ui_port, () => {
     console.log(
-      `ui server started at http://localhost:${Config.ui_port}, go there to deploy contract!`
+      `ui server started at http://localhost:${polymanConfig.http_server_options.ui_port}, go there to deploy contract!`
     );
   });
 }

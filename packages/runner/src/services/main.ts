@@ -1,44 +1,23 @@
 import { getRollupTypeHash } from "../../js/transactions/deposit";
 import { deploymentConfig } from "../../js/utils/deployment_config";
-import { PolymanConfig, DefaultIndexerPath } from "../getPolymanConfig";
+import { polymanConfig, filePaths } from "../base/config";
 import { Api } from "../api";
 import path from "path";
 import { loadJsonFile } from "../util";
 import fs from "fs";
 import { Service } from "./service";
 
-const sudt_id_str = PolymanConfig.default_sudt_id_str;
-const godwoken_config_file_path = path.resolve(
-  __dirname,
-  "../configs/godwoken-config.json"
-);
-const scripts_deploy_result_file_path = path.resolve(
-  __dirname,
-  "../configs/scripts-deploy-result.json"
-);
-
-const deposit_cell_minimal_capacity = "40000000000";
-const default_deposit_amount = PolymanConfig.default_amount;
-const default_sudt_issue_amount = PolymanConfig.default_issue_sudt_amount;
-const default_sudt_capacity = PolymanConfig.default_deposit_sudt_capacity;
-const default_issue_sudt_capacity = PolymanConfig.default_issue_sudt_capacity;
-const user_private_key = PolymanConfig.user_private_key;
-const user_ckb_address = PolymanConfig.user_ckb_devnet_addr;
-const miner_private_key = PolymanConfig.miner_private_key;
-const miner_ckb_address = PolymanConfig.miner_ckb_devnet_addr;
-const change_amount = "10000000000"; // 100 ckb change for pay fee.
 const rollup_type_hash = getRollupTypeHash();
 
 const service_name = "polyjuice";
 
 export class main extends Service {
-
-  constructor(api: Api, name: string=service_name, req?, res?) {
-    super(api, service_name, req, res);
+  constructor(api: Api, name: string = service_name, req?, res?) {
+    super(api, name, req, res);
   }
 
   get_server_configs() {
-    return PolymanConfig;
+    return polymanConfig;
   }
 
   get_rollup_type_hash() {
@@ -50,15 +29,17 @@ export class main extends Service {
   }
 
   async get_creator_id() {
-    return await this.api.findCreatorAccountId(sudt_id_str);
+    return await this.api.findCreatorAccountId(
+      polymanConfig.default_quantity.sudt_id_str
+    );
   }
 
   async get_godwoken_config() {
-    return await loadJsonFile(godwoken_config_file_path);
+    return await loadJsonFile(filePaths.godwoken_config);
   }
 
   async get_godwoken_script_deploy_result_file() {
-    return await loadJsonFile(scripts_deploy_result_file_path);
+    return await loadJsonFile(filePaths.scripts_deploy_result);
   }
 
   async deposit() {
@@ -69,11 +50,15 @@ export class main extends Service {
     let amount =
       req.query.amount &&
       BigInt(req.query.amount + "").valueOf() >
-        BigInt(deposit_cell_minimal_capacity)
+        BigInt(polymanConfig.default_quantity.deposit_minimal_capacity)
         ? req.query.amount + ""
-        : default_deposit_amount;
+        : polymanConfig.default_quantity.deposit_amount;
 
-    const account_id = await api.deposit(user_private_key, eth_address, amount);
+    const account_id = await api.deposit(
+      polymanConfig.addresses.user_private_key,
+      eth_address,
+      amount
+    );
     return {
       eth_address: eth_address,
       account_id: account_id,
@@ -88,43 +73,41 @@ export class main extends Service {
     const eth_address = req.query.eth_address + "";
     // FIXME: remove this with sudt transfer fixed.
     await api.giveUserLayer1AccountSomeMoney(
-      miner_ckb_address,
-      miner_private_key,
-      user_ckb_address,
-      BigInt(change_amount)
+      polymanConfig.addresses.miner_ckb_devnet_addr,
+      polymanConfig.addresses.miner_private_key,
+      polymanConfig.addresses.user_ckb_devnet_addr,
+      BigInt(polymanConfig.default_quantity.change_amount)
     );
     const { account_id, l2_sudt_script_hash } = await api.deposit_sudt(
-      user_private_key,
+      polymanConfig.addresses.user_private_key,
       eth_address,
-      default_deposit_amount,
-      default_sudt_capacity
+      polymanConfig.default_quantity.deposit_amount,
+      polymanConfig.default_quantity.deposit_sudt_capacity
     );
     return { account_id, l2_sudt_script_hash };
   }
 
   async issue_token() {
-    const req = this.req;
     const api = this.api;
 
     const sudt_token = await api.issueToken(
-      default_sudt_issue_amount,
-      user_private_key,
-      BigInt(default_issue_sudt_capacity)
+      polymanConfig.default_quantity.issue_sudt_amount,
+      polymanConfig.addresses.user_private_key,
+      BigInt(polymanConfig.default_quantity.issue_sudt_capacity)
     );
     return { sudt_token: sudt_token };
   }
 
   async prepare_change_money() {
-    const req = this.req;
     const api = this.api;
 
     await api.giveUserLayer1AccountSomeMoney(
-      miner_ckb_address,
-      miner_private_key,
-      user_ckb_address,
-      BigInt(change_amount)
+      polymanConfig.addresses.miner_ckb_devnet_addr,
+      polymanConfig.addresses.miner_private_key,
+      polymanConfig.addresses.user_ckb_devnet_addr,
+      BigInt(polymanConfig.default_quantity.change_amount)
     );
-    return { amount: change_amount };
+    return { amount: polymanConfig.default_quantity.change_amount };
   }
 
   async create_creator_account() {
@@ -134,7 +117,7 @@ export class main extends Service {
     const from_id = req.query.from_id + "";
     return await api.generateCreateCreatorAccountTx(
       from_id,
-      sudt_id_str,
+      polymanConfig.default_quantity.sudt_id_str,
       rollup_type_hash
     );
   }
@@ -143,7 +126,9 @@ export class main extends Service {
     const req = this.req;
     const api = this.api;
 
-    const creator_account_id = await api.findCreatorAccountId(sudt_id_str);
+    const creator_account_id = await api.findCreatorAccountId(
+      polymanConfig.default_quantity.sudt_id_str
+    );
     if (!creator_account_id) throw new Error(`creator_account_id not found.`);
 
     const contract_code = req.body.data.contract_code + "";
@@ -158,10 +143,11 @@ export class main extends Service {
   }
 
   async deploy_erc20_proxy_contract() {
-    const req = this.req;
     const api = this.api;
 
-    const creator_account_id = await api.findCreatorAccountId(sudt_id_str);
+    const creator_account_id = await api.findCreatorAccountId(
+      polymanConfig.default_quantity.sudt_id_str
+    );
     if (!creator_account_id) throw new Error(`creator_account_id not found.`);
 
     const contract_file = path.resolve(
@@ -172,7 +158,9 @@ export class main extends Service {
       "0x" + (await fs.readFileSync(contract_file).toString("utf-8"));
     await api.syncToTip();
     // get sudt id
-    const sudt_script_hash = api.getL2SudtScriptHash(user_private_key);
+    const sudt_script_hash = api.getL2SudtScriptHash(
+      polymanConfig.addresses.user_private_key
+    );
     const sudt_id = await api.getAccountIdByScriptHash(sudt_script_hash);
     console.log(`sudt_id: ${sudt_id}`);
     if (!sudt_id)
@@ -185,10 +173,9 @@ export class main extends Service {
   }
 
   async deploy_sudt_contract() {
-    const req = this.req;
     const api = this.api;
 
-    await api.deployLayer1Sudt(miner_private_key);
+    await api.deployLayer1Sudt(polymanConfig.addresses.miner_private_key);
     return null;
   }
 
@@ -212,18 +199,19 @@ export class main extends Service {
   }
 
   async get_sudt_token() {
-    const req = this.req;
     const api = this.api;
 
-    const sudt_token = api.getL1SudtToken(user_private_key);
+    const sudt_token = api.getL1SudtToken(
+      polymanConfig.addresses.user_private_key
+    );
     return { sudt_token: sudt_token };
   }
 
   async get_sudt_token_total_amount() {
-    const req = this.req;
     const api = this.api;
-
-    const sudt_token = api.getL1SudtToken(user_private_key);
+    const sudt_token = api.getL1SudtToken(
+      polymanConfig.addresses.user_private_key
+    );
     const total_amount = await api.getL1SudtTokenTotalAmount(sudt_token);
     return { total_amount: total_amount.toString() };
   }

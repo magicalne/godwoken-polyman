@@ -1,4 +1,4 @@
-import { Service } from "./services/service";
+import { Service } from "../services/service";
 import { Application } from "express";
 
 export enum HttpRequestType {
@@ -47,8 +47,14 @@ export const setUrlTargetMethod = async (
   }
 };
 
-export const setUpRouters = async (app: Application, service: Service, mod: typeof Service) => {
-  const method_names: string[] = getMethodNames(mod);
+export const setUpRouters = async (
+  app: Application,
+  service: Service,
+  mod: typeof Service
+) => {
+  const base_service_methods: string[] = getMethodNames(Service); //public method like ping
+  const method_names: string[] =
+    getMethodNames(mod).concat(base_service_methods);
   console.log(`${service.name} server methods: `, method_names);
   for (let name of method_names) {
     const target_url = name === "default" ? "" : name; // default = url "/" home page

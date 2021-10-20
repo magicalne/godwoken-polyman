@@ -9,18 +9,13 @@
     "clean": "rm -rf ./db",
     "start-call-polyman": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/callPolyman.ts",
     "start-call-polyman:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/callPolyman.ts",
-    "prepare-money": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/prepare_money.ts",
-    "prepare-sudt": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/prepare_sudt_contract.ts",
     "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/index",
     "start:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/index",
     "start:testnet": "MODE=testnet ts-node-dev ./src/index",
-    "prepare-money:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/prepare_money.ts",
-    "prepare-sudt:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/prepare_sudt_contract.ts",
     "generateConfig": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev --ignore-watch configs/godwoken-config.json ./src/generateConfig.ts",
     "generateConfig:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev --ignore-watch configs/godwoken-config.json ./src/generateConfig.ts",
     "fmt": "prettier --write \"src/*.ts\" \"src/**/*.ts\" \"js/**/*.ts\" \"test/*.ts\" package.json",
-    "lint": "eslint -c ../../.eslintrc.js \"src/*.ts\" \"js/**/*.ts\" \"test/*.ts\"",
-    "test_gen_config": "ts-node-dev ./test/gen_config.ts"
+    "lint": "eslint -c ../../.eslintrc.js \"src/*.ts\" \"src/**/*.ts\" \"js/**/*.ts\" \"test/*.ts\""
   },
   "dependencies": {
     "@ckb-lumos/base": "^0.18.0-rc1",

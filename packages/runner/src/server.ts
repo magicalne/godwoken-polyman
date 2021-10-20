@@ -3,47 +3,26 @@ import path from "path";
 import express from "express";
 import cors from "cors";
 import timeout from "connect-timeout";
-import { PolymanConfig, DefaultIndexerPath } from "./getPolymanConfig";
+import { polymanConfig, urls, indexerDbPath } from "./base/config";
 import { getRollupTypeHash } from "../js/transactions/deposit";
 import { main as MainService } from "./services/main";
-import { getMethodNames, setUpRouters } from "./base";
+import { setUpRouters } from "./base/httpServer";
 
 let INDEXER_DB_PATH = path.resolve(
-  DefaultIndexerPath,
+  indexerDbPath,
   "./api-server/ckb-indexer-data"
 );
-let cfgIdx = 2;
-switch (process.env.MODE) {
-  case "docker-compose":
-    cfgIdx = 1;
-    break;
-  case "testnet":
-    cfgIdx = 0;
-    INDEXER_DB_PATH = path.resolve(__dirname, "../db/ckb-indexer-testnet");
-    break;
-  default:
-    cfgIdx = 2;
-}
-
-const ckb_rpc = PolymanConfig.components.ckb.rpc[cfgIdx];
-const godwoken_rpc = PolymanConfig.components.godwoken.rpc[cfgIdx];
-const godwoken_web3_rpc_url =
-  PolymanConfig.components.godwoken.web3_rpc[cfgIdx];
-const sudt_id_str = PolymanConfig.default_sudt_id_str;
-const default_deposit_amount = PolymanConfig.default_amount;
-const user_private_key = PolymanConfig.user_private_key;
-
 const api = new Api(
-  ckb_rpc,
-  godwoken_rpc,
-  INDEXER_DB_PATH,
-  godwoken_web3_rpc_url
+  urls.ckb_rpc,
+  urls.godwoken_rpc,
+  urls.web3_rpc,
+  INDEXER_DB_PATH
 );
 api.syncLayer1();
 
 export const app = express();
 const corsOptions = {
-  origin: PolymanConfig.cros_server_list,
+  origin: polymanConfig.http_server_options.cros_list,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   credentials: true,
 };
@@ -62,20 +41,22 @@ export async function start() {
   // start a polyjuice chain
   try {
     await api.syncToTip();
-    const creatorId = await api.findCreatorAccountId(sudt_id_str);
+    const creatorId = await api.findCreatorAccountId(
+      polymanConfig.default_quantity.sudt_id_str
+    );
     if (creatorId === null) {
       const from_id = await api.deposit(
-        user_private_key,
+        polymanConfig.addresses.user_private_key,
         undefined,
-        default_deposit_amount
+        polymanConfig.default_quantity.deposit_amount
       );
       console.log(`create deposit account.${from_id}`);
       const rollup_type_hash = getRollupTypeHash();
       const creator_account_id = await api.createCreatorAccount(
         from_id,
-        sudt_id_str,
+        polymanConfig.default_quantity.sudt_id_str,
         rollup_type_hash,
-        user_private_key
+        polymanConfig.addresses.user_private_key
       );
       console.log(`create creator account =>`, creator_account_id);
       console.log(`init polyjuice chain.`);
@@ -89,9 +70,9 @@ export async function start() {
   }
 
   // start api server
-  app.listen(PolymanConfig.server_port, () => {
+  app.listen(polymanConfig.http_server_options.main_port, () => {
     console.log(
-      `api server started at http://localhost:${PolymanConfig.server_port}`
+      `${service.name} Server started at http://localhost:${polymanConfig.http_server_options.main_port}`
     );
   });
 }

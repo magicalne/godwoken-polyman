@@ -19,7 +19,12 @@ export class Service {
     await this.api.syncToTip();
   }
 
+  // default home page router: http://xxxxxx:port/
   default() {
     return `you just reach ${this.name} api server.`;
+  }
+
+  ping() {
+    return "pong";
   }
 }

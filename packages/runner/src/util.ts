@@ -12,7 +12,7 @@ import TOML from "@iarna/toml";
 import fs from "fs";
 import path from "path";
 import { getRollupTypeHash } from "../js/transactions/deposit";
-import { GodwokenScriptsPath } from "./types";
+import { GodwokenScriptsPath } from "./base/types/gw";
 
 export function asyncSleep(ms = 0) {
   return new Promise((r) => setTimeout(r, ms));
@@ -312,5 +312,27 @@ export async function getDeployScriptsPaths(_file_path: string) {
     }
   } catch (error) {
     throw new Error(`failed to read and parse scripts file,` + error.message);
+  }
+}
+
+export async function retry_execution(
+  method: any,
+  args: any[],
+  max_retry_limit: number = 10,
+  intervals: number = 5000,
+  retry: number = 0
+) {
+  try {
+    await method(...args);
+    retry++;
+  } catch (e) {
+    console.error(e);
+    if (retry < max_retry_limit) {
+      await asyncSleep(intervals);
+      console.log(`keep retrying...${retry}th times...`);
+      await retry_execution(method, args, max_retry_limit, intervals, retry);
+    } else {
+      throw new Error(`retry ${max_retry_limit}th times, still failed. abort.`);
+    }
   }
 }
