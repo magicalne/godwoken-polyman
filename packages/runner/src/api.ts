@@ -1067,7 +1067,7 @@ export class Api {
     return await this.getAccountId(l2_script_hash);
   }
 
-  async findCreatorAccoundId(sudt_id_str: string) {
+  async findCreatorAccountId(sudt_id_str: string) {
     const script_args =
       getRollupTypeHash() + numberToUInt32LE(parseInt(sudt_id_str)).slice(2);
     const l2_script: Script = {

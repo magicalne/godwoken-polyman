@@ -269,18 +269,25 @@ export async function saveJsonFile(jsonObj: Object, path: string) {
     await fs.writeFileSync(path, data);
     return true;
   } catch (error) {
-    console.log(`can not save the json file, err: ${error.message}`);
+    console.error(`can not save the json file, err: ${error.message}`);
     return false;
   }
 }
 
-export async function loadJsonFile(path: string) {
+export async function loadJsonFile(
+  path: string,
+  encoding?: BufferEncoding
+): Promise<Object | null> {
   try {
     const data = await fs.readFileSync(path);
+    if (encoding) {
+      const data_json = JSON.parse(data.toString(encoding));
+      return data_json;
+    }
     const data_json = JSON.parse(data.toLocaleString());
     return data_json;
   } catch (error) {
-    console.log("scripts deployment history file not exist.");
+    console.error(`json file not exist, err: ${error.message}`);
     return null;
   }
 }
