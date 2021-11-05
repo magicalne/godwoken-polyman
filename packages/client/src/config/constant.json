@@ -1,6 +1,10 @@
 {
     "development_server_url": "http://localhost:6101",
-    "web3_server_url": "http://localhost:8024",
+    "web3_server_url": {
+        "devnet": "http://localhost:8024",
+        "testnet": "https://godwoken-testnet-web3-rpc.ckbapp.dev",
+        "mainnet": "https://mainnet.godwoken.io/rpc"
+    },
     "production_server_url": "https://your.domain",
     "mode": "development"
 }
