@@ -9,10 +9,52 @@ export default class Web3Api{
     url: string;
 
     constructor(){
-        this.url = config.web3_server_url;
+        this.url = config.web3_server_url.devnet;
     };
 
-    async getPolyjucieContractTypeHash(){
+    async getChainInfo(){
+      let response = await axios.post(this.url, {
+        jsonrpc: '2.0',
+        id: + new Date(),
+        method: 'poly_getChainInfo',
+        params: [],
+      }, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+      });
+      return response.data;  
+    }
+
+    async getRollupTypeHash(){
+      let response = await axios.post(this.url, {
+        jsonrpc: '2.0',
+        id: + new Date(),
+        method: 'poly_getRollupTypeHash',
+        params: [],
+      }, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+      });
+      return response.data; 
+    }
+
+    async getEthAccountLockHash(){
+      let response = await axios.post(this.url, {
+        jsonrpc: '2.0',
+        id: + new Date(),
+        method: 'poly_getEthAccountLockHash',
+        params: [],
+      }, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+      });
+      return response.data; 
+    }
+
+    async getPolyjuiceContractTypeHash(){
       let response = await axios.post(this.url, {
           jsonrpc: '2.0',
           id: + new Date(),

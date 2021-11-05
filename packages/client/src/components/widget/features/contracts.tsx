@@ -77,10 +77,8 @@ export default function Contracts(props: ContractsProps) {
   const { selectedAddress, rollupTypeHash, ethAccountLockConfig } = props;
 
   const init_web3_provider = () => {
-    const godwoken_web3_rpc_url = config.web3_server_url;
+    const godwoken_web3_rpc_url = config.web3_server_url.devnet;
     const provider_config: PolyjuiceConfig = {
-      rollupTypeHash: rollupTypeHash || "",
-      ethAccountLockCodeHash: ethAccountLockConfig?.code_hash || "",
       web3Url: godwoken_web3_rpc_url,
     };
     const provider = new PolyjuiceHttpProvider(

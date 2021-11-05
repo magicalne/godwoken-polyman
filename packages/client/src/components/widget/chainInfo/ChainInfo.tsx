@@ -41,6 +41,29 @@ export default function ChainInfo() {
   const [contractTypeHash, setContractTypeHash] = useState<string>();
   const [serverConfig, setServerConfig] = useState<any>();
 
+  const getChainInfo = async () => {
+    const web3Api = new Web3Api();
+    try {
+      const data = await web3Api.getChainInfo();
+      console.log(data);
+      if (data.error) return notify(`failed to get chain info, `, data.error);
+
+      const info = data.result;
+      await setChainId(info.chainId);
+      await setCreatorId(info.polyjuiceCreatorId);
+      await setRollupTypeHash(info.rollupScriptHash);
+      await setEthAccountLockConfig({
+        hash_type: "type",
+        code_hash: info.ethAccountLockTypeHash,
+      });
+      await setContractTypeHash(info.polyjuiceContractTypeHash); 
+    } catch (error) {
+      console.log(`get chain info error`);
+      console.log(error);
+      notify(error.message);
+    }
+  }
+
   const getChainId = async () => {
     const web3Api = new Web3Api();
     try {
@@ -74,7 +97,7 @@ export default function ChainInfo() {
   const getPolyjuiceContractValidatorTypeHash = async () => {
     const web3Api = new Web3Api();
     try {
-      const data = await web3Api.getPolyjucieContractTypeHash();
+      const data = await web3Api.getPolyjuiceContractTypeHash();
       console.log(data);
       if (data.error)
         return notify(
@@ -140,11 +163,7 @@ export default function ChainInfo() {
   };
 
   useEffect(() => {
-    getChainId();
-    getCreatorId();
-    getRollupTypeHash();
-    getEthAccountLockConfig();
-    getPolyjuiceContractValidatorTypeHash();
+    getChainInfo(); 
     getServerConfig();
   }, []);
 

@@ -116,10 +116,8 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
     }, []);
 
     const init_web3_provider = () => {
-        const godwoken_web3_rpc_url = config.web3_server_url;
+        const godwoken_web3_rpc_url = config.web3_server_url.devnet;
         const provider_config: PolyjuiceConfig = {
-          rollupTypeHash: rollup_type_hash || '',
-          ethAccountLockCodeHash: eth_account_lock_code_hash || '', 
           abiItems: abi,
           web3Url: godwoken_web3_rpc_url 
         };
