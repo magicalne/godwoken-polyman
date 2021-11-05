@@ -145,7 +145,7 @@ export default function Contracts(props: ContractsProps) {
     } catch (error) {
       console.log(error);
       return notify(
-        `could not finished signing process. \n\n ${JSON.stringify(error)}`
+        `could not finished signing process. \n\n ${JSON.stringify(error.message)}`
       );
     }
   };

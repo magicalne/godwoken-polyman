@@ -186,7 +186,7 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
                         await assemble_call_view_tx(abi_item, input_params);   
                     } catch (error) {
                         console.log(error);
-                        notify(JSON.stringify(error, null, 2));   
+                        notify(JSON.stringify(error.message, null, 2));   
                     }
                 }
         
@@ -194,7 +194,7 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
                     try {
                         await assemble_send_payable_tx(abi_item, input_params); 
                     } catch (error) {
-                        notify(JSON.stringify(error, null, 2));   
+                        notify(JSON.stringify(error.message, null, 2));   
                     }
                 }
             }

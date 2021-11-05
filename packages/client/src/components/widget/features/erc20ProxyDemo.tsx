@@ -226,7 +226,7 @@ export default function Erc20ProxyDemo(props: Erc20ProxyDemoProps) {
       } catch (error) {
         console.log(error);
         return notify(
-          `could not finished signing process. \n\n ${JSON.stringify(error)}`
+          `could not finished signing process. \n\n ${JSON.stringify(error.message)}`
         );
       }
     } catch (error) {
