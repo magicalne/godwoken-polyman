@@ -271,7 +271,7 @@ export default function Wallet (props: WalletProps) {
           </div>
 */}
           <div>
-            <div style={styles.balance}> <span>{balance} CKB ( {toEthBalance(balance)}  pETH )</span></div>
+            <div style={styles.balance}> <span>{balance} CKB ( {balance}  pETH )</span></div>
           </div>
         </div>
     )
