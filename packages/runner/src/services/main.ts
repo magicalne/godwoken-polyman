@@ -9,6 +9,8 @@ import path from "path";
 import { loadJsonFile } from "../base/util";
 import fs from "fs";
 import { Service } from "./service";
+import { encodeArgs, EthTransaction } from "@polyjuice-provider/base";
+import { HexNumber, HexString } from "@ckb-lumos/base";
 
 const service_name = "polyjuice";
 
@@ -215,5 +217,42 @@ export class main extends Service {
     );
     const total_amount = await api.getL1SudtTokenTotalAmount(sudt_token);
     return { total_amount: total_amount.toString() };
+  }
+
+  //##### from here is sudt benchmark interface
+  async build_deploy() {
+    await this.issue_token();
+    await this.deploy_erc20_proxy_contract();
+    return null;
+  }
+
+  async build_transfer() {
+    const api = this.api;
+    const req = this.req;
+
+    const amount: HexString = this.req.amount;
+    const from_id: HexNumber = this.req.from_id;
+
+    const dummy_from = "0xFb2C72d3ffe10Ef7c9960272859a23D24db9e04A";
+    const dummy_to = "0xFb2C72d3ffe10Ef7c9960272859a23D24db9e04A";
+    const dummy_gas_limit = "";
+    const dummy_gas_price = "";
+    const dummy_data = "0x00";
+
+    const dummy_eth_tx: EthTransaction = {
+      from: dummy_from,
+      to: dummy_to,
+      gas: req.gas_limit || dummy_gas_limit,
+      gasPrice: req.gas_price || dummy_gas_price,
+      value: amount,
+      data: dummy_data,
+    };
+
+    const args = encodeArgs(dummy_eth_tx);
+    const nonce = await api.godwoken.getNonce(parseInt(from_id, 16));
+    return {
+      nonce: nonce.toString(),
+      args: args,
+    };
   }
 }
