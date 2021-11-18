@@ -9,6 +9,16 @@ import path from "path";
 import { loadJsonFile } from "../base/util";
 import fs from "fs";
 import { Service } from "./service";
+import { AbiItems, DEFAULT_EMPTY_ETH_ADDRESS, encodeArgs, EthTransaction, PolyjuiceConfig } from "@polyjuice-provider/base";
+import { HexNumber, HexString } from "@ckb-lumos/base";
+import crypto from "crypto";
+import keccak256 from "keccak256";
+import Web3 from "web3";
+import { PolyjuiceHttpProviderCli } from "@polyjuice-provider/web3";
+import erc20ProxyAbi from "../../configs/bin/newErc20ProxyAbi.json";
+const Web3EthAbi = require("web3-eth-abi");
+
+let erc20ProxyAddress: HexString;
 
 const service_name = "polyjuice";
 
@@ -216,4 +226,122 @@ export class main extends Service {
     const total_amount = await api.getL1SudtTokenTotalAmount(sudt_token);
     return { total_amount: total_amount.toString() };
   }
+
+  //##### from here is sudt benchmark interface
+  async build_deploy() {
+    const sudt_id = "0x"+polymanConfig.default_quantity.sudt_id_str;
+    const contract_file = path.resolve(
+      __dirname,
+      "../../configs/bin/newErc20Proxy.bin"
+    );
+    const contract_code =
+      "0x" + (await fs.readFileSync(contract_file).toString("utf-8"));
+
+    const to_deploy_contract_code = await this.api.generateErc20ProxyContractCode(sudt_id, contract_code);
+      
+    const from = privateKeyToEthAddress(polymanConfig.addresses.user_private_key);
+    const to = DEFAULT_EMPTY_ETH_ADDRESS;
+    const gas_limit = "0xffffff";
+    const gas_price = "0x00";
+    const value = "0x00";
+
+    const eth_tx: EthTransaction = {
+      from: from,
+      to: to,
+      gas: gas_limit,
+      gasPrice: gas_price,
+      value:value,
+      data: to_deploy_contract_code,
+    };
+    const polyjuiceConfig:PolyjuiceConfig = {
+      web3Url: polymanConfig.components.web3.rpc[1]
+    }
+    const provider = new PolyjuiceHttpProviderCli(polymanConfig.components.web3.rpc[1], polyjuiceConfig, polymanConfig.addresses.user_private_key);
+    const web3 = new Web3(provider);
+    const receipt = await web3.eth.sendTransaction(eth_tx as any);
+    console.log("receipt:", receipt);
+    const contractAddress = receipt.contractAddress;
+    erc20ProxyAddress = contractAddress;
+    const account_script_hash = await this.api.godwokenWeb3Rpc.gw_get_script_hash_by_short_address(contractAddress);
+    const account_id = await this.api.godwokenWeb3Rpc.gw_get_account_id_by_script_hash(account_script_hash);
+    return {
+      proxy_contract_id: account_id,
+      proxy_contract_script_hash: account_script_hash
+    }
+  }
+
+  async build_transfer() {
+    const api = this.api;
+    const req = this.req;
+    
+    const amount: HexString = this.req.query.amount;
+    const from_id: HexNumber = this.req.query.from_id;
+    const to_id: HexNumber = this.req.query.to_id;
+    const recevier_script_hash: HexString = await this.api.getScriptHashByAccountId(parseInt(to_id, 16));
+
+    console.log(`amount: ${amount}, from_id: ${from_id}, to_id: ${to_id}, to_script_hash: ${recevier_script_hash}`);
+
+    const dummy_from = privateKeyToEthAddress(polymanConfig.addresses.user_private_key);
+    const dummy_to = "0xE0cb80eaAcc32acb57dA171627AA19EF5ec30fCF";
+    const recevier_account_address = recevier_script_hash.slice(0, 42);
+    const dummy_gas_limit = "0xffffff";
+    const dummy_gas_price = "0x00";
+    const dummy_value = "0x00";
+
+    const abi_item = {
+      "inputs": [
+        { "internalType": "address", "name": "recipient", "type": "address" },
+        { "internalType": "uint256", "name": "amount", "type": "uint256" }
+      ],
+      "name": "transfer",
+      "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    };
+    const data = Web3EthAbi.encodeFunctionCall(
+      abi_item,
+      [recevier_account_address, amount]
+    );
+    console.log("data", data);
+    const dummy_eth_tx: EthTransaction = {
+      from: dummy_from,
+      to: dummy_to,
+      gas: req.gas_limit || dummy_gas_limit,
+      gasPrice: req.gas_price || dummy_gas_price,
+      value: dummy_value,
+      data: data,
+    };
+
+    const args = encodeArgs(dummy_eth_tx);
+    const nonce = await api.godwoken.getNonce(parseInt(from_id, 16));
+
+    //test
+   // const polyjuiceConfig:PolyjuiceConfig = {
+   //   web3Url: polymanConfig.components.web3.rpc[1]
+   // }
+   // const provider = new PolyjuiceHttpProviderCli(polymanConfig.components.web3.rpc[1], polyjuiceConfig, polymanConfig.addresses.user_private_key);
+   // const web3 = new Web3(provider);
+   // const receipt = await web3.eth.sendTransaction(dummy_eth_tx as any, function(error, hash){
+   //   console.log(error, hash)
+   // });
+   // console.log(receipt);
+
+    return {
+      nonce: nonce.toString(),
+      args: args,
+    };
+  }
+}
+
+export function privateKeyToEthAddress(privateKey) {
+  const ecdh = crypto.createECDH(`secp256k1`);
+  ecdh.generateKeys();
+  ecdh.setPrivateKey(Buffer.from(privateKey.slice(2), "hex"));
+  const publicKey = "0x" + ecdh.getPublicKey("hex", "uncompressed");
+  const _ethAddress =
+    "0x" +
+    keccak256(Buffer.from(publicKey.slice(4), "hex"))
+      .slice(12)
+      .toString("hex");
+  return _ethAddress;
 }
