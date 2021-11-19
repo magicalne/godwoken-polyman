@@ -7,6 +7,9 @@
   "author": "Linfeng Qian <thewawar@gmail.com>",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "build": "echo 'no need to build.'"
+  },
   "dependencies": {
     "@godwoken-polyman/godwoken": "^0.0.1"
   }

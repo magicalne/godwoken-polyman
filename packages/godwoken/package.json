@@ -9,7 +9,8 @@
   "private": true,
   "scripts": {
     "fmt": "prettier --write \"{lib,scripts,tests}/**/*.js\" index.d.ts package.json",
-    "test": "node test/godwoken.js"
+    "test": "node test/godwoken.js",
+    "build": "tsc"
   },
   "dependencies": {
     "@ckb-lumos/base": "^0.18.0-rc1",

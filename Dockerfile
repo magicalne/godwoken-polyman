@@ -2,7 +2,7 @@ FROM node:14-bullseye
 MAINTAINER Retric Su <retric@cryptape.com>
 
 COPY . /godwoken-polyman/.
-RUN cd /godwoken-polyman && yarn && yarn init_placeholder_config && yarn build:server
+RUN cd /godwoken-polyman && yarn && yarn init_placeholder_config && yarn build
 
 RUN apt-get update \
  && apt-get dist-upgrade -y \

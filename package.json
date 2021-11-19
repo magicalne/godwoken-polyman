@@ -23,6 +23,7 @@
     "init_placeholder_config": ". scripts/tool.sh && copy_configs_if_not_exist",
     "start": "yarn workspace @godwoken-polyman/runner start",
     "start:normal": "yarn workspace @godwoken-polyman/runner start:normal",
+    "build": "yarn workspace @godwoken-polyman/godwoken build && yarn workspace @godwoken-polyman/runner build",
     "build:server": "yarn workspace @godwoken-polyman/runner tsc",
     "build:client": "yarn workspace @godwoken-polyman/client build",
     "prepare-ui": "yarn build:client && rm -rf ./packages/runner/ui && cp -r ./packages/client/build ./packages/runner/ui",

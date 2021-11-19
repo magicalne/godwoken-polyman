@@ -3,7 +3,7 @@ import { SerializeDepositLockArgs } from "@godwoken-polyman/godwoken/schemas/god
 import { GwScriptsConfig } from "./types/conf";
 import { gwScriptsConfig } from "./config";
 import { Script, HexString, Hash, PackedSince, utils } from "@ckb-lumos/base";
-import { NormalizeDepositLockArgs } from "@godwoken-polyman/godwoken/normalizer";
+import { NormalizeDepositLockArgs } from "@godwoken-polyman/godwoken/lib/normalizer";
 import { rollupTypeHash } from "./config";
 
 export interface DepositLockArgs {

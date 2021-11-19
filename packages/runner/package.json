@@ -2,20 +2,19 @@
   "name": "@godwoken-polyman/runner",
   "version": "0.0.1",
   "description": "run for polyjuice",
-  "main": "lib/index.js",
-  "types": "index.d.ts",
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf ./db",
-    "start-call-polyman": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/setup-server.ts",
-    "start-call-polyman:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/setup-server.ts",
-    "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/index",
-    "start:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/index",
+    "start-call-polyman": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose concurrently \"tsc -w\" \"nodemon ./lib/src/setup-server.js\"",
+    "start-call-polyman:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal concurrently \"tsc -w\" \"nodemon ./lib/src/setup-server.js\"",
+    "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose concurrently \"tsc -w\" \"nodemon ./lib/src/index.js\"",
+    "start:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal concurrently \"tsc -w\" \"nodemon ./lib/src/index.js\"",
     "start:testnet": "MODE=testnet ts-node-dev ./src/index",
     "generateConfig": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev --ignore-watch configs/godwoken-config.json ./src/generate-config.ts",
     "generateConfig:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev --ignore-watch configs/godwoken-config.json ./src/generate-config.ts",
     "fmt": "prettier --write \"src/*.ts\" \"src/**/*.ts\" \"test/*.ts\" package.json",
-    "lint": "eslint -c ../../.eslintrc.js \"src/*.ts\" \"src/**/*.ts\" \"test/*.ts\""
+    "lint": "eslint -c ../../.eslintrc.js \"src/*.ts\" \"src/**/*.ts\" \"test/*.ts\"",
+    "build": "tsc"
   },
   "dependencies": {
     "@ckb-lumos/base": "^0.18.0-rc1",
@@ -27,6 +26,7 @@
     "@ckb-lumos/transaction-manager": "^0.18.0-rc1",
     "@godwoken-polyman/godwoken": "^0.0.1",
     "@iarna/toml": "^2.2.5",
+    "@polyjuice-provider/base": "^0.0.1-rc15",
     "@polyjuice-provider/web3": "^0.0.1-rc15",
     "@types/secp256k1": "^4.0.1",
     "ckb-js-toolkit": "^0.10.2",
@@ -39,10 +39,11 @@
     "web3": "^1.6.0"
   },
   "devDependencies": {
-    "@polyjuice-provider/base": "^0.0.1-rc15",
     "@types/connect-timeout": "0.0.34",
     "@types/cors": "^2.8.10",
     "@types/express": "^4.17.11",
+    "concurrently": "^6.4.0",
+    "nodemon": "^2.0.15",
     "ts-node-dev": "1.1.6"
   }
 }
