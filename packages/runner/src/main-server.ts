@@ -18,6 +18,7 @@ let INDEXER_DB_PATH = path.resolve(
 );
 const api = new Api(
   urls.ckb_rpc,
+  urls.ckb_indexer_rpc,
   urls.godwoken_rpc,
   urls.web3_rpc,
   INDEXER_DB_PATH

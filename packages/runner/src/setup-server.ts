@@ -11,6 +11,7 @@ const STORE_PATH_ROOT = path.resolve(indexerDbPath, "./call-polyman");
 const indexer_db_path = path.resolve(STORE_PATH_ROOT, "./indexer-db");
 const api = new Api(
   urls.ckb_rpc,
+  urls.ckb_indexer_rpc,
   urls.godwoken_rpc,
   urls.web3_rpc,
   indexer_db_path

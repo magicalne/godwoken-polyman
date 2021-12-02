@@ -51,6 +51,13 @@
         "http://ckb:8114",
         "http://localhost:8114"
       ]
+    },
+    "indexer": {
+      "rpc": [
+        "https://testnet.ckb.dev/indexer",
+        "http://ckb:8114",
+        "http://localhost:8114"
+      ]
     }
   }
 }

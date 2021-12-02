@@ -82,6 +82,7 @@ export const filePaths = {
 
 export const urls = {
   ckb_rpc: polymanConfig.components.ckb.rpc[cfgIdx],
+  ckb_indexer_rpc: polymanConfig.components.indexer.rpc[cfgIdx],
   godwoken_rpc: polymanConfig.components.godwoken.rpc[cfgIdx],
   web3_rpc: polymanConfig.components.web3.rpc[cfgIdx],
 };

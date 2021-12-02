@@ -8,6 +8,7 @@ import {
   generateCkbAddress,
   generateEthAddress,
 } from "./base/common";
+import { CkbIndexer } from "./indexer-remote";
 import {
   Godwoken,
   L2Transaction,
@@ -28,7 +29,7 @@ import {
 } from "@ckb-lumos/base";
 import { GwScriptsConfig } from "./base/types/conf";
 import { rollupTypeHash } from "./base/config";
-import { Indexer, CellCollector } from "@ckb-lumos/indexer";
+// import { Indexer, CellCollector } from "@ckb-lumos/indexer";
 import { key } from "@ckb-lumos/hd";
 import TransactionManager from "@ckb-lumos/transaction-manager";
 import {
@@ -66,23 +67,26 @@ import { ScriptDeploymentTransactionInfo } from "./base/types/gw";
 export class Api {
   public validator_code_hash: string;
   public ckb_rpc_url: string;
+  public ckb_indexer_url: string;
   public ckb_rpc: RPC;
   public godwokenWeb3Rpc: RPC;
   public godwoken_rpc_url: string;
   public godwoken: Godwoken;
-  public indexer: Indexer | null;
+  public indexer: CkbIndexer | null;
   public transactionManager: TransactionManager | null;
   public indexer_path: string;
   public polyjuice: Polyjuice | null;
 
   constructor(
     _ckb_rpc_url: string,
+    _ckb_indexer_url: string,
     _godwoken_rpc: string,
     _godwoken_web3_rpc_url: string,
     _indexer_path: string
   ) {
     this.indexer_path = _indexer_path;
     this.ckb_rpc_url = _ckb_rpc_url;
+    this.ckb_indexer_url = _ckb_indexer_url;
     this.godwoken_rpc_url = _godwoken_rpc;
 
     this.validator_code_hash = gwScriptsConfig.polyjuice_validator.code_hash;
@@ -157,11 +161,12 @@ export class Api {
         return httpsAliveAgent;
       }
     };
-    this.indexer = new Indexer(this.ckb_rpc_url, indexerPath, {
-      rpcOptions: {
-        agent: aliveAgent(new URL(this.ckb_rpc_url)),
-      },
-    });
+    this.indexer = new CkbIndexer(this.ckb_rpc_url, this.ckb_indexer_url);
+    // this.indexer = new Indexer(this.ckb_rpc_url, indexerPath, {
+    //   rpcOptions: {
+    //     agent: aliveAgent(new URL(this.ckb_rpc_url)),
+    //   },
+    // });
 
     this.indexer.startForever();
     this.transactionManager = new TransactionManager(this.indexer);
@@ -658,9 +663,12 @@ export class Api {
     };
 
     // find cell with sudt
-    const cellCollector = new CellCollector(this.indexer, {
-      type: type_script,
+    const cellCollector = this.indexer.collector({
+      type: type_script
     });
+    // const cellCollector = new CellCollector(this.indexer, {
+    //   type: type_script,
+    // });
 
     let capacity = 0n;
 
