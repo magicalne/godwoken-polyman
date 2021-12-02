@@ -49,6 +49,7 @@ export async function start() {
     const creatorId = await api.findCreatorAccountId(
       polymanConfig.default_quantity.sudt_id_str
     );
+    console.log(`creator id: ${creatorId}`);
     if (creatorId === null) {
       const from_id = await api.deposit(
         polymanConfig.addresses.user_private_key,
