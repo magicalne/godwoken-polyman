@@ -16,6 +16,7 @@ let INDEXER_DB_PATH = path.resolve(
   indexerDbPath,
   "./api-server/ckb-indexer-data"
 );
+console.log(`urls: ${JSON.stringify(urls, null, 2)}`);
 const api = new Api(
   urls.ckb_rpc,
   urls.ckb_indexer_rpc,
@@ -49,7 +50,6 @@ export async function start() {
     const creatorId = await api.findCreatorAccountId(
       polymanConfig.default_quantity.sudt_id_str
     );
-    console.log(`creator id: ${creatorId}`);
     if (creatorId === null) {
       const from_id = await api.deposit(
         polymanConfig.addresses.user_private_key,

@@ -104,7 +104,7 @@ function getOptional(name: string): string | undefined {
   return env[name];
 }
 
-function getConfigIndex() {
+export function getConfigIndex() {
   let cfgIdx;
   switch (envConfig.mode) {
     case "testnet":

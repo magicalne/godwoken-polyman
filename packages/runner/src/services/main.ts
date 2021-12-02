@@ -1,4 +1,5 @@
 import {
+  getConfigIndex,
   polymanConfig,
   gwScriptsConfig,
   filePaths,
@@ -21,6 +22,7 @@ const Web3EthAbi = require("web3-eth-abi");
 let erc20ProxyAddress: HexString;
 
 const service_name = "polyjuice";
+export const cfgIdx = getConfigIndex();
 
 export class main extends Service {
   constructor(api: Api, name: string = service_name, req?, res?) {
@@ -253,10 +255,11 @@ export class main extends Service {
       value:value,
       data: to_deploy_contract_code,
     };
+    const web3_url = polymanConfig.components.web3.rpc[cfgIdx];
     const polyjuiceConfig:PolyjuiceConfig = {
-      web3Url: polymanConfig.components.web3.rpc[1]
+      web3Url: web3_url
     }
-    const provider = new PolyjuiceHttpProviderCli(polymanConfig.components.web3.rpc[1], polyjuiceConfig, polymanConfig.addresses.user_private_key);
+    const provider = new PolyjuiceHttpProviderCli(web3_url, polyjuiceConfig, polymanConfig.addresses.user_private_key);
     const web3 = new Web3(provider);
     const receipt = await web3.eth.sendTransaction(eth_tx as any);
     console.log("receipt:", receipt);
