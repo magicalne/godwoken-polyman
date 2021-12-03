@@ -16,7 +16,6 @@ let INDEXER_DB_PATH = path.resolve(
   indexerDbPath,
   "./api-server/ckb-indexer-data"
 );
-console.log(`urls: ${JSON.stringify(urls, null, 2)}`);
 const api = new Api(
   urls.ckb_rpc,
   urls.ckb_indexer_rpc,

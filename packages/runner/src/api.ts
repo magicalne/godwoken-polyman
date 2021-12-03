@@ -162,11 +162,6 @@ export class Api {
       }
     };
     this.indexer = new CkbIndexer(this.ckb_rpc_url, this.ckb_indexer_url);
-    // this.indexer = new Indexer(this.ckb_rpc_url, indexerPath, {
-    //   rpcOptions: {
-    //     agent: aliveAgent(new URL(this.ckb_rpc_url)),
-    //   },
-    // });
 
     this.indexer.startForever();
     this.transactionManager = new TransactionManager(this.indexer);
@@ -666,9 +661,6 @@ export class Api {
     const cellCollector = this.indexer.collector({
       type: type_script
     });
-    // const cellCollector = new CellCollector(this.indexer, {
-    //   type: type_script,
-    // });
 
     let capacity = 0n;
 
