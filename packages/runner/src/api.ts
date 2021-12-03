@@ -69,7 +69,7 @@ export class Api {
   public ckb_rpc_url: string;
   public ckb_indexer_url: string;
   public ckb_rpc: RPC;
-  public godwokenWeb3Rpc: RPC;
+  public godwokenRpc: RPC;
   public godwoken_rpc_url: string;
   public godwoken: Godwoken;
   public indexer: CkbIndexer | null;
@@ -94,7 +94,12 @@ export class Api {
     this.indexer = null;
     this.transactionManager = null;
     this.ckb_rpc = new RPC(this.ckb_rpc_url);
-    this.godwokenWeb3Rpc = new RPC(_godwoken_web3_rpc_url);
+
+    if (this.isTestnet) {
+      this.godwokenRpc = new RPC(_godwoken_web3_rpc_url);
+    } else {
+      this.godwokenRpc = new RPC(_godwoken_rpc); // in kicker we can remove the deps for web3
+    }
     this.godwoken = new Godwoken(this.godwoken_rpc_url);
 
     this.polyjuice = null;
@@ -110,7 +115,7 @@ export class Api {
   public async getAccountIdByScriptHash(
     scriptHash: Hash
   ): Promise<number | null> {
-    const accountID = await this.godwokenWeb3Rpc
+    const accountID = await this.godwokenRpc
       .gw_get_account_id_by_script_hash(scriptHash)
       .catch(console.error);
 
