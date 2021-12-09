@@ -80,6 +80,7 @@ export class FeeTest extends Tester {
       return [];
     }
 
+    console.log(`ready to test ${this.testAccounts.length} accounts`);
     let executePromiseList: Promise<ExecuteFeeResult>[] = [];
     let counter: number = 0;
     for (const [index, account] of Object.entries(this.testAccounts)) {
@@ -113,6 +114,9 @@ export class FeeTest extends Tester {
             gasPriceType: getGasPriceTypeById(gasPriceId),
             executeTimeInMilSecs: diffInMilSecs,
           };
+          console.log(
+            `account ${index} finished, gasPrice: ${result.gasPrice}, time: ${result.executeTimeInMilSecs}m`
+          );
           return resolve(result);
         } catch (error) {
           return reject(error);

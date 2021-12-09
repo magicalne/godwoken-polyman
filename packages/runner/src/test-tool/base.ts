@@ -30,15 +30,15 @@ export class Tester {
     let that = this;
     await this.api.syncToTip();
 
-    try {
-      const testAccountsJson = await loadJsonFile(testAccountsJsonPath);
+    const testAccountsJson = await loadJsonFile(testAccountsJsonPath);
+    if (testAccountsJson != null) {
       this.testAccounts = testAccountsJson as TestAccount[];
       return this.testAccounts;
-    } catch (error) {
-      console.debug(
-        "can not load test accounts from file, try generating brand new accounts."
-      );
     }
+
+    console.debug(
+      "can not load test accounts from file, try generating brand new accounts."
+    );
 
     // let's prepare some live cells for deposit
     const splitTxHash = await this.api.sendSplitCells(

@@ -18,7 +18,7 @@ api.syncLayer1();
 const fee = async () => {
   const test = new FeeTest(api, polymanConfig.addresses.user_private_key);
   try {
-    await test.prepareTestAccounts(6);
+    await test.prepareTestAccounts(30);
     await test.run();
     process.exit(0);
   } catch (error) {
