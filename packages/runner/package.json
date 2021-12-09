@@ -12,6 +12,7 @@
     "start": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev ./src/index",
     "start:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev ./src/index",
     "start:testnet": "MODE=testnet ts-node-dev ./src/index",
+    "testcase": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node ./src/test-case.ts",
     "generateConfig": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=docker-compose ts-node-dev --ignore-watch configs/godwoken-config.json ./src/generate-config.ts",
     "generateConfig:normal": "LUMOS_CONFIG_FILE=./configs/lumos-config.json MODE=normal ts-node-dev --ignore-watch configs/godwoken-config.json ./src/generate-config.ts",
     "fmt": "prettier --write \"src/*.ts\" \"src/**/*.ts\" \"test/*.ts\" package.json",
@@ -27,7 +28,7 @@
     "@ckb-lumos/transaction-manager": "^0.18.0-rc1",
     "@godwoken-polyman/godwoken": "^0.0.1",
     "@iarna/toml": "^2.2.5",
-    "@polyjuice-provider/web3": "^0.0.1-rc15",
+    "@polyjuice-provider/web3": "v0.1.1",
     "@types/secp256k1": "^4.0.1",
     "ckb-js-toolkit": "^0.10.2",
     "commander": "^6.2.1",
@@ -39,7 +40,7 @@
     "web3": "^1.6.0"
   },
   "devDependencies": {
-    "@polyjuice-provider/base": "^0.0.1-rc15",
+    "@polyjuice-provider/base": "v0.1.1",
     "@types/connect-timeout": "0.0.34",
     "@types/cors": "^2.8.10",
     "@types/express": "^4.17.11",
