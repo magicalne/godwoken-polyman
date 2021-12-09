@@ -63,6 +63,11 @@ import {
 } from "./base/util";
 import { ScriptDeploymentTransactionInfo } from "./base/types/gw";
 
+export interface DepositTxResult {
+  txHash: HexString;
+  ethAddress: HexString;
+}
+
 export class Api {
   public validator_code_hash: string;
   public ckb_rpc_url: string;
@@ -231,11 +236,11 @@ export class Api {
       ownerLockHash,
       layer2LockArgs
     );
-    console.log(
-      `Layer 2 lock script hash: ${utils.computeScriptHash(
-        depositLockArgs.layer2_lock
-      )}`
-    );
+    // console.log(
+    //   `Layer 2 lock script hash: ${utils.computeScriptHash(
+    //     depositLockArgs.layer2_lock
+    //   )}`
+    // );
     const serializedArgs: HexString = serializeArgs(depositLockArgs);
     const depositLock: Script = generateDepositLock(
       deploymentConfig,
@@ -273,8 +278,7 @@ export class Api {
 
     const tx = sealTransaction(txSkeleton, [content]);
 
-    const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
-
+    const txHash: Hash = await this.transactionManager.send_transaction(tx);
     return txHash;
   }
 
@@ -409,6 +413,71 @@ export class Api {
           this.ckb_rpc!,
           txWithStatus.tx_status.block_hash
         );
+        break;
+      }
+    }
+    console.log(`tx ${txHash} is now onChain!`);
+
+    //get deposit account id
+    const script_hash = calculateLayer2LockScriptHash(ethAddress);
+
+    // wait for confirm
+    await this.waitForAccountIdOnChain(script_hash);
+
+    const account_id = await this.getAccountIdByScriptHash(script_hash);
+    return account_id.toString();
+  }
+
+  async generateDepositTx(
+    _privateKey: string,
+    _ethAddress: string | undefined,
+    _amount: string
+  ): Promise<DepositTxResult> {
+    if (!this.indexer) {
+      throw new Error("indexer is null, please run syncLayer1 first!");
+    }
+
+    const privateKey = _privateKey;
+    const ckbAddress = generateCkbAddress(privateKey);
+    const ethAddress = _ethAddress || generateEthAddress(privateKey);
+    console.log("using eth address:", ethAddress);
+
+    const txHash: Hash = await this.sendTx(
+      gwScriptsConfig,
+      ckbAddress,
+      _amount,
+      ethAddress.toLowerCase(),
+      privateKey
+    );
+
+    console.log(`txHash ${txHash} is sent!`);
+
+    return { txHash, ethAddress };
+  }
+
+  async checkDepositByTxHash(txHash: HexString, ethAddress: HexString) {
+    let tx;
+    // Wait for tx to land on chain.
+    while (true) {
+      await asyncSleep(1000);
+      const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
+      if (txWithStatus === null) {
+        throw new Error(
+          `the tx ${txHash} is disappeared from ckb, please re-try.`
+        );
+      }
+
+      if (
+        txWithStatus &&
+        txWithStatus.tx_status &&
+        txWithStatus.tx_status.status === "committed"
+      ) {
+        await waitForBlockSync(
+          this.indexer,
+          this.ckb_rpc!,
+          txWithStatus.tx_status.block_hash
+        );
+        tx = txWithStatus;
         break;
       }
     }
@@ -1325,6 +1394,7 @@ export class Api {
     const content: HexString = key.signRecoverable(message, private_key);
 
     const tx = sealTransaction(txSkeleton, [content]);
+
     const tx_hash: Hash = await this.transactionManager.send_transaction(tx);
     console.log(`transaction ${tx_hash} is now sent...`);
     const outpoint: OutPoint = {
