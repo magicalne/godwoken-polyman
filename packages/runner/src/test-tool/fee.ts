@@ -84,6 +84,14 @@ export class FeeTest extends Tester {
     let executePromiseList: Promise<ExecuteFeeResult>[] = [];
     let counter: number = 0;
     for (const [index, account] of Object.entries(this.testAccounts)) {
+      if (
+        process.env.MAX_ACCOUNTs != null &&
+        +index > +process.env.MAX_ACCOUNTs
+      ) {
+        // control max accounts used for test from env
+        continue;
+      }
+
       if (+index >= 3 && +index % 3 === 0) {
         counter = 0;
       }
