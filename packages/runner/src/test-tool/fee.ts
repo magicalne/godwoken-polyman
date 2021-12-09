@@ -80,13 +80,18 @@ export class FeeTest extends Tester {
       return [];
     }
 
-    console.log(`ready to test ${this.testAccounts.length} accounts`);
+    console.log(
+      `load ${this.testAccounts.length} accounts, ready to test with ${
+        process.env.MAX_ACCOUNT || this.testAccounts.length
+      }.`
+    );
+
     let executePromiseList: Promise<ExecuteFeeResult>[] = [];
     let counter: number = 0;
     for (const [index, account] of Object.entries(this.testAccounts)) {
       if (
-        process.env.MAX_ACCOUNTs != null &&
-        +index > +process.env.MAX_ACCOUNTs
+        process.env.MAX_ACCOUNT != null &&
+        +index > +process.env.MAX_ACCOUNT
       ) {
         // control max accounts used for test from env
         continue;
@@ -135,11 +140,6 @@ export class FeeTest extends Tester {
     }
     return Promise.all(executePromiseList)
       .then((results) => {
-        results.forEach((result) => {
-          console.debug(
-            `execute result => gasPrice ${result.gasPrice}, time: ${result.executeTimeInMilSecs} milsecs`
-          );
-        });
         return Promise.resolve(results);
       })
       .catch((err) => {
@@ -147,6 +147,19 @@ export class FeeTest extends Tester {
         return Promise.reject(err);
       });
   }
+}
+
+export async function outputTestReport(results: ExecuteFeeResult[]) {
+  const sortResult = results.sort(
+    (a, b) => a.executeTimeInMilSecs - b.executeTimeInMilSecs
+  );
+  console.log("");
+  console.log("======= execute results =======");
+  sortResult.forEach((result) => {
+    console.debug(
+      `=> gasPrice ${result.gasPrice}, time: ${result.executeTimeInMilSecs} milsecs`
+    );
+  });
 }
 
 export async function getGasPrice() {

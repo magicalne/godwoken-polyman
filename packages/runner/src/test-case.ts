@@ -1,4 +1,4 @@
-import { FeeTest } from "./test-tool";
+import { FeeTest, outputTestReport } from "./test-tool";
 import path from "path";
 import { urls, indexerDbPath, polymanConfig } from "./base/config";
 import { Api } from "./api";
@@ -19,7 +19,8 @@ const fee = async () => {
   const test = new FeeTest(api, polymanConfig.addresses.user_private_key);
   try {
     await test.prepareTestAccounts(30);
-    await test.run();
+    const results = await test.run();
+    await outputTestReport(results);
     process.exit(0);
   } catch (error) {
     console.log(error);
