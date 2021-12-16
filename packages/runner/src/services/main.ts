@@ -233,6 +233,22 @@ export class main extends Service {
     return { total_amount: total_amount.toString() };
   }
 
+  //##### from here is test-tool interface
+  
+  async jam_ckb_network(){
+    const api = this.api;
+    const req = this.req;
+
+    const total = +req.query.total;
+    const txHashes = [];
+    for(let i=0;i<total;i++){
+      const txHash = await api.sendJamL1Tx(polymanConfig.addresses.user_private_key);
+      console.log(`send l1 tx: ${txHash}`);
+      txHashes.push(txHash);
+    }
+    return {txHashes}
+  }
+
   //##### from here is sudt benchmark interface
   async build_deploy() {
     const sudt_id = "0x" + polymanConfig.default_quantity.sudt_id_str;

@@ -1255,6 +1255,52 @@ export class Api {
     return true;
   }
 
+  // send some meaningless layer1 tx to jam ckb node
+  async sendJamL1Tx(private_key: string) {
+    let txSkeleton = TransactionSkeleton({
+      cellProvider: this.transactionManager,
+    });
+    const ckb_address = generateCkbAddress(private_key);
+    const lock: Script = parseAddress(ckb_address);
+
+    const capacity_per_cell = BigInt("10000000000"); // 100 ckb
+    let outputCell: Cell = {
+      cell_output: {
+        capacity: `0x${capacity_per_cell.toString(16)}`,
+        lock: lock,
+      },
+      data: "0x",
+    };
+    try {
+      txSkeleton = await common.injectCapacity(
+        txSkeleton,
+        [ckb_address],
+        capacity_per_cell
+      );
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push(outputCell);
+    });
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [ckb_address],
+      BigInt(1000)
+    );
+
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, private_key);
+
+    const tx = sealTransaction(txSkeleton, [content]);
+    const tx_hash: Hash = await this.transactionManager.send_transaction(tx);
+    console.log(`transaction ${tx_hash} is now sent...`);
+    return tx_hash;
+  }
+
   // split cells evenly
   async sendSplitCells(
     total_capacity: bigint,
