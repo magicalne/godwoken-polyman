@@ -234,7 +234,26 @@ export class main extends Service {
   }
 
   //##### from here is test-tool interface
-  
+  async give_user_cells(){
+    const api = this.api;
+    const req = this.req;
+
+    const total = +req.query.total;
+
+    const txHash = await api.sendSplitCells(
+      BigInt(100_0000_0000) * BigInt(total),
+      total,
+      polymanConfig.addresses.miner_private_key,
+      polymanConfig.addresses.user_ckb_devnet_addr
+    );
+    await api.waitForCkbTx(txHash);
+    const count = await api.getTotalCells(polymanConfig.addresses.user_ckb_devnet_addr);
+
+    console.log("deposit for user", `total cells: ${count}`);
+    return {txHash, cellsCount: count};
+  }  
+
+
   async jam_ckb_network(){
     const api = this.api;
     const req = this.req;
@@ -242,6 +261,7 @@ export class main extends Service {
     const total = +req.query.total;
     const txHashes = [];
     for(let i=0;i<total;i++){
+      console.log(`${i}th tx.........`);
       const txHash = await api.sendJamL1Tx(polymanConfig.addresses.user_private_key);
       console.log(`send l1 tx: ${txHash}`);
       txHashes.push(txHash);

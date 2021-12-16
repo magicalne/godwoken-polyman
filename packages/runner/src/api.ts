@@ -25,6 +25,7 @@ import {
   core as ckb_core,
   OutPoint,
   TransactionWithStatus,
+  QueryOptions,
 } from "@ckb-lumos/base";
 import { GwScriptsConfig } from "./base/types/conf";
 import { rollupTypeHash } from "./base/config";
@@ -1257,6 +1258,7 @@ export class Api {
 
   // send some meaningless layer1 tx to jam ckb node
   async sendJamL1Tx(private_key: string) {
+    this.syncToTip();
     let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
@@ -1301,17 +1303,33 @@ export class Api {
     return tx_hash;
   }
 
+  async getTotalCells(
+    ckb_address: string
+  ){
+    const lock: Script = parseAddress(ckb_address);
+    const query: QueryOptions = {
+      lock,
+      type: null
+    };
+    const count = await this.transactionManager.collector(query).count();
+    console.log(`${ckb_address} cell count: ${count}`);
+    return count;
+  }
+
   // split cells evenly
   async sendSplitCells(
     total_capacity: bigint,
     total_pieces: number,
-    private_key: string
+    private_key: string,
+    receiver_ckb_address?: string
   ) {
+    await this.syncToTip();
     let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
-    const ckb_address = generateCkbAddress(private_key);
-    const lock: Script = parseAddress(ckb_address);
+    const sender_address = generateCkbAddress(private_key);
+    const receiver_address = receiver_ckb_address || generateCkbAddress(private_key);
+    const lock: Script = parseAddress(receiver_address);
 
     const capacity_per_cell = total_capacity / BigInt(total_pieces);
     let outputCell: Cell = {
@@ -1328,7 +1346,7 @@ export class Api {
     try {
       txSkeleton = await common.injectCapacity(
         txSkeleton,
-        [ckb_address],
+        [sender_address],
         capacity_per_cell * BigInt(total_pieces)
       );
     } catch (error) {
@@ -1340,7 +1358,7 @@ export class Api {
     });
     txSkeleton = await common.payFeeByFeeRate(
       txSkeleton,
-      [ckb_address],
+      [sender_address],
       BigInt(1000)
     );
 
