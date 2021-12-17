@@ -5,7 +5,10 @@ import { indexerDbPath, polymanConfig } from "../base/config";
 import { loadJsonFile, saveJsonFile } from "../base/util";
 import path from "path";
 
-const testAccountsJsonPath = path.resolve(indexerDbPath, "./testAccounts.json");
+const testAccountsJsonPath = path.resolve(
+  indexerDbPath,
+  "./test-accounts.json"
+);
 
 export class Tester {
   public api: Api;
@@ -91,6 +94,32 @@ export class Tester {
       .catch((error) => {
         Promise.reject(error);
       });
+  }
+
+  async genTestAccounts(
+    length: number = 20,
+    filePath: string = testAccountsJsonPath
+  ) {
+    const testAccountsJson = await loadJsonFile(filePath);
+    if (testAccountsJson != null) {
+      this.testAccounts = testAccountsJson as TestAccount[];
+
+      if (this.testAccounts.length < length) {
+        const offset = length - this.testAccounts.length;
+        // generate accounts and make deposit
+        const newAccounts = newEthAccountList(offset);
+        this.testAccounts = [...this.testAccounts, ...newAccounts];
+      }
+
+      // save on local
+      await saveJsonFile(this.testAccounts, filePath);
+      return this.testAccounts;
+    }
+
+    // generate account json file
+    this.testAccounts = newEthAccountList(length);
+    await saveJsonFile(this.testAccounts, filePath);
+    return this.testAccounts;
   }
 
   run() {}

@@ -7,10 +7,12 @@ import { AbiItems, PolyjuiceConfig } from "@polyjuice-provider/base";
 import PolyjuiceHttpProvider, {
   PolyjuiceAccounts,
 } from "@polyjuice-provider/web3";
+import { generateCkbAddress } from "../base/common";
 const Contract = require("web3-eth-contract");
 
 export interface TestAccount {
   ethAddress: HexString;
+  ckbAddress: HexString;
   privateKey: HexString;
   accountId?: null | HexNumber;
 }
@@ -20,6 +22,18 @@ export function newEthAccountList(length: number = 20) {
 }
 
 export function generateEthAccount() {
+  const web3 = new Web3();
+  const privateKey = web3.utils.randomHex(32);
+  const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+  const ckbAddress = privateKeyToCkbAddress(privateKey);
+  return {
+    ethAddress: account.address,
+    ckbAddress: ckbAddress,
+    privateKey: account.privateKey,
+  };
+}
+
+export function generateCkbAccount() {
   const web3 = new Web3();
   const privateKey = web3.utils.randomHex(32);
   const account = web3.eth.accounts.privateKeyToAccount(privateKey);
@@ -40,6 +54,11 @@ export function privateKeyToEthAddress(privateKey) {
       .slice(12)
       .toString("hex");
   return _ethAddress;
+}
+
+export function privateKeyToCkbAddress(privateKey: HexString) {
+  const address = generateCkbAddress(privateKey);
+  return address;
 }
 
 export async function deployContract(

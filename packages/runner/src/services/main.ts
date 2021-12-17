@@ -22,6 +22,7 @@ import keccak256 from "keccak256";
 import Web3 from "web3";
 import { PolyjuiceHttpProviderCli } from "@polyjuice-provider/web3";
 import erc20ProxyAbi from "../../configs/bin/newErc20ProxyAbi.json";
+import { Tester, TestAccount } from "../test-tool";
 const Web3EthAbi = require("web3-eth-abi");
 
 let erc20ProxyAddress: HexString;
@@ -234,7 +235,14 @@ export class main extends Service {
   }
 
   //##### from here is test-tool interface
-  async give_user_cells(){
+  async get_total_cells_info() {
+    const api = this.api;
+    return await api.getTotalCells(
+      polymanConfig.addresses.user_ckb_devnet_addr
+    );
+  }
+
+  async give_user_cells() {
     const api = this.api;
     const req = this.req;
 
@@ -247,26 +255,65 @@ export class main extends Service {
       polymanConfig.addresses.user_ckb_devnet_addr
     );
     await api.waitForCkbTx(txHash);
-    const count = await api.getTotalCells(polymanConfig.addresses.user_ckb_devnet_addr);
+    const count = await api.getTotalCells(
+      polymanConfig.addresses.user_ckb_devnet_addr
+    );
 
     console.log("deposit for user", `total cells: ${count}`);
-    return {txHash, cellsCount: count};
-  }  
+    return { txHash, cellsCount: count };
+  }
 
-
-  async jam_ckb_network(){
+  async prepare_jam_accounts() {
     const api = this.api;
     const req = this.req;
 
     const total = +req.query.total;
-    const txHashes = [];
-    for(let i=0;i<total;i++){
-      console.log(`${i}th tx.........`);
-      const txHash = await api.sendJamL1Tx(polymanConfig.addresses.user_private_key);
-      console.log(`send l1 tx: ${txHash}`);
-      txHashes.push(txHash);
+    const accountsFilePath = path.resolve(
+      __dirname,
+      "../../db/test-accounts.json"
+    );
+
+    const tester = new Tester(api, polymanConfig.addresses.miner_private_key);
+    await tester.genTestAccounts(total + 1, accountsFilePath);
+    const accounts = tester.testAccounts;
+
+    const receiverAddressList = accounts.map((a) => a.ckbAddress);
+
+    const totalAccounts = receiverAddressList.length;
+    const totalCap = BigInt("60000000000") * BigInt(totalAccounts);
+
+    const txHash = await api.sendFundAccountsTx(
+      totalCap,
+      totalAccounts,
+      polymanConfig.addresses.miner_private_key,
+      receiverAddressList
+    );
+    await api.waitForCkbTx(txHash);
+    return accounts;
+  }
+
+  async jam_ckb_network() {
+    const api = this.api;
+    const req = this.req;
+
+    const total = +req.query.total;
+
+    const accountsFilePath = path.resolve(
+      __dirname,
+      "../../db/test-accounts.json"
+    );
+    const accounts = (await loadJsonFile(accountsFilePath)) as TestAccount[];
+    if (accounts == null) throw new Error("do prepare_jam_accounts first!");
+
+    const jamTxs = [];
+    for (let i = 0; i < total; i++) {
+      const privateKey = accounts[i].privateKey;
+      const receiver = accounts[i].ethAddress;
+      const tx = await api.genDepositJamTx(privateKey, receiver, "40000000000"); // 400ckb
+      jamTxs.push(tx);
     }
-    return {txHashes}
+    console.log(`prepare ${jamTxs.length} txs, ready to jam ckb network...`);
+    return await api.sendBatchTxs(jamTxs);
   }
 
   //##### from here is sudt benchmark interface
