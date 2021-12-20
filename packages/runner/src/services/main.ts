@@ -3,6 +3,7 @@ import {
   gwScriptsConfig,
   filePaths,
   rollupTypeHash,
+  indexerDbPath,
 } from "../base/config";
 import { Api } from "../api";
 import path from "path";
@@ -10,7 +11,6 @@ import { loadJsonFile } from "../base/util";
 import fs from "fs";
 import { Service } from "./service";
 import {
-  AbiItems,
   DEFAULT_EMPTY_ETH_ADDRESS,
   encodeArgs,
   EthTransaction,
@@ -21,11 +21,8 @@ import crypto from "crypto";
 import keccak256 from "keccak256";
 import Web3 from "web3";
 import { PolyjuiceHttpProviderCli } from "@polyjuice-provider/web3";
-import erc20ProxyAbi from "../../configs/bin/newErc20ProxyAbi.json";
 import { Tester, TestAccount } from "../test-tool";
 const Web3EthAbi = require("web3-eth-abi");
-
-let erc20ProxyAddress: HexString;
 
 const service_name = "polyjuice";
 
@@ -269,8 +266,8 @@ export class main extends Service {
 
     const total = +req.query.total;
     const accountsFilePath = path.resolve(
-      __dirname,
-      "../../db/test-accounts.json"
+      indexerDbPath,
+      "./test-accounts.json"
     );
 
     const tester = new Tester(api, polymanConfig.addresses.miner_private_key);
@@ -299,8 +296,8 @@ export class main extends Service {
     const total = +req.query.total;
 
     const accountsFilePath = path.resolve(
-      __dirname,
-      "../../db/test-accounts.json"
+      indexerDbPath,
+      "./test-accounts.json"
     );
     const accounts = (await loadJsonFile(accountsFilePath)) as TestAccount[];
     if (accounts == null) throw new Error("do prepare_jam_accounts first!");
@@ -308,8 +305,10 @@ export class main extends Service {
     const jamTxs = [];
     for (let i = 0; i < total; i++) {
       const privateKey = accounts[i].privateKey;
-      const receiver = accounts[i].ethAddress;
-      const tx = await api.genDepositJamTx(privateKey, receiver, "40000000000"); // 400ckb
+      // const receiver = accounts[i].ethAddress;
+      //const tx = await api.genDepositJamTx(privateKey, receiver, "40000000000"); // 400ckb
+      const ckbAddress = accounts[i].ckbAddress; 
+      const tx = await api.genJamL1Tx(privateKey, ckbAddress);
       jamTxs.push(tx);
     }
     console.log(`prepare ${jamTxs.length} txs, ready to jam ckb network...`);
@@ -357,7 +356,6 @@ export class main extends Service {
     const receipt = await web3.eth.sendTransaction(eth_tx as any);
     console.log("receipt:", receipt);
     const contractAddress = receipt.contractAddress;
-    erc20ProxyAddress = contractAddress;
     const account_script_hash =
       await this.api.godwokenRpc.gw_get_script_hash_by_short_address(
         contractAddress
