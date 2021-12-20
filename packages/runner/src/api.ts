@@ -25,6 +25,8 @@ import {
   core as ckb_core,
   OutPoint,
   TransactionWithStatus,
+  QueryOptions,
+  Transaction,
 } from "@ckb-lumos/base";
 import { GwScriptsConfig } from "./base/types/conf";
 import { rollupTypeHash } from "./base/config";
@@ -62,6 +64,11 @@ import {
   DeepDiffMapper,
 } from "./base/util";
 import { ScriptDeploymentTransactionInfo } from "./base/types/gw";
+
+export interface DepositTxResult {
+  txHash: HexString;
+  ethAddress: HexString;
+}
 
 export class Api {
   public validator_code_hash: string;
@@ -231,11 +238,11 @@ export class Api {
       ownerLockHash,
       layer2LockArgs
     );
-    console.log(
-      `Layer 2 lock script hash: ${utils.computeScriptHash(
-        depositLockArgs.layer2_lock
-      )}`
-    );
+    // console.log(
+    //   `Layer 2 lock script hash: ${utils.computeScriptHash(
+    //     depositLockArgs.layer2_lock
+    //   )}`
+    // );
     const serializedArgs: HexString = serializeArgs(depositLockArgs);
     const depositLock: Script = generateDepositLock(
       deploymentConfig,
@@ -273,9 +280,70 @@ export class Api {
 
     const tx = sealTransaction(txSkeleton, [content]);
 
-    const txHash: Hash = await this.ckb_rpc.send_transaction(tx, "passthrough");
-
+    const txHash: Hash = await this.transactionManager.send_transaction(tx);
     return txHash;
+  }
+
+  async genDepositTx(
+    deploymentConfig: GwScriptsConfig,
+    fromAddress: string,
+    amount: string,
+    layer2LockArgs: HexString,
+    privateKey: HexString
+  ): Promise<Transaction> {
+    if (!this.transactionManager)
+      throw new Error(`this.transactionManager not found.`);
+
+    let txSkeleton = TransactionSkeleton({
+      cellProvider: this.transactionManager,
+    });
+
+    const ownerLock: Script = parseAddress(fromAddress);
+    const ownerLockHash: Hash = utils.computeScriptHash(ownerLock);
+
+    const depositLockArgs: DepositLockArgs = getDepositLockArgs(
+      ownerLockHash,
+      layer2LockArgs
+    );
+
+    const serializedArgs: HexString = serializeArgs(depositLockArgs);
+    const depositLock: Script = generateDepositLock(
+      deploymentConfig,
+      serializedArgs
+    );
+
+    const outputCell: Cell = {
+      cell_output: {
+        capacity: "0x" + BigInt(amount).toString(16),
+        lock: depositLock,
+      },
+      data: "0x",
+    };
+
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push(outputCell);
+    });
+
+    txSkeleton = await common.injectCapacity(
+      txSkeleton,
+      [fromAddress],
+      BigInt(amount)
+    );
+
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [fromAddress],
+      BigInt(1000)
+    );
+
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, privateKey);
+
+    const tx = sealTransaction(txSkeleton, [content]);
+
+    return tx;
   }
 
   async sendSudtTx(
@@ -409,6 +477,71 @@ export class Api {
           this.ckb_rpc!,
           txWithStatus.tx_status.block_hash
         );
+        break;
+      }
+    }
+    console.log(`tx ${txHash} is now onChain!`);
+
+    //get deposit account id
+    const script_hash = calculateLayer2LockScriptHash(ethAddress);
+
+    // wait for confirm
+    await this.waitForAccountIdOnChain(script_hash);
+
+    const account_id = await this.getAccountIdByScriptHash(script_hash);
+    return account_id.toString();
+  }
+
+  async generateDepositTx(
+    _privateKey: string,
+    _ethAddress: string | undefined,
+    _amount: string
+  ): Promise<DepositTxResult> {
+    if (!this.indexer) {
+      throw new Error("indexer is null, please run syncLayer1 first!");
+    }
+
+    const privateKey = _privateKey;
+    const ckbAddress = generateCkbAddress(privateKey);
+    const ethAddress = _ethAddress || generateEthAddress(privateKey);
+    console.log("using eth address:", ethAddress);
+
+    const txHash: Hash = await this.sendTx(
+      gwScriptsConfig,
+      ckbAddress,
+      _amount,
+      ethAddress.toLowerCase(),
+      privateKey
+    );
+
+    console.log(`txHash ${txHash} is sent!`);
+
+    return { txHash, ethAddress };
+  }
+
+  async checkDepositByTxHash(txHash: HexString, ethAddress: HexString) {
+    let tx;
+    // Wait for tx to land on chain.
+    while (true) {
+      await asyncSleep(1000);
+      const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
+      if (txWithStatus === null) {
+        throw new Error(
+          `the tx ${txHash} is disappeared from ckb, please re-try.`
+        );
+      }
+
+      if (
+        txWithStatus &&
+        txWithStatus.tx_status &&
+        txWithStatus.tx_status.status === "committed"
+      ) {
+        await waitForBlockSync(
+          this.indexer,
+          this.ckb_rpc!,
+          txWithStatus.tx_status.block_hash
+        );
+        tx = txWithStatus;
         break;
       }
     }
@@ -1186,17 +1319,145 @@ export class Api {
     return true;
   }
 
+  // send some meaningless layer1 tx to jam ckb node
+  async genJamL1Tx(private_key: string, receiver_address?: string) {
+    let txSkeleton = TransactionSkeleton({
+      cellProvider: this.transactionManager,
+    });
+    const sender_address = generateCkbAddress(private_key);
+    const ckb_address = receiver_address || sender_address;
+    const lock: Script = parseAddress(ckb_address);
+
+    const capacity_per_cell = BigInt("10000000000"); // 100 ckb
+    let outputCell: Cell = {
+      cell_output: {
+        capacity: `0x${capacity_per_cell.toString(16)}`,
+        lock: lock,
+      },
+      data: "0x",
+    };
+    try {
+      txSkeleton = await common.injectCapacity(
+        txSkeleton,
+        [sender_address],
+        capacity_per_cell
+      );
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push(outputCell);
+    });
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [sender_address],
+      BigInt(1000)
+    );
+
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, private_key);
+
+    const tx = sealTransaction(txSkeleton, [content]);
+    return tx;
+  }
+
+  async genDepositJamTx(
+    _privateKey: string,
+    _ethAddress: string | undefined,
+    _amount: string
+  ) {
+    if (!this.indexer) {
+      throw new Error("indexer is null, please run syncLayer1 first!");
+    }
+
+    const privateKey = _privateKey;
+    const ckbAddress = generateCkbAddress(privateKey);
+    const ethAddress = _ethAddress || generateEthAddress(privateKey);
+    console.log("using eth address:", ethAddress);
+
+    const tx = await this.genDepositTx(
+      gwScriptsConfig,
+      ckbAddress,
+      _amount,
+      ethAddress.toLowerCase(),
+      privateKey
+    );
+    return tx;
+  }
+
+  async sendBatchTxs(txs: Transaction[], check: boolean = false) {
+    if (check) {
+      const execs = [];
+      for (const tx of txs) {
+        const p = new Promise(async (resolve, reject) => {
+          try {
+            const txHash = await this.transactionManager.send_transaction(tx);
+            resolve(txHash);
+          } catch (error) {
+            reject(error);
+          }
+        });
+        execs.push(p);
+      }
+      return Promise.allSettled(execs);
+    }
+
+    for (const [index, tx] of txs.entries()) {
+      console.log(index);
+      this.ckb_rpc.send_transaction(tx, "passthrough");
+    }
+    return "done";
+  }
+
+  async getTotalCells(ckb_address: string) {
+    const lock: Script = parseAddress(ckb_address);
+    const query: QueryOptions = {
+      lock,
+      type: null,
+    };
+    const collector = await this.transactionManager.collector(query);
+    const count = await collector.count();
+    const cells = collector.collect();
+
+    let totalUndefineCells = 0;
+    let totalQualifyCells = 0;
+    for await (const cell of cells) {
+      if (cell == undefined) {
+        totalUndefineCells++;
+      }
+
+      if (cell && BigInt(cell.cell_output.capacity) >= BigInt("10000000000")) {
+        totalQualifyCells++;
+      }
+    }
+    console.log(
+      `${ckb_address} cell count: ${count}, totalUndefineCells: ${totalUndefineCells}, totalQualifyCells: ${totalQualifyCells}`
+    );
+    return {
+      count,
+      totalUndefineCells,
+      totalQualifyCells,
+    };
+  }
+
   // split cells evenly
   async sendSplitCells(
     total_capacity: bigint,
     total_pieces: number,
-    private_key: string
+    private_key: string,
+    receiver_ckb_address?: string
   ) {
+    await this.syncToTip();
     let txSkeleton = TransactionSkeleton({
       cellProvider: this.transactionManager,
     });
-    const ckb_address = generateCkbAddress(private_key);
-    const lock: Script = parseAddress(ckb_address);
+    const sender_address = generateCkbAddress(private_key);
+    const receiver_address =
+      receiver_ckb_address || generateCkbAddress(private_key);
+    const lock: Script = parseAddress(receiver_address);
 
     const capacity_per_cell = total_capacity / BigInt(total_pieces);
     let outputCell: Cell = {
@@ -1213,7 +1474,7 @@ export class Api {
     try {
       txSkeleton = await common.injectCapacity(
         txSkeleton,
-        [ckb_address],
+        [sender_address],
         capacity_per_cell * BigInt(total_pieces)
       );
     } catch (error) {
@@ -1225,7 +1486,63 @@ export class Api {
     });
     txSkeleton = await common.payFeeByFeeRate(
       txSkeleton,
-      [ckb_address],
+      [sender_address],
+      BigInt(1000)
+    );
+
+    txSkeleton = common.prepareSigningEntries(txSkeleton);
+
+    const message: HexString = txSkeleton.get("signingEntries").get(0)!.message;
+    const content: HexString = key.signRecoverable(message, private_key);
+
+    const tx = sealTransaction(txSkeleton, [content]);
+    const tx_hash: Hash = await this.transactionManager.send_transaction(tx);
+    console.log(`transaction ${tx_hash} is now sent...`);
+    return tx_hash;
+  }
+
+  // use one root account to fund a lot of ckb accounts
+  async sendFundAccountsTx(
+    total_capacity: bigint,
+    total_pieces: number,
+    private_key: string,
+    receiver_address_list: string[]
+  ) {
+    await this.syncToTip();
+    let txSkeleton = TransactionSkeleton({
+      cellProvider: this.transactionManager,
+    });
+    const sender_address = generateCkbAddress(private_key);
+    const capacity_per_cell = total_capacity / BigInt(total_pieces);
+    let outputCells: Cell[] = [];
+
+    for (const receiver_address of receiver_address_list) {
+      const lock: Script = parseAddress(receiver_address);
+      let outputCell: Cell = {
+        cell_output: {
+          capacity: `0x${capacity_per_cell.toString(16)}`,
+          lock: lock,
+        },
+        data: "0x",
+      };
+      outputCells.push(outputCell);
+    }
+    try {
+      txSkeleton = await common.injectCapacity(
+        txSkeleton,
+        [sender_address],
+        capacity_per_cell * BigInt(total_pieces)
+      );
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+    txSkeleton = txSkeleton.update("outputs", (outputs) => {
+      return outputs.push(...outputCells);
+    });
+    txSkeleton = await common.payFeeByFeeRate(
+      txSkeleton,
+      [sender_address],
       BigInt(1000)
     );
 
@@ -1325,6 +1642,7 @@ export class Api {
     const content: HexString = key.signRecoverable(message, private_key);
 
     const tx = sealTransaction(txSkeleton, [content]);
+
     const tx_hash: Hash = await this.transactionManager.send_transaction(tx);
     console.log(`transaction ${tx_hash} is now sent...`);
     const outpoint: OutPoint = {

@@ -13,8 +13,8 @@ export interface DepositLockArgs {
 }
 
 export function serializeArgs(args: DepositLockArgs): HexString {
-  console.log(`rollup_type_hash: ${rollupTypeHash}`);
-  console.log(`DepositLockArgs: ${JSON.stringify(args, null, 2)}`);
+  //console.log(`rollup_type_hash: ${rollupTypeHash}`);
+  //console.log(`DepositLockArgs: ${JSON.stringify(args, null, 2)}`);
   const serializedDepositLockArgs: ArrayBuffer = SerializeDepositLockArgs(
     NormalizeDepositLockArgs(args)
   );
