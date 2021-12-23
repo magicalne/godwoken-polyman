@@ -106,7 +106,7 @@ export class Tester {
 
       if (this.testAccounts.length < length) {
         const offset = length - this.testAccounts.length;
-        // generate accounts and make deposit
+        // generate more accounts
         const newAccounts = newEthAccountList(offset);
         this.testAccounts = [...this.testAccounts, ...newAccounts];
       }
