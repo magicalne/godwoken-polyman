@@ -260,6 +260,7 @@ export class main extends Service {
     return { txHash, cellsCount: count };
   }
 
+  // gen new accounts and fund some ckb from miner
   async prepare_jam_accounts() {
     const api = this.api;
     const req = this.req;
@@ -291,12 +292,15 @@ export class main extends Service {
     return accounts;
   }
 
-  async deposit_l2_jam_accounts() {
+  // miner deposit or self-deposit to create godwoken accounts
+  async deposit_jam_accounts() {
     const api = this.api;
     const req = this.req;
 
     const total = +req.query.total;
     const depositAmount = req.query.amount || "40000000000"; // deposit 400 ckb by default
+    const type = req.query.type || "self-deposit"; // self deposit by default
+
     const accountsFilePath = path.resolve(
       indexerDbPath,
       "./test-accounts.json"
@@ -306,7 +310,27 @@ export class main extends Service {
     await tester.genTestAccounts(total + 1, accountsFilePath);
     const accounts = tester.testAccounts;
 
-    // let's prepare some live cells for deposit
+    if (type === "self-deposit") {
+      const depositTxs = [];
+      for (let i = 0; i < total; i++) {
+        const privateKey = accounts[i].privateKey;
+        const receiver = accounts[i].ethAddress;
+        const tx = await api.genDepositJamTx(
+          privateKey,
+          receiver,
+          depositAmount
+        );
+        depositTxs.push(tx);
+      }
+      console.log(
+        `prepare ${depositTxs.length} txs, ready to deposit accounts...`
+      );
+      await api.sendBatchTxs(depositTxs);
+      return depositTxs;
+    }
+
+    // deposit from miner, will be slow and fail if accounts length is too large
+    // first, let's prepare some live cells for deposit
     const splitTxHash = await this.api.sendSplitCells(
       BigInt(depositAmount) * BigInt(accounts.length) * BigInt(2),
       accounts.length,
@@ -314,31 +338,19 @@ export class main extends Service {
     );
     await this.api.waitForCkbTx(splitTxHash);
 
-    const checkDepositPromiseList: any[] = [];
+    const depositTxs: any[] = [];
     for await (const account of accounts) {
       const { txHash, ethAddress } = await api.generateDepositTx(
         polymanConfig.addresses.miner_private_key,
         account.ethAddress,
         depositAmount
       );
-
-      const p = new Promise(async (resolve, reject) => {
-        try {
-          const accountId = await api.checkDepositByTxHash(txHash, ethAddress);
-          return resolve({
-            ...account,
-            ...{ accountId: accountId },
-          } as TestAccount);
-        } catch (error) {
-          return reject(error);
-        }
-      });
-      checkDepositPromiseList.push(p);
+      depositTxs.push(txHash);
     }
-
-    await Promise.allSettled(checkDepositPromiseList);
+    return depositTxs;
   }
 
+  // send simple l1 transfer tx to jam ckb network...
   async jam_ckb_network() {
     const api = this.api;
     const req = this.req;
