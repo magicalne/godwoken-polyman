@@ -520,32 +520,7 @@ export class Api {
   }
 
   async checkDepositByTxHash(txHash: HexString, ethAddress: HexString) {
-    let tx;
-    // Wait for tx to land on chain.
-    while (true) {
-      await asyncSleep(1000);
-      const txWithStatus = await this.ckb_rpc!.get_transaction(txHash);
-      if (txWithStatus === null) {
-        throw new Error(
-          `the tx ${txHash} is disappeared from ckb, please re-try.`
-        );
-      }
-
-      if (
-        txWithStatus &&
-        txWithStatus.tx_status &&
-        txWithStatus.tx_status.status === "committed"
-      ) {
-        await waitForBlockSync(
-          this.indexer,
-          this.ckb_rpc!,
-          txWithStatus.tx_status.block_hash
-        );
-        tx = txWithStatus;
-        break;
-      }
-    }
-    console.log(`tx ${txHash} is now onChain!`);
+    await this.waitForCkbTx(txHash);
 
     //get deposit account id
     const script_hash = calculateLayer2LockScriptHash(ethAddress);
@@ -882,11 +857,14 @@ export class Api {
   // Wait for tx to land on chain.
   async waitForCkbTx(tx_hash: string) {
     let finalized_tx: TransactionWithStatus;
+    let timeoutSeconds = 300;
+    let counterSeconds = 0;
     while (true) {
       await asyncSleep(1000);
+      counterSeconds++;
       const txWithStatus = await this.ckb_rpc!.get_transaction(tx_hash);
       if (txWithStatus === null) {
-        throw new Error(`the tx is disapeared from ckb, please re-try.`);
+        throw new Error(`the tx is disappeared from ckb, please re-try.`);
       }
 
       if (
@@ -905,19 +883,36 @@ export class Api {
         finalized_tx = txWithStatus;
         break;
       }
+
+      if (counterSeconds > timeoutSeconds) {
+        throw new Error(
+          `time out in ${timeoutSeconds} seconds. failed to wait for transaction land on chain.`
+        );
+      }
     }
     console.log(`tx ${tx_hash} is now onChain!`);
     return finalized_tx;
   }
 
   async waitForAccountIdOnChain(script_hash: string) {
+    let timeoutSeconds = 300;
+    let counterSeconds = 0;
     while (true) {
       await asyncSleep(1000);
+      counterSeconds++;
       const new_account_id = await this.getAccountIdByScriptHash(script_hash);
-      console.log(`try fetching account_id: ${new_account_id}`);
+      console.log(
+        `try fetching account_id: ${new_account_id}, ${counterSeconds} seconds.`
+      );
 
       if (new_account_id) {
         break;
+      }
+
+      if (counterSeconds > timeoutSeconds) {
+        throw new Error(
+          `time out in ${timeoutSeconds} seconds. failed to fetch account id.`
+        );
       }
     }
     return;

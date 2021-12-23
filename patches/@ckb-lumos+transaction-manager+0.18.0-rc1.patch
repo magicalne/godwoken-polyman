@@ -1,5 +1,5 @@
 diff --git a/node_modules/@ckb-lumos/transaction-manager/lib/index.js b/node_modules/@ckb-lumos/transaction-manager/lib/index.js
-index 19338ac..966fd01 100644
+index 19338ac..cc4accb 100644
 --- a/node_modules/@ckb-lumos/transaction-manager/lib/index.js
 +++ b/node_modules/@ckb-lumos/transaction-manager/lib/index.js
 @@ -116,7 +116,7 @@ class TransactionManager {
@@ -11,3 +11,15 @@ index 19338ac..966fd01 100644
      tx.hash = txHash;
      this.transactions = this.transactions.add(
        new values.TransactionValue(tx, { validate: false })
+@@ -244,6 +244,11 @@ class TransactionManagerCellCollector {
+ 
+   async *collect() {
+     for await (const cell of this.collector.collect()) {
++      if(cell == null){
++        console.log("cell is null, skip.");
++        continue;
++      }
++
+       if (!this.spentCells.has(new values.OutPointValue(cell.out_point))) {
+         yield cell;
+       }
