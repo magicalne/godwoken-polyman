@@ -33,7 +33,7 @@ push to docker:
 make build-push # needs login, will ask you for tag
 ```
 
-docker image: https://hub.docker.com/repository/docker/nervos/godwoken-polyman-prebuilds
+docker image: https://hub.docker.com/r/nervos/godwoken-polyman-prebuilds
 
 How to run
 ------
