@@ -18,6 +18,11 @@ frontend:
 
 - ui: react project under client sub-packages
 
+Apis
+------
+
+- [test api](docs/main-server-api.md)
+
 Prebuilds
 ------
 
