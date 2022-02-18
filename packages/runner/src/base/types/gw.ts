@@ -14,8 +14,7 @@ export type GodwokenScriptsPath = {
   always_success: string;
   state_validator: string;
   polyjuice_validator: string;
-  poa_state: string;
-  stake_lock: string;
+  eth_addr_reg_validator: string;
   withdrawal_lock: string;
   tron_account_lock: string;
 };
@@ -43,8 +42,7 @@ export type GodwokenScriptsDeployResult = {
   eth_account_lock: GodwokenScriptDep;
   tron_account_lock: GodwokenScriptDep;
   polyjuice_validator: GodwokenScriptDep;
-  state_validator_lock: GodwokenScriptDep;
-  poa_state: GodwokenScriptDep;
+  eth_addr_reg_validator: GodwokenScriptDep;
 };
 
 export type ScriptDeploymentTransactionInfo = {

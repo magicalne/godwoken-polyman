@@ -33,10 +33,9 @@ export const gwScriptsConfig: GwScriptsConfig = {
   polyjuice_validator: buildScriptFromCodeHash(
     scripts.polyjuice_validator.script_type_hash
   ),
-  state_validator_lock: buildScriptFromCodeHash(
-    scripts.state_validator_lock.script_type_hash
+  eth_addr_reg_validator: buildScriptFromCodeHash(
+    scripts.eth_addr_reg_validator.script_type_hash
   ),
-  poa_state: buildScriptFromCodeHash(scripts.poa_state.script_type_hash),
 
   deposit_lock_dep: scripts.deposit_lock.cell_dep as CellDep,
   custodian_lock_dep: scripts.custodian_lock.cell_dep as CellDep,
@@ -49,8 +48,6 @@ export const gwScriptsConfig: GwScriptsConfig = {
   l2_sudt_validator_dep: scripts.l2_sudt_validator.cell_dep as CellDep,
   eth_account_lock_dep: scripts.eth_account_lock.cell_dep as CellDep,
   polyjuice_validator_dep: scripts.polyjuice_validator.cell_dep as CellDep,
-  state_validator_lock_dep: scripts.state_validator.cell_dep as CellDep,
-  poa_state_dep: scripts.poa_state.cell_dep as CellDep,
 };
 
 export const rollupTypeHash = getRollupTypeHash();
