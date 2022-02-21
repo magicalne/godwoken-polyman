@@ -3,45 +3,69 @@ node_mode = 'fullnode'
 [[backends]]
 validator_path = 'scripts/release/meta-contract-validator'
 generator_path = 'deploy/backend/meta-contract-generator'
-validator_script_type_hash = '0x61dbbe7a228d4340a869c81748fed4c3dc5d597bb0fb0c0fa3d17a8230b51440'
+validator_script_type_hash = '0x341305972588ea0328e8cb0ed5747f2e6a6dc5975004355742a3d1b5f4bce59d'
+backend_type = 'Meta'
 
 [[backends]]
 validator_path = 'scripts/release/sudt-validator'
 generator_path = 'deploy/backend/sudt-generator'
-validator_script_type_hash = '0xa78176967a0164dc35b9c5b8c83635f65c72a3715db0b589f278507a3937592b'
+validator_script_type_hash = '0xfcdaf5c321bd544d54a16797c8e94d1d02d10ff0017f5dc48ff57512195fa122'
+backend_type = 'Sudt'
 
 [[backends]]
 validator_path = 'scripts/release/polyjuice-validator'
-generator_path = 'deploy/polyjuice-backend/polyjuice-generator'
-validator_script_type_hash = '0x6677005599a98f86f003946eba01a21b54ed1f13a09f36b5e8bbcf7586b96b41'
+generator_path = 'deploy/polyjuice-backend/polyjuice-generator.aot'
+validator_script_type_hash = '0x046031abcd2c5df7fb1eff9ba620080376be7e112acf4afb0618b9987e01ff40'
+backend_type = 'Polyjuice'
+
+[[backends]]
+validator_path = 'deploy/polyjuice-backend/eth_addr_reg_validator'
+generator_path = 'deploy/polyjuice-backend/eth_addr_reg_generator'
+validator_script_type_hash = '0x05373706bf9a308e2779eef3ab97b6d218e6d267e89f7b4619dcee13ea96ab81'
+backend_type = 'EthAddrReg'
 
 [genesis]
-timestamp = 1634708767669
-rollup_type_hash = '0x828b8a63f97e539ddc79e42fa62dac858c7a9da222d61fc80f0d61b44b5af5d4'
-meta_contract_validator_type_hash = '0x61dbbe7a228d4340a869c81748fed4c3dc5d597bb0fb0c0fa3d17a8230b51440'
+timestamp = 1645440574950
+rollup_type_hash = '0x6feedfacbc5a50ae2b8981195298749375679a427a31206ea7e46c2eefecfd0d'
+meta_contract_validator_type_hash = '0x341305972588ea0328e8cb0ed5747f2e6a6dc5975004355742a3d1b5f4bce59d'
 
 [genesis.rollup_config]
 l1_sudt_script_type_hash = '0xc1d16846e515a60e28d19197b87097631f40fbc8a33c0408ee65202803795939'
-custodian_script_type_hash = '0x195d8fa3100998252de5a3b1ccbb21978cffcc61714a0a5a776ffe81bd9800e4'
-deposit_script_type_hash = '0x04498d5fc9cac4def9b0734c509caa1dead3ea91e07c8d3622e2e45cde94f4ab'
-withdrawal_script_type_hash = '0x26693d74becd8b2826ff654c8e04c43f04aa840dee7e9a94f3ecd8d623ac4f3b'
-challenge_script_type_hash = '0x96cbdc4f5410190ca2e87e75f8cbc321745eeca69b85fb9a33907b3fc7767921'
-stake_script_type_hash = '0xe4183ea17eef804b04c03e55354a4c0766667f3f228d285909405fb347d04435'
-l2_sudt_validator_script_type_hash = '0xa78176967a0164dc35b9c5b8c83635f65c72a3715db0b589f278507a3937592b'
+custodian_script_type_hash = '0x2c653cae2eef4112ef31f3a2b7ecb644789c1bc21e09157079b926968bd0a968'
+deposit_script_type_hash = '0x8a3002ee10a0bfa5239d5a788784b0e4f442043b490931e1a47a623f740ed0e2'
+withdrawal_script_type_hash = '0x164d6aa289768c5fbc8f0e8bb4fd91e0c2489ca5059b245e89106f559ce38bdc'
+challenge_script_type_hash = '0x2f27646149fe2e95ba2cd62dd5a42c2f9ff379c083bbf72843d9412824eced0b'
+stake_script_type_hash = '0x3ee1eda1730b69f8fa86c09a2daefb5ed3b70809949c2a62df7f6bf7ae34c36e'
+l2_sudt_validator_script_type_hash = '0xfcdaf5c321bd544d54a16797c8e94d1d02d10ff0017f5dc48ff57512195fa122'
 burn_lock_hash = '0x77c93b0632b5b6c3ef922c5b7cea208fb0a7c427a13d50e13d3fefad17e0c590'
 required_staking_capacity = '0x2540be400'
 challenge_maturity_blocks = '0x64'
 finality_blocks = '0x64'
 reward_burn_rate = '0x32'
-allowed_eoa_type_hashes = [
-    '0xf96d799a3c90ac8e153ddadd1747c6067d119a594f7f1c4b1fffe9db0f304335',
-    '0xcaf52b697409dea34694ae1cd6299ad03117d30c57e1c960144749e8c9312ed7',
-]
-allowed_contract_type_hashes = [
-    '0x61dbbe7a228d4340a869c81748fed4c3dc5d597bb0fb0c0fa3d17a8230b51440',
-    '0xa78176967a0164dc35b9c5b8c83635f65c72a3715db0b589f278507a3937592b',
-    '0x6677005599a98f86f003946eba01a21b54ed1f13a09f36b5e8bbcf7586b96b41',
-]
+
+[[genesis.rollup_config.allowed_eoa_type_hashes]]
+type_ = 'eth'
+hash = '0xaba21331e1fb7d3cea16646fcda0449314c66275b9e2fefded152aab6a0a4a01'
+
+[[genesis.rollup_config.allowed_eoa_type_hashes]]
+type_ = 'tron'
+hash = '0x81c6aa5c7d0e5c0d7143f9f6d791c0b303ca32a8129b7f737a1cfaba3998462e'
+
+[[genesis.rollup_config.allowed_contract_type_hashes]]
+type_ = 'meta'
+hash = '0x341305972588ea0328e8cb0ed5747f2e6a6dc5975004355742a3d1b5f4bce59d'
+
+[[genesis.rollup_config.allowed_contract_type_hashes]]
+type_ = 'sudt'
+hash = '0xfcdaf5c321bd544d54a16797c8e94d1d02d10ff0017f5dc48ff57512195fa122'
+
+[[genesis.rollup_config.allowed_contract_type_hashes]]
+type_ = 'polyjuice'
+hash = '0x046031abcd2c5df7fb1eff9ba620080376be7e112acf4afb0618b9987e01ff40'
+
+[[genesis.rollup_config.allowed_contract_type_hashes]]
+type_ = 'eth_addr_reg'
+hash = '0x05373706bf9a308e2779eef3ab97b6d218e6d267e89f7b4619dcee13ea96ab81'
 
 [genesis.secp_data_dep]
 dep_type = 'code'
@@ -54,130 +78,40 @@ index = '0x3'
 skipped_invalid_block_list = []
 
 [chain.genesis_committed_info]
-number = '0x1a'
-block_hash = '0x330d2dad3ef3bd5dfe1cacc41b47ce92bc46a896508e396ac04984a9c101ee09'
-transaction_hash = '0x4b88d66a66d8e5ee9826835f404e2980e09a3babd355ca13a6e808d6a0823055'
+number = '0x97'
+block_hash = '0x9a00c997b9edcfa6bf346fb61e46b4dda7ba0da09db094fefc9fe40e7b071379'
+transaction_hash = '0xc8e0045438a28f3d6785b82aaa06ec771ed20709ebd84138c298a5f99eb52226'
 
 [chain.rollup_type_script]
-code_hash = '0x9394306e2763a8e986b3a0f9636e628470d5d9ee8d697818e5361f74a9107b21'
+code_hash = '0xadf556ecb7685a7c7e5e6dbfba6eb73cab428525a2048b9311affc2646d73474'
 hash_type = 'type'
-args = '0x37ad0888c3c36f588b70a0e10cc13c377f488cf9092035f242a8285c3673aa89'
+args = '0x479f4cee71a6536df9f1f0581dbeb17e70008f258e9caf29efaa5fecb0f0779f'
 
 [rpc_client]
 indexer_url = 'http://indexer:8116'
 ckb_url = 'http://ckb:8114'
 
 [rpc_server]
+err_receipt_ws_listen = '0.0.0.0:8120'
 listen = '0.0.0.0:8119'
-
-[rpc]
-allowed_sudt_proxy_creator_account_id = []
-sudt_proxy_code_hashes = []
+enable_methods = []
 
 [debug]
 output_l1_tx_cycles = true
-expected_l1_tx_upper_bound_cycles = 45000000
+expected_l1_tx_upper_bound_cycles = 70000000
 debug_tx_dump_path = 'debug-tx-dump'
 enable_debug_rpc = false
 
 [block_producer]
 account_id = 0
-
-[block_producer.rollup_cell_type_dep]
-dep_type = 'code'
-
-[block_producer.rollup_cell_type_dep.out_point]
-tx_hash = '0x7da7293be631845dc12dfd5dad1e6525f89a7ed9e5651574b3403c7f73001643'
-index = '0x1'
+check_mem_block_before_submit = false
 
 [block_producer.rollup_config_cell_dep]
 dep_type = 'code'
 
 [block_producer.rollup_config_cell_dep.out_point]
-tx_hash = '0xa8a3314d553469f6bc6d718d97ac61913fb27b1330780db9215df0f78a8d2d54'
+tx_hash = '0xd91869bc5fb72d61b85a06154f49cd6cc96c59294a38ed88026d790e7dee573b'
 index = '0x0'
-
-[block_producer.deposit_cell_lock_dep]
-dep_type = 'code'
-
-[block_producer.deposit_cell_lock_dep.out_point]
-tx_hash = '0x04594cc70a264b4c5c492c13a0770954f4fa39addc3ac639d49c8eb5ec681a26'
-index = '0x1'
-
-[block_producer.stake_cell_lock_dep]
-dep_type = 'code'
-
-[block_producer.stake_cell_lock_dep.out_point]
-tx_hash = '0x9a4a556638e6ee8697776706c5c869208a664a884ee2e9de058d1494d939c2f9'
-index = '0x1'
-
-[block_producer.poa_lock_dep]
-dep_type = 'code'
-
-[block_producer.poa_lock_dep.out_point]
-tx_hash = '0xd907cbac6effbde2e57121a31d8ee5d7bb38ea403e5611e780c466e28524a3d5'
-index = '0x1'
-
-[block_producer.poa_state_dep]
-dep_type = 'code'
-
-[block_producer.poa_state_dep.out_point]
-tx_hash = '0xd89b247beb2619ad7b1b79c5c55f9bcac6662a33b1fe4d9b8c8523fd833a9888'
-index = '0x1'
-
-[block_producer.custodian_cell_lock_dep]
-dep_type = 'code'
-
-[block_producer.custodian_cell_lock_dep.out_point]
-tx_hash = '0x4acd8b3cd91a8d9617ecb0691bdba86e5eeb8428764e73016e5dd0d09a260f5d'
-index = '0x1'
-
-[block_producer.withdrawal_cell_lock_dep]
-dep_type = 'code'
-
-[block_producer.withdrawal_cell_lock_dep.out_point]
-tx_hash = '0xc95da96e920adeffebd1613b5665cd86535e0267a8fa7c89d7add143537f4809'
-index = '0x1'
-
-[block_producer.challenge_cell_lock_dep]
-dep_type = 'code'
-
-[block_producer.challenge_cell_lock_dep.out_point]
-tx_hash = '0xbc5459596158f6e939fc50c491a3ccb35ee84ce7e0a23fd1fd16745b4dd26ca9'
-index = '0x1'
-
-[block_producer.l1_sudt_type_dep]
-dep_type = 'code'
-
-[block_producer.l1_sudt_type_dep.out_point]
-tx_hash = '0x50ca87722da8b67deea5517cca73da7d65408d6e2e87539e40b4267341830e50'
-index = '0x1'
-[block_producer.allowed_eoa_deps.0xf96d799a3c90ac8e153ddadd1747c6067d119a594f7f1c4b1fffe9db0f304335]
-dep_type = 'code'
-
-[block_producer.allowed_eoa_deps.0xf96d799a3c90ac8e153ddadd1747c6067d119a594f7f1c4b1fffe9db0f304335.out_point]
-tx_hash = '0x2849a0da85041ff0a3654326806c58b5edc0d4447bdbb2d9e4ddc434f3642d8f'
-index = '0x1'
-[block_producer.allowed_contract_deps.0xa78176967a0164dc35b9c5b8c83635f65c72a3715db0b589f278507a3937592b]
-dep_type = 'code'
-
-[block_producer.allowed_contract_deps.0xa78176967a0164dc35b9c5b8c83635f65c72a3715db0b589f278507a3937592b.out_point]
-tx_hash = '0xca87e30b470f363a08b166b2727a511d5a1cee84c9c7a7b461bf4a70fe575bb3'
-index = '0x1'
-
-[block_producer.allowed_contract_deps.0x61dbbe7a228d4340a869c81748fed4c3dc5d597bb0fb0c0fa3d17a8230b51440]
-dep_type = 'code'
-
-[block_producer.allowed_contract_deps.0x61dbbe7a228d4340a869c81748fed4c3dc5d597bb0fb0c0fa3d17a8230b51440.out_point]
-tx_hash = '0x76d02aaf54e9e473b3653a577d61b820a15d8ac0ac28cd19d5ad99f58abcdbb4'
-index = '0x1'
-
-[block_producer.allowed_contract_deps.0x6677005599a98f86f003946eba01a21b54ed1f13a09f36b5e8bbcf7586b96b41]
-dep_type = 'code'
-
-[block_producer.allowed_contract_deps.0x6677005599a98f86f003946eba01a21b54ed1f13a09f36b5e8bbcf7586b96b41.out_point]
-tx_hash = '0x4b300e82c75f21d87d10d631e53bd56ee7d97de924f6d6a158497b2e2f2c70d4'
-index = '0x1'
 [block_producer.challenger_config.rewards_receiver_lock]
 args = '0x74e5c89172c5d447819f1629743ef2221df083be'
 hash_type = 'type'
@@ -196,16 +130,86 @@ args = '0x43d509d97f26007a285f39241cffcd411157196c'
 hash_type = 'type'
 code_hash = '0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8'
 
-[web3_indexer]
-database_url = 'postgres://user:password@postgres:5432/lumos'
-polyjuice_script_type_hash = '0x6677005599a98f86f003946eba01a21b54ed1f13a09f36b5e8bbcf7586b96b41'
-eth_account_lock_hash = '0xf96d799a3c90ac8e153ddadd1747c6067d119a594f7f1c4b1fffe9db0f304335'
-tron_account_lock_hash = '0xcaf52b697409dea34694ae1cd6299ad03117d30c57e1c960144749e8c9312ed7'
 
 [mem_pool]
 execute_l2tx_max_cycles = 100000000
+restore_path = 'mem_block'
+[mem_pool.publish]
+topic = 'sync-mem-block'
+hosts = ['kafka:9092']
 
 [store]
 path = '../cache/activity/godwoken-chain-data'
 
 [store.options]
+[consensus.contract_type_scripts.state_validator]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x84fee030b819ad0741022167c249f4554ac3a33210ffdde4734592521d9cca8c'
+
+[consensus.contract_type_scripts.deposit_lock]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x306bdb6a66ea277560041b014f2f1142d4d1c4dedd9a841d23c2bd274880ecd5'
+
+[consensus.contract_type_scripts.stake_lock]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x0a0fa3b2cdba0c907200508c38f51316780775ff9ddc7440bb3b52d547bac805'
+
+[consensus.contract_type_scripts.custodian_lock]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x7840d20d8828ee4ea694fbc95f73e1513681e5d8ee3d866a72068c96ff25a25b'
+
+[consensus.contract_type_scripts.withdrawal_lock]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x176d32f50e2f949c72425c2746803759729dc046ba0f493d6f5ff27130a57ecb'
+
+[consensus.contract_type_scripts.challenge_lock]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0xf0b17d4966fd2c5e628af85794f829e7bd8094e71ea124f340b49e40548bfd02'
+
+[consensus.contract_type_scripts.l1_sudt]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x5fd2e4ebc8cfb57f7c3e4a6561ea3b2c1479a141114a3acbc2a327e0c20f2eca'
+[consensus.contract_type_scripts.allowed_eoa_scripts.0x81c6aa5c7d0e5c0d7143f9f6d791c0b303ca32a8129b7f737a1cfaba3998462e]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x7bf21969833745d4e2ccf0b21c92671e55b5a3c35193336292e61c167521d2b9'
+
+[consensus.contract_type_scripts.allowed_eoa_scripts.0xaba21331e1fb7d3cea16646fcda0449314c66275b9e2fefded152aab6a0a4a01]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x97a15724782b3dfe16216c5a7c263e6bfd9425f82c18e729765b4131ad09d686'
+[consensus.contract_type_scripts.allowed_contract_scripts.0x05373706bf9a308e2779eef3ab97b6d218e6d267e89f7b4619dcee13ea96ab81]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x8fd5773e1dd4e4d377809589dabf616de6c45103f0715e799a6a282632cc7b5d'
+
+[consensus.contract_type_scripts.allowed_contract_scripts.0x341305972588ea0328e8cb0ed5747f2e6a6dc5975004355742a3d1b5f4bce59d]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0xe72f389db5b3178dff945078ae8263192f96868a2be70c0b7b43b102d0154a04'
+
+[consensus.contract_type_scripts.allowed_contract_scripts.0xfcdaf5c321bd544d54a16797c8e94d1d02d10ff0017f5dc48ff57512195fa122]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0xddcf094898c788fe617ef993f6c20d6e7c90cea1536e0f5e53e5fc9a05dec5a4'
+
+[consensus.contract_type_scripts.allowed_contract_scripts.0x046031abcd2c5df7fb1eff9ba620080376be7e112acf4afb0618b9987e01ff40]
+code_hash = '0x00000000000000000000000000000000000000000000000000545950455f4944'
+hash_type = 'type'
+args = '0x1ae3b7a0e0f6c562400e61a702a85a8d763c26475b6b943479a1996774ea55c3'
+[dynamic_config.fee_config]
+meta_cycles_limit = 20000
+sudt_cycles_limit = 20000
+eth_addr_reg_cycles_limit = 20000
+withdraw_cycles_limit = 20000
+
+[dynamic_config.rpc_config]
+allowed_sudt_proxy_creator_account_id = []
+sudt_proxy_code_hashes = []

@@ -538,6 +538,7 @@ export class Api {
     const ethAddress = generateEthAddress(privateKey);
     const script_hash = calculateLayer2LockScriptHash(ethAddress);
     const account_id = await this.getAccountIdByScriptHash(script_hash);
+    if(account_id === null)return null;
     return account_id.toString();
   }
 
