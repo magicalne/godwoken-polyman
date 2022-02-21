@@ -49,15 +49,28 @@ export async function start() {
       polymanConfig.default_quantity.sudt_id_str
     );
     if (creatorId === null) {
-      const from_id = await api.deposit(
-        polymanConfig.addresses.user_private_key,
-        undefined,
-        polymanConfig.default_quantity.deposit_amount
-      );
+      //const from_id = await api.deposit(
+      //  polymanConfig.addresses.user_private_key,
+      //  undefined,
+      //  polymanConfig.default_quantity.deposit_amount
+      //);
+      const from_id = "2";
       console.log(`create deposit account.${from_id}`);
+
+      // find or create register account id
+      let register_account_id: string | number | null = await api.findRegisterAccountId();
+      if(register_account_id === null){
+        register_account_id = await api.createRegisterAccount(from_id, rollupTypeHash, polymanConfig.addresses.user_private_key);
+        console.log(`create register account: ${register_account_id}`);
+      }else{
+        register_account_id = "0x" + register_account_id.toString(16);
+        console.log(`register account already exits: ${register_account_id}`);
+      }
+
       const creator_account_id = await api.createCreatorAccount(
         from_id,
         polymanConfig.default_quantity.sudt_id_str,
+        register_account_id as string,
         rollupTypeHash,
         polymanConfig.addresses.user_private_key
       );

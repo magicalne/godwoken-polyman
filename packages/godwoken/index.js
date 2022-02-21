@@ -199,7 +199,7 @@ class GodwokenUtils {
       args,
     };
   }
-
+  
   static createRawWithdrawalRequest(
     nonce,
     capacity,

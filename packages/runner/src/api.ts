@@ -1,7 +1,7 @@
 import {
   _signMessage,
   _generateTransactionMessageToSign,
-  _createAccountRawL2Transaction,
+  _createCreatorAccountRawL2Transaction,
   accountScriptHash,
   calculateLayer2LockScriptHash,
   serializeScript,
@@ -64,6 +64,7 @@ import {
   DeepDiffMapper,
 } from "./base/util";
 import { ScriptDeploymentTransactionInfo } from "./base/types/gw";
+import { createRegisterAccountRawL2Transaction, generateRegisterAccountScript } from "./base/registryAccount";
 
 export interface DepositTxResult {
   txHash: HexString;
@@ -71,6 +72,7 @@ export interface DepositTxResult {
 }
 
 export class Api {
+  public register_code_hash: string;
   public validator_code_hash: string;
   public ckb_rpc_url: string;
   public ckb_rpc: RPC;
@@ -93,7 +95,7 @@ export class Api {
     this.godwoken_rpc_url = _godwoken_rpc;
 
     this.validator_code_hash = gwScriptsConfig.polyjuice_validator.code_hash;
-
+    this.register_code_hash = gwScriptsConfig.eth_addr_reg_validator.code_hash;
     this.indexer = null;
     this.transactionManager = null;
     this.ckb_rpc = new RPC(this.ckb_rpc_url);
@@ -531,22 +533,60 @@ export class Api {
     const account_id = await this.getAccountIdByScriptHash(script_hash);
     return account_id.toString();
   }
+  
+  async createRegisterAccount(
+    from_id_str: string,
+    rollup_type_hash: string,
+    privkey: string
+  ){
+    const from_id = parseInt(from_id_str, 16);
+    const nonceStr = (await this.godwoken.getNonce(from_id)) + "";
+    const nonce = parseInt(nonceStr, 16);
+    const l2_script = generateRegisterAccountScript(this.register_code_hash, rollup_type_hash);
+    console.log(`register l2 script: `, l2_script);
+    const rawL2Tx = createRegisterAccountRawL2Transaction(from_id, nonce, l2_script);
+
+    const sender_script_hash = await this.godwoken.getScriptHash(from_id);
+    const receiver_script_hash = await this.godwoken.getScriptHash(0);
+
+    const message = await _generateTransactionMessageToSign(
+      rawL2Tx,
+      rollup_type_hash,
+      sender_script_hash,
+      receiver_script_hash
+    );
+    const signature = _signMessage(message, privkey);
+    console.log("message", message);
+    console.log("signature", signature);
+    const l2tx: L2Transaction = { raw: rawL2Tx, signature };
+    console.log(l2tx);
+    const txHash = await this.godwoken.submitL2Transaction(l2tx);
+    console.log("l2TxHash", txHash);
+
+    const l2_script_hash = serializeScript(l2_script);
+    await this.waitForAccountIdOnChain(l2_script_hash);
+    const new_account_id = await this.getAccountIdByScriptHash(l2_script_hash);
+    return new_account_id.toString();
+  }
 
   async createCreatorAccount(
     from_id_str: string,
     sudt_id_str: string,
+    register_id_str: string,
     rollup_type_hash: string,
     privkey: string
   ) {
     const from_id = parseInt(from_id_str);
     const nonce = await this.godwoken.getNonce(from_id);
     console.log(nonce);
-    const script_args = numberToUInt32LE(parseInt(sudt_id_str));
-    const raw_l2tx = _createAccountRawL2Transaction(
+    const sudt_id_arg = numberToUInt32LE(parseInt(sudt_id_str));
+    const register_id_arg = numberToUInt32LE(parseInt(register_id_str));
+    const raw_l2tx = _createCreatorAccountRawL2Transaction(
       from_id,
       parseInt(nonce + ""),
       gwScriptsConfig.polyjuice_validator.code_hash,
-      script_args
+      sudt_id_arg,
+      register_id_arg
     );
 
     const sender_script_hash = await this.godwoken.getScriptHash(from_id);
@@ -574,7 +614,7 @@ export class Api {
       hash_type: gwScriptsConfig.polyjuice_validator.hash_type as
         | "type"
         | "data",
-      args: rollupTypeHash + script_args.slice(2),
+      args: rollupTypeHash + sudt_id_arg.slice(2),
     };
     const l2_script_hash = serializeScript(l2_script);
     await this.waitForAccountIdOnChain(l2_script_hash);
@@ -1066,16 +1106,19 @@ export class Api {
   async generateCreateCreatorAccountTx(
     from_id_str: string,
     sudt_id_str: string,
+    register_id_str: string,
     rollup_type_hash: string
   ) {
     const from_id = parseInt(from_id_str);
     const nonce = await this.godwoken.getNonce(from_id);
-    const script_args = numberToUInt32LE(parseInt(sudt_id_str));
-    const raw_l2tx = _createAccountRawL2Transaction(
+    const sudt_id_arg = numberToUInt32LE(parseInt(sudt_id_str));
+    const register_id_arg = numberToUInt32LE(parseInt(register_id_str));
+    const raw_l2tx = _createCreatorAccountRawL2Transaction(
       from_id,
       nonce,
       gwScriptsConfig.polyjuice_validator.code_hash,
-      script_args
+      sudt_id_arg,
+      register_id_arg
     );
     const message = this.generateLayer2TransactionMessageToSign(
       raw_l2tx,
@@ -1085,7 +1128,7 @@ export class Api {
       type: "create_creator",
       raw_l2tx: raw_l2tx,
       message: message,
-      l2_script_args: script_args,
+      l2_script_args: sudt_id_arg,
     };
   }
 
@@ -1200,6 +1243,18 @@ export class Api {
       rollupTypeHash + numberToUInt32LE(parseInt(sudt_id_str)).slice(2);
     const l2_script: Script = {
       code_hash: this.validator_code_hash,
+      hash_type: "type",
+      args: script_args,
+    };
+    const l2_script_hash = serializeScript(l2_script);
+
+    return await this.getAccountIdByScriptHash(l2_script_hash);
+  }
+
+  async findRegisterAccountId() {
+    const script_args = rollupTypeHash;
+    const l2_script: Script = {
+      code_hash: this.register_code_hash,
       hash_type: "type",
       args: script_args,
     };

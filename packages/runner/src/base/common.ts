@@ -103,16 +103,17 @@ export function _generateTransactionMessageToSign(
   );
 }
 
-export function _createAccountRawL2Transaction(
+export function _createCreatorAccountRawL2Transaction(
   from_id: number,
   nonce: number,
   script_code_hash: string,
-  script_args: string
+  sudt_id: string,
+  eth_register_id: string,
 ) {
   const script: Script = {
     code_hash: script_code_hash,
     hash_type: "type",
-    args: rollupTypeHash + script_args.slice(2),
+    args: rollupTypeHash + sudt_id.slice(2) + eth_register_id.slice(2),
   };
   console.log(`creator args: ${JSON.stringify(script, null, 2)}`);
   return GodwokenUtils.createAccountRawL2Transaction(from_id, nonce, script);

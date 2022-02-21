@@ -130,9 +130,11 @@ export class main extends Service {
     const api = this.api;
 
     const from_id = req.query.from_id + "";
+    const register_id = req.query.register_id + "";
     return await api.generateCreateCreatorAccountTx(
       from_id,
       polymanConfig.default_quantity.sudt_id_str,
+      register_id,
       rollupTypeHash
     );
   }
