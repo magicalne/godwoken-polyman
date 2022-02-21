@@ -534,6 +534,13 @@ export class Api {
     return account_id.toString();
   }
   
+  async findEthEoaAccountIdByPrivKey(privateKey: string){
+    const ethAddress = generateEthAddress(privateKey);
+    const script_hash = calculateLayer2LockScriptHash(ethAddress);
+    const account_id = await this.getAccountIdByScriptHash(script_hash);
+    return account_id.toString();
+  }
+
   async createRegisterAccount(
     from_id_str: string,
     rollup_type_hash: string,
@@ -1238,9 +1245,9 @@ export class Api {
     return await this.getAccountId(l2_script_hash);
   }
 
-  async findCreatorAccountId(sudt_id_str: string) {
+  async findCreatorAccountId(sudt_id_str: string, register_id_str: string) {
     const script_args =
-      rollupTypeHash + numberToUInt32LE(parseInt(sudt_id_str)).slice(2);
+      rollupTypeHash + numberToUInt32LE(parseInt(sudt_id_str)).slice(2) + numberToUInt32LE(parseInt(register_id_str)).slice(2);
     const l2_script: Script = {
       code_hash: this.validator_code_hash,
       hash_type: "type",

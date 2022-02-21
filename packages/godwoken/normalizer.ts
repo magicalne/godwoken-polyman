@@ -205,7 +205,7 @@ export function NormalizeCreateAccount(
 ) {
   return normalizeObject(debugPath, createAccount, {
     script: toNormalize(normalizers.NormalizeScript),
-    fee: toNormalize(NormalizeFee),
+    fee: normalizeHexNumber(8),
   });
 }
 

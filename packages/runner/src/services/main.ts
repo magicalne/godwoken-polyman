@@ -43,9 +43,22 @@ export class main extends Service {
     return gwScriptsConfig.eth_account_lock;
   }
 
+  async get_register_id(): Promise<HexString | null>{
+    let register_account_id: string | number | null = await this.api.findRegisterAccountId();
+    if (!register_account_id) return null;
+    return register_account_id = "0x" + register_account_id.toString(16);
+  }
+
   async get_creator_id() {
+    const register_account_id = await this.get_register_id();
+    console.log("register_account_id: ", register_account_id);
+    if(register_account_id === null){
+      return null;
+    }
+
     return await this.api.findCreatorAccountId(
-      polymanConfig.default_quantity.sudt_id_str
+      polymanConfig.default_quantity.sudt_id_str,
+      register_account_id
     );
   }
 
@@ -130,7 +143,11 @@ export class main extends Service {
     const api = this.api;
 
     const from_id = req.query.from_id + "";
-    const register_id = req.query.register_id + "";
+    const register_id = await this.get_register_id();
+    if(register_id === null){
+      throw new Error("register account id not found!");
+    }
+
     return await api.generateCreateCreatorAccountTx(
       from_id,
       polymanConfig.default_quantity.sudt_id_str,
@@ -143,10 +160,8 @@ export class main extends Service {
     const req = this.req;
     const api = this.api;
 
-    const creator_account_id = await api.findCreatorAccountId(
-      polymanConfig.default_quantity.sudt_id_str
-    );
-    if (!creator_account_id) throw new Error(`creator_account_id not found.`);
+    const creator_account_id = await this.get_creator_id(); 
+    if (creator_account_id === null) throw new Error(`creator_account_id not found.`);
 
     const contract_code = req.body.data.contract_code + "";
     const eth_address = req.body.data.eth_address + "";
@@ -162,10 +177,8 @@ export class main extends Service {
   async deploy_erc20_proxy_contract() {
     const api = this.api;
 
-    const creator_account_id = await api.findCreatorAccountId(
-      polymanConfig.default_quantity.sudt_id_str
-    );
-    if (!creator_account_id) throw new Error(`creator_account_id not found.`);
+    const creator_account_id = await this.get_creator_id(); 
+    if (creator_account_id === null) throw new Error(`creator_account_id not found.`);
 
     const contract_file = path.resolve(
       __dirname,

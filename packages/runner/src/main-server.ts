@@ -45,28 +45,33 @@ export async function start() {
   // start a polyjuice chain
   try {
     await api.syncToTip();
+
+    let from_id = await api.findEthEoaAccountIdByPrivKey(polymanConfig.addresses.user_private_key);
+    if(from_id === null){
+      from_id = await api.deposit(
+        polymanConfig.addresses.user_private_key,
+        undefined,
+        polymanConfig.default_quantity.deposit_amount
+      );
+      console.log(`create deposit account.${from_id}`);
+    }
+
+    // find or create register account id
+    let register_account_id: string | number | null = await api.findRegisterAccountId();
+    if(register_account_id === null){
+      register_account_id = await api.createRegisterAccount(from_id, rollupTypeHash, polymanConfig.addresses.user_private_key);
+      console.log(`create register account: ${register_account_id}`);
+    }else{
+      register_account_id = "0x" + register_account_id.toString(16);
+      console.log(`register account already exits: ${register_account_id}`);
+    }
+
+    // find creator account id
     const creatorId = await api.findCreatorAccountId(
-      polymanConfig.default_quantity.sudt_id_str
+      polymanConfig.default_quantity.sudt_id_str,
+      register_account_id
     );
     if (creatorId === null) {
-      //const from_id = await api.deposit(
-      //  polymanConfig.addresses.user_private_key,
-      //  undefined,
-      //  polymanConfig.default_quantity.deposit_amount
-      //);
-      const from_id = "2";
-      console.log(`create deposit account.${from_id}`);
-
-      // find or create register account id
-      let register_account_id: string | number | null = await api.findRegisterAccountId();
-      if(register_account_id === null){
-        register_account_id = await api.createRegisterAccount(from_id, rollupTypeHash, polymanConfig.addresses.user_private_key);
-        console.log(`create register account: ${register_account_id}`);
-      }else{
-        register_account_id = "0x" + register_account_id.toString(16);
-        console.log(`register account already exits: ${register_account_id}`);
-      }
-
       const creator_account_id = await api.createCreatorAccount(
         from_id,
         polymanConfig.default_quantity.sudt_id_str,
