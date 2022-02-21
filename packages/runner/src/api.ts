@@ -622,7 +622,7 @@ export class Api {
       hash_type: gwScriptsConfig.polyjuice_validator.hash_type as
         | "type"
         | "data",
-      args: rollupTypeHash + sudt_id_arg.slice(2),
+      args: rollupTypeHash + sudt_id_arg.slice(2) + register_id_arg.slice(2),
     };
     const l2_script_hash = serializeScript(l2_script);
     await this.waitForAccountIdOnChain(l2_script_hash);
