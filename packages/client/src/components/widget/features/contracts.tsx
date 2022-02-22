@@ -9,10 +9,6 @@ import FreshButton from "../fresh_button";
 import { notify } from "../notify";
 import config from "../../../config/constant.json";
 import Web3 from "web3";
-import { PolyjuiceConfig } from "@polyjuice-provider/base"
-import {
-  PolyjuiceHttpProvider,
-} from "@polyjuice-provider/web3";
 import { EthAccountLockConfig } from "../chainInfo/ChainInfo";
 
 const styles = {
@@ -78,14 +74,7 @@ export default function Contracts(props: ContractsProps) {
 
   const init_web3_provider = () => {
     const godwoken_web3_rpc_url = config.web3_server_url.devnet;
-    const provider_config: PolyjuiceConfig = {
-      web3Url: godwoken_web3_rpc_url,
-    };
-    const provider = new PolyjuiceHttpProvider(
-      godwoken_web3_rpc_url,
-      provider_config
-    );
-    var web3 = new Web3(provider);
+    var web3 = new Web3(Web3.givenProvider || godwoken_web3_rpc_url);
     return web3;
   };
 
@@ -142,7 +131,7 @@ export default function Contracts(props: ContractsProps) {
 
       notify(`your contract address: ${contractAddr}`, "success");
       setDeployedContracts((oldArray) => [...oldArray, contractAddr]);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       return notify(
         `could not finished signing process. \n\n ${JSON.stringify(error.message)}`

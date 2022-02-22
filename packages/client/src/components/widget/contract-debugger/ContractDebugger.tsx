@@ -7,8 +7,6 @@ import commonStyle from '../common_style';
 import utils from '../../../utils/index';
 import config from '../../../config/constant.json';
 import Web3 from 'web3';
-import { PolyjuiceConfig } from "@polyjuice-provider/base"
-import { PolyjuiceHttpProvider } from "@polyjuice-provider/web3";
 
 const Web3EthAbi = require('web3-eth-abi');
 
@@ -117,15 +115,7 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
 
     const init_web3_provider = () => {
         const godwoken_web3_rpc_url = config.web3_server_url.devnet;
-        const provider_config: PolyjuiceConfig = {
-          abiItems: abi,
-          web3Url: godwoken_web3_rpc_url 
-        };
-        const provider = new PolyjuiceHttpProvider(
-          godwoken_web3_rpc_url,
-          provider_config,
-        );
-        var web3 = new Web3(provider);
+        var web3 = new Web3(Web3.givenProvider || godwoken_web3_rpc_url);
         return web3;
     }
 
@@ -184,7 +174,7 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
                 if (abi_item.stateMutability === 'view') {
                     try {
                         await assemble_call_view_tx(abi_item, input_params);   
-                    } catch (error) {
+                    } catch (error: any) {
                         console.log(error);
                         notify(JSON.stringify(error.message, null, 2));   
                     }
@@ -193,7 +183,7 @@ export default function ContractDebbuger (props: ContractDebbugerProps) {
                 if (abi_item.stateMutability !== 'view') {
                     try {
                         await assemble_send_payable_tx(abi_item, input_params); 
-                    } catch (error) {
+                    } catch (error: any) {
                         notify(JSON.stringify(error.message, null, 2));   
                     }
                 }
