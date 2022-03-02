@@ -201,10 +201,8 @@ export default function Erc20ProxyDemo(props: Erc20ProxyDemoProps) {
 
       try {
         const transactionObject = {
-          nonce: 0, // ignored by MetaMask
           gasPrice: "0x0000", // customizable by user during MetaMask confirmation.
           gas: "0x9184e72a000", // customizable by user during MetaMask confirmation.
-          to: "0x" + "0".repeat(40), // Required except during contract publications.
           from: window.ethereum.selectedAddress, // must match user's active address.
           value: "0x00", // Only required to send ether to the recipient from the initiating external account.
           data: contract_code_with_constructor, // Optional, but used for defining smart contract creation and interaction.
@@ -223,7 +221,7 @@ export default function Erc20ProxyDemo(props: Erc20ProxyDemoProps) {
 
         notify(`your contract address: ${contractAddr}`, "success");
         setErc20ProxyContractAddress(contractAddr);
-      } catch (error) {
+      } catch (error: any) {
         console.log(error);
         return notify(
           `could not finished signing process. \n\n ${JSON.stringify(error.message)}`

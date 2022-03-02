@@ -110,10 +110,8 @@ export default function Contracts(props: ContractsProps) {
     const web3 = init_web3_provider();
     try {
       const transactionObject = {
-        nonce: 0, // ignored by MetaMask
         gasPrice: "0x0000", // customizable by user during MetaMask confirmation.
         gas: "0x9184e72a000", // customizable by user during MetaMask confirmation.
-        to: "0x" + "0".repeat(40), // Required except during contract publications.
         from: window.ethereum.selectedAddress, // must match user's active address.
         value: "0x00", // Only required to send ether to the recipient from the initiating external account.
         data: contractCode, // Optional, but used for defining smart contract creation and interaction.
